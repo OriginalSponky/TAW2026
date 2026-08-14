@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # PRIMO CONTAINER: Il Database
+  db:
+    image: mysql:8.0
+    container_name: dbTAW
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app_database
+      MYSQL_USER: express_user
+      MYSQL_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+
+  # SECONDO CONTAINER: Il Backend Express
+  backend:
+    build: .
+    container_name: BackendTAW
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=db
+    depends_on:
+      - db
