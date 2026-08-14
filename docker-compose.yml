@@ -1,0 +1,39 @@
+services:
+  # 1. Database
+  db:
+    image: mysql:8.0
+    container_name: dbTAW
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app_database
+      MYSQL_USER: express_user
+      MYSQL_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./backend/mysql-data:/var/lib/mysql
+      - ./backend/mysql-init:/docker-entrypoint-initdb.d
+
+  # 2. Backend
+  backend:
+    build: ./backend # Ora punta alla cartella backend
+    container_name: BackendTAW
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=db
+    depends_on:
+      - db
+
+  # 3. Frontend Angular
+  frontend:
+    build: ./frontend # Punta alla nuova cartella Angular
+    container_name: FrontendTAW
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend/src:/usr/src/app/src
+    depends_on:
+      - backend
