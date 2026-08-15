@@ -13,7 +13,7 @@ export class AppComponent {
   coloreTesto: string = 'green';
 
   testServer() {
-    // Interroga il backend Express sulla porta 3000
+    // Interroga il backend Express
     fetch('http://localhost:3000/api/projects')
       .then((response) => {
         if (!response.ok) {
