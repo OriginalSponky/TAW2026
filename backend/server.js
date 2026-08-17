@@ -16,9 +16,9 @@ const dbPool = mysql.createPool({
     queueLimit: 0
 });
 
-app.get('/api/projects', async (req, res) => {
+app.get('/api/users', async (req, res) => {
     try {
-        const [rows] = await dbPool.query('SELECT * FROM projects');
+        const [rows] = await dbPool.query('SELECT * FROM Users');
         res.json(rows);
     } catch (error) {
         console.error("Errore DB:", error);

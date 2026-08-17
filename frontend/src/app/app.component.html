@@ -9,14 +9,15 @@
   <div [style.color]="coloreTesto" style="margin-top: 20px; font-weight: bold;">
     <p>{{ messaggioErrore }}</p>
 
-    @if (progetti.length > 0) {
-      <h3>Progetti estratti dal Database:</h3>
+    @if (utenti.length > 0) {
+      <h3>Utenti estratti dal Nuovo Database:</h3>
       <ul style="list-style-type: none; padding: 0;">
-        @for (progetto of progetti; track progetto.id) {
-          <li style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; display: inline-block; text-align: left; min-width: 300px;">
-            <strong>{{ progetto.title }}</strong><br>
-            <span style="font-weight: normal;">{{ progetto.description }}</span><br>
-            <em style="color: #666; font-size: 0.9em;">Stato: {{ progetto.status }}</em>
+
+        @for (user of utenti; track user.id) {
+          <li style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; display: inline-block; text-align: left; min-width: 300px;">
+            <strong>{{ user.first_name }} {{ user.last_name }}</strong><br>
+            <span style="font-weight: normal;">{{ user.email }}</span><br>
+            <em style="color: #666; font-size: 0.9em;">Ruolo: {{ user.role }}</em>
           </li>
         }
       </ul>

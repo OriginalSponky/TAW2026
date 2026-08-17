@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core'; // <-- 1. Importa ChangeDetectorRef
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -8,13 +8,15 @@ import { CommonModule } from '@angular/common';
   templateUrl: './app.component.html',
 })
 export class AppComponent {
-  progetti: any[] = [];
+  utenti: any[] = [];
   messaggioErrore: string = '';
   coloreTesto: string = 'green';
 
+  // 2. Inietta il ChangeDetectorRef tramite il costruttore
+  constructor(private cdr: ChangeDetectorRef) {}
+
   testServer() {
-    // Interroga il backend Express
-    fetch('http://localhost:3000/api/projects')
+    fetch('http://localhost:3000/api/users')
       .then((response) => {
         if (!response.ok) {
           throw new Error('Errore nella risposta del server');
@@ -24,12 +26,15 @@ export class AppComponent {
       .then((data) => {
         this.coloreTesto = 'green';
         this.messaggioErrore = '';
-        this.progetti = data;
+        this.utenti = data;
+
+        // 3. Forza Angular ad aggiornare l'HTML istantaneamente!
+        this.cdr.detectChanges();
       })
       .catch((error) => {
         this.coloreTesto = 'red';
         this.messaggioErrore = 'Errore di connessione al server o DB spento.';
-        this.progetti = [];
+        this.utenti = [];
         console.error(error);
       });
   }
