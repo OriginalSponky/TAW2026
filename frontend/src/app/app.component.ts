@@ -9,13 +9,10 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './app.component.html',
 })
 export class AppComponent implements OnInit {
-  coloreTesto: string = 'green';
-  utenti: any[] = [];
-
   emailInput: string = '';
   passwordInput: string = '';
-  utenteLoggato: any = null;
 
+  utenteLoggato: any = null;
   messaggioErrore: string = '';
 
   constructor(private cdr: ChangeDetectorRef) {}
@@ -24,32 +21,12 @@ export class AppComponent implements OnInit {
     const utenteSalvato = localStorage.getItem('utenteLoggato');
     if (utenteSalvato) {
       this.utenteLoggato = JSON.parse(utenteSalvato);
+    } else {
+      this.inizializzaBottoneGoogle();
     }
   }
 
-  /*
-  testServer() {
-    fetch('http://localhost:3000/api/users')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Errore nella risposta del server');
-        }
-        return response.json();
-      })
-      .then((data) => {
-        this.coloreTesto = 'green';
-        this.messaggioErrore = '';
-        this.utenti = data;
-        this.cdr.detectChanges();
-      })
-      .catch((error) => {
-        this.coloreTesto = 'red';
-        this.messaggioErrore = 'Errore di connessione al server o DB spento.';
-        this.utenti = [];
-        console.error(error);
-      });
-  } */
-
+  // Classic Login(Database)
   eseguiLogin() {
     fetch('http://localhost:3000/api/login', {
       method: 'POST',
@@ -75,11 +52,79 @@ export class AppComponent implements OnInit {
       });
   }
 
+  // Google Auth Login
+  gestisciRispostaGoogle(response: any) {
+    const token = response.credential;
+    const payloadBase64 = token.split('.')[1];
+    const decodedPayload = JSON.parse(atob(payloadBase64));
+    const googleEmail = decodedPayload.email;
+
+    fetch('http://localhost:3000/api/google-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: googleEmail }),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("L'email Google non è presente nel database dell'Ateneo.");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        this.messaggioErrore = '';
+        this.utenteLoggato = data;
+
+        localStorage.setItem('utenteLoggato', JSON.stringify(data));
+        this.cdr.detectChanges();
+      })
+      .catch((error) => {
+        this.messaggioErrore = error.message;
+        this.utenteLoggato = null;
+
+        if ((window as any).google) {
+          (window as any).google.accounts.id.disableAutoSelect();
+        }
+
+        this.cdr.detectChanges();
+      });
+  }
+
+  inizializzaBottoneGoogle() {
+    setTimeout(() => {
+      if ((window as any).google) {
+        (window as any).google.accounts.id.initialize({
+          client_id: '815258409239-ud52hl573eknubjouh7j6v0id12bh55j.apps.googleusercontent.com',
+          callback: this.gestisciRispostaGoogle.bind(this),
+        });
+
+        (window as any).google.accounts.id.renderButton(
+          document.getElementById('google-btn-container'),
+          {
+            theme: 'outline',
+            size: 'large',
+            type: 'standard',
+            shape: 'rectangular',
+            text: 'signin_with',
+            logo_alignment: 'left',
+          },
+        );
+      }
+    }, 100);
+  }
+
   eseguiLogout() {
     this.utenteLoggato = null;
     this.emailInput = '';
     this.passwordInput = '';
+    this.messaggioErrore = '';
     localStorage.removeItem('utenteLoggato');
+
+    if ((window as any).google) {
+      (window as any).google.accounts.id.disableAutoSelect();
+    }
+
     this.cdr.detectChanges();
+
+    this.inizializzaBottoneGoogle();
   }
 }

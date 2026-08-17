@@ -17,12 +17,11 @@ const dbPool = mysql.createPool({
     queueLimit: 0
 });
 
-// Nuova rotta di Login
+// Regular login route
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Interroghiamo il database cercando l'esatta combinazione email/password
         const [rows] = await dbPool.query(
             'SELECT * FROM Users WHERE email = ? AND password_hash = ?',
             [email, password]
@@ -30,7 +29,6 @@ app.post('/api/login', async (req, res) => {
 
         if (rows.length > 0) {
             const user = rows[0];
-            // Login ok: restituiamo al frontend solo i dati utili (NON la password)
             res.json({
                 first_name: user.first_name,
                 last_name: user.last_name,
@@ -38,7 +36,6 @@ app.post('/api/login', async (req, res) => {
                 matriculation_number: user.matriculation_number
             });
         } else {
-            // Nessuna corrispondenza trovata
             res.status(401).send("Credenziali non valide");
         }
     } catch (error) {
@@ -47,16 +44,32 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-/*
-app.get('/api/users', async (req, res) => {
+// Google Auth route
+app.post('/api/google-login', async (req, res) => {
+    const { email } = req.body;
+
     try {
-        const [rows] = await dbPool.query('SELECT * FROM Users');
-        res.json(rows);
+        const [rows] = await dbPool.query('SELECT * FROM Users WHERE email = ?', [email]);
+
+        if (rows.length > 0) {
+            const user = rows[0];
+            
+            const matricolaEstratta = email.split('@')[0];
+            
+            res.json({
+                first_name: user.first_name,
+                last_name: user.last_name,
+                role: user.role,
+                matriculation_number: matricolaEstratta
+            });
+        } else {
+            res.status(401).send("Questa email non è autorizzata o non è nel sistema.");
+        }
     } catch (error) {
-        console.error("Errore DB:", error);
+        console.error("Errore DB Google Login:", error);
         res.status(500).send("Errore interno");
     }
-}); */
+});
 
 app.listen(3000, () => {
     console.log('Backend in ascolto sulla porta 3000');

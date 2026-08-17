@@ -115,7 +115,7 @@ CREATE TABLE Documents (
 
 -- 1. Popoliamo gli Utenti (1 Studente, 1 Professore, 1 Staff)
 INSERT INTO Users (role, first_name, last_name, matriculation_number, email, password_hash) VALUES
-                                                                                                ('STUDENT', 'Filippo', 'Bianchi', '855443', '855443@stud.unive.it', 'hash_password_fittizio_1'),
+                                                                                                ('STUDENT', 'Filippo', 'Bianchi', '907476', '907476@stud.unive.it', 'Papaya2026@'),
                                                                                                 ('LECTURER', 'Mario', 'Rossi', NULL, 'mario.rossi@unive.it', 'hash_password_fittizio_2'),
                                                                                                 ('STAFF', 'Anna', 'Verdi', NULL, 'anna.verdi@unive.it', 'hash_password_fittizio_3');
 
