@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagina di Login</title>
+  <!-- SCRIPT DI GOOGLE FONDAMENTALE (aggiunto) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh;">
+
+  <div style="background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); width: 100%; max-width: 350px; text-align: center; box-sizing: border-box;">
+
+    <h2 style="margin-top: 0; margin-bottom: 5px; color: #333333;">Ciao User</h2>
+    <!-- Corretto h10 in p -->
+    <p style="margin-top: 0; margin-bottom: 25px; color: #555555; font-size: 14px;">Portale ufficiale Ca' Foscari per gli Erasmus</p>
+
+    <form action="#" method="POST">
+
+      <div style="margin-bottom: 20px; text-align: left;">
+        <label for="email" style="display: block; margin-bottom: 8px; color: #555555; font-size: 14px; font-weight: 600;">Email</label>
+        <input type="email" id="email" name="email" placeholder="Inserisci la tua email" required style="width: 100%; padding: 12px; border: 1px solid #cccccc; border-radius: 8px; box-sizing: border-box; font-size: 14px;">
+      </div>
+
+      <div style="margin-bottom: 20px; text-align: left;">
+        <label for="password" style="display: block; margin-bottom: 8px; color: #555555; font-size: 14px; font-weight: 600;">Password</label>
+        <input type="password" id="password" name="password" placeholder="Inserisci la tua password" required style="width: 100%; padding: 12px; border: 1px solid #cccccc; border-radius: 8px; box-sizing: border-box; font-size: 14px;">
+      </div>
+
+      <!-- Riaggiunto margin-bottom: 20px al pulsante -->
+      <button type="submit" style="width: 100%; padding: 12px; background-color: #4A90E2; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 20px;">Accedi</button>
+
+      <!-- Divisore "oppure" -->
+      <div style="display: flex; align-items: center; margin-bottom: 20px;">
+        <div style="flex-grow: 1; height: 1px; background-color: #dddddd;"></div>
+        <span style="padding: 0 10px; color: #888888; font-size: 14px;">oppure</span>
+        <div style="flex-grow: 1; height: 1px; background-color: #dddddd;"></div>
+      </div>
+
+     <!-- 2. Configurazione "invisibile" di Google -->
+      <div id="g_id_onload"
+           data-client_id="INSERISCI_QUI_IL_TUO_CLIENT_ID.apps.googleusercontent.com"
+           data-context="signin"
+           data-ux_mode="popup"
+           data-callback="gestisciRispostaGoogle"
+           data-auto_prompt="false">
+      </div>
+
+      <!-- 3. Il pulsante ufficiale generato da Google -->
+      <div class="g_id_signin"
+           data-type="standard"
+           data-shape="rectangular"
+           data-theme="outline"
+           data-text="signin_with"
+           data-size="large"
+           data-logo_alignment="left"
+           style="display: flex; justify-content: center; width: 100%;">
+      </div>
+
+    </form>
+
+  </div>
+
+  <script>
+    function gestisciRispostaGoogle(response) {
+      alert("Login con Google completato! Token ricevuto.");
+      console.log("Token ID JWT codificato: " + response.credential);
+    }
+  </script>
+</body>
+</html>

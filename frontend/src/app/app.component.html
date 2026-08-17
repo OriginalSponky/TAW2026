@@ -1,4 +1,5 @@
-<div style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
+<!--
+  <div style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
   <h1>Test della Rotta Express</h1>
   <p>Clicca il bottone qui sotto per interrogare il server Express tramite Docker.</p>
 
@@ -23,4 +24,50 @@
       </ul>
     }
   </div>
+</div>
+-->
+
+<div style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
+
+  <!-- SCHERMATA DI LOGIN (Mostrata se utenteLoggato è null) -->
+  @if (!utenteLoggato) {
+    <div style="display: inline-block; text-align: left; padding: 30px; border: 1px solid #ccc; border-radius: 8px; background-color: #f9f9f9;">
+      <h2 style="margin-top: 0;">Accesso al Portale</h2>
+
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; font-weight: bold; margin-bottom: 5px;">Email:</label>
+        <!-- ngModel collega in tempo reale l'input alla variabile TypeScript -->
+        <input type="email" [(ngModel)]="emailInput" placeholder="es. 855443@stud.unive.it" style="width: 100%; padding: 8px; box-sizing: border-box;">
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-weight: bold; margin-bottom: 5px;">Password:</label>
+        <input type="password" [(ngModel)]="passwordInput" placeholder="Inserisci la password" style="width: 100%; padding: 8px; box-sizing: border-box;">
+      </div>
+
+      <button (click)="eseguiLogin()" style="padding: 10px 20px; width: 100%; font-size: 16px; cursor: pointer; background-color: #0056b3; color: white; border: none; border-radius: 5px;">
+        Accedi
+      </button>
+
+      <p style="color: red; margin-top: 15px; font-weight: bold; text-align: center; min-height: 20px;">
+        {{ messaggioErrore }}
+      </p>
+    </div>
+  } @else {
+    <div style="display: inline-block; text-align: left; padding: 30px; border: 2px solid #28a745; border-radius: 8px; min-width: 300px; background-color: #f4fff5;">
+      <h2 style="color: #28a745; margin-top: 0;">Benvenuto, {{ utenteLoggato.first_name }} {{ utenteLoggato.last_name }}!</h2>
+      <hr style="border-top: 1px solid #ddd; margin: 15px 0;">
+
+      <p style="font-size: 18px;"><strong>Ruolo:</strong> {{ utenteLoggato.role }}</p>
+
+      <!-- Mostriamo la matricola SOLO se il ruolo è STUDENTE -->
+      @if (utenteLoggato.role === 'STUDENT') {
+        <p style="font-size: 18px;"><strong>Matricola:</strong> {{ utenteLoggato.matriculation_number }}</p>
+      }
+
+      <button (click)="eseguiLogout()" style="margin-top: 25px; padding: 10px 20px; cursor: pointer; background-color: #dc3545; color: white; border: none; border-radius: 5px;">
+        Esci dal profilo
+      </button>
+    </div>
+  }
 </div>

@@ -5,6 +5,7 @@ const cors = require('cors');
 const app = express();
 
 app.use(cors());
+app.use(express.json());
 
 const dbPool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
@@ -16,6 +17,37 @@ const dbPool = mysql.createPool({
     queueLimit: 0
 });
 
+// Nuova rotta di Login
+app.post('/api/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // Interroghiamo il database cercando l'esatta combinazione email/password
+        const [rows] = await dbPool.query(
+            'SELECT * FROM Users WHERE email = ? AND password_hash = ?',
+            [email, password]
+        );
+
+        if (rows.length > 0) {
+            const user = rows[0];
+            // Login ok: restituiamo al frontend solo i dati utili (NON la password)
+            res.json({
+                first_name: user.first_name,
+                last_name: user.last_name,
+                role: user.role,
+                matriculation_number: user.matriculation_number
+            });
+        } else {
+            // Nessuna corrispondenza trovata
+            res.status(401).send("Credenziali non valide");
+        }
+    } catch (error) {
+        console.error("Errore DB:", error);
+        res.status(500).send("Errore interno");
+    }
+});
+
+/*
 app.get('/api/users', async (req, res) => {
     try {
         const [rows] = await dbPool.query('SELECT * FROM Users');
@@ -24,7 +56,7 @@ app.get('/api/users', async (req, res) => {
         console.error("Errore DB:", error);
         res.status(500).send("Errore interno");
     }
-});
+}); */
 
 app.listen(3000, () => {
     console.log('Backend in ascolto sulla porta 3000');
