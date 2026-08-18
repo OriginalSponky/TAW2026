@@ -5,167 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Le Mie Richieste - Ca' Foscari</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-
+    
     <style>
         /* RESET E STILI DI BASE */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
         body { background-color: #f8f9fa; color: #202124; min-height: 100vh; padding-bottom: 50px; }
 
-        /* HEADER E PROFILO */
+        /* HEADER */
         header {
-            padding: 20px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: white;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;
+            background-color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100;
         }
+        .back-btn { text-decoration: none; color: #5f6368; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+        .profile-btn { background-color: #4285f4; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-weight: 500; cursor: pointer; }
 
-        .back-btn {
-            text-decoration: none;
-            color: #5f6368;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .back-btn:hover { color: #202124; }
-
-        .profile-container { position: relative; }
-        .profile-btn {
-            background-color: #4285f4; color: white; border: none; border-radius: 50%;
-            width: 40px; height: 40px; font-size: 16px; font-weight: 500; cursor: pointer;
-        }
-
-        /* LAYOUT PRINCIPALE */
+        /* LAYOUT */
         main { max-width: 900px; margin: 40px auto; padding: 0 20px; }
-
-        .header-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
+        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .page-title { font-size: 2rem; font-weight: 400; }
-
-        .new-btn {
-            background-color: #1a73e8;
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 500;
-            transition: background 0.2s;
-        }
+        .new-btn { background-color: #1a73e8; color: white; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 500; transition: background 0.2s;}
         .new-btn:hover { background-color: #1557b0; }
 
-        /* LISTA RICHIESTE */
-        .requests-list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        /* CARD RICHIESTA */
+        /* LISTA RICHIESTE E CARD */
+        .requests-list { display: flex; flex-direction: column; gap: 20px; }
+        
         .request-card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid transparent;
-            transition: all 0.2s;
+            background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            border: 1px solid transparent; transition: all 0.2s; overflow: hidden;
         }
-        .request-card:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border-color: #dadce0;
-        }
+        .request-card:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-color: #dadce0; }
 
-        .request-info {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+        .card-header { padding: 24px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .university-name { font-size: 1.25rem; font-weight: 500; color: #202124; margin-bottom: 8px; }
+        .details { font-size: 14px; color: #5f6368; display: flex; gap: 16px; margin-bottom: 8px; }
+        
+        /* BADGE PER TUTTI GLI STATI DEL PROGETTO */
+        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; text-transform: uppercase; }
+        
+        .status-created { background-color: #e8eaed; color: #3c4043; } /* Grigio - Bozza */
+        .status-awaiting-la { background-color: #fef7e0; color: #b06000; } /* Giallo - Attesa prof */
+        .status-pre-departure { background-color: #e6f4ea; color: #137333; } /* Verde - Approvato staff */
+        .status-in-progress { background-color: #e8f0fe; color: #1967d2; } /* Blu - Mobilità attiva */
+        .status-waiting-score { background-color: #f3e8fd; color: #681da8; } /* Viola - Attesa voti */
+        .status-closed { background-color: #f1f3f4; color: #5f6368; } /* Grigio scuro - Chiusa */
+        .status-canceled { background-color: #fce8e6; color: #d93025; } /* Rosso - Annullata */
 
-        .university-name {
-            font-size: 1.25rem;
-            font-weight: 500;
-            color: #202124;
-        }
-
-        .details {
-            font-size: 14px;
-            color: #5f6368;
-            display: flex;
-            gap: 16px;
-        }
-
-        .details span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* BADGE STATO */
-        .status-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 16px;
-            font-size: 12px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 8px;
-            width: fit-content;
-        }
-
-        /* Colori per i vari stati richiesti dal progetto */
-        .status-created { background-color: #e8eaed; color: #3c4043; } /* Grigio */
-        .status-awaiting { background-color: #fef7e0; color: #b06000; } /* Giallo/Arancio */
-        .status-pre-departure { background-color: #e6f4ea; color: #137333; } /* Verde */
-        .status-in-progress { background-color: #e8f0fe; color: #1967d2; } /* Blu */
-        .status-closed { background-color: #f1f3f4; color: #5f6368; } /* Grigio scuro */
-
-        /* AZIONI */
-        .actions {
-            display: flex;
-            gap: 12px;
-        }
-
+        /* PULSANTI E AZIONI */
+        .actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end;}
         .btn-outline {
-            background: transparent;
-            border: 1px solid #dadce0;
-            color: #1a73e8;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background 0.2s;
+            background: transparent; border: 1px solid #dadce0; color: #1a73e8;
+            padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.2s; text-decoration: none;
         }
         .btn-outline:hover { background: #f8f9fa; }
+        
+        .btn-danger { color: #d93025; border-color: #fce8e6; }
+        .btn-danger:hover { background: #fce8e6; }
 
-        /* RESPONSIVE */
+        .btn-primary { background-color: #1a73e8; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-primary:hover { background-color: #1557b0; }
+
+        /* PANNELLO DI MODIFICA DURANTE LA MOBILITÀ */
+        .edit-panel { display: none; background-color: #fafbfc; border-top: 1px solid #dadce0; padding: 20px 24px; flex-direction: column; gap: 16px; }
+        .edit-panel.active { display: flex; }
+        .edit-panel h4 { font-size: 16px; color: #3c4043; margin-bottom: 4px; }
+        
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        label { font-size: 14px; font-weight: 500; color: #5f6368; }
+        textarea { width: 100%; padding: 12px; border: 1px solid #dadce0; border-radius: 6px; font-size: 14px; outline: none; resize: vertical; min-height: 80px; }
+        textarea:focus { border-color: #4285f4; }
+        input[type="file"] { padding: 10px; border: 1px dashed #dadce0; border-radius: 6px; background: white; }
+        .panel-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; }
+
         @media (max-width: 600px) {
-            .request-card { flex-direction: column; align-items: flex-start; gap: 20px; }
-            .actions { width: 100%; justify-content: flex-end; }
+            .card-header { flex-direction: column; align-items: flex-start; gap: 20px; }
+            .actions { width: 100%; justify-content: flex-start; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <a href="#" class="back-btn" onclick="alert('Torna alla dashboard')">← Dashboard</a>
-        <div class="profile-container">
-            <button class="profile-btn">NC</button>
-        </div>
+        <a href="#" class="back-btn">← Home</a>
+        <div class="profile-container"><button class="profile-btn">NC</button></div>
     </header>
 
     <main>
@@ -175,58 +97,138 @@
         </div>
 
         <div class="requests-list">
-
-            <!-- Esempio 1: In attesa di approvazione -->
+            
+            <!-- STATO 1: CREATED (Bozza - Modificabile liberamente) -->
             <div class="request-card">
-                <div class="request-info">
-                    <div class="university-name">University of Tokyo</div>
-                    <div class="details">
-                        <span>📅 A.A. 2025/2026</span>
-                        <span>⏱️ First Semester</span>
+                <div class="card-header">
+                    <div class="request-info">
+                        <div class="university-name">University of Sydney</div>
+                        <div class="details"><span>📅 A.A. 2026/2027</span><span>⏱️ Entire Year</span></div>
+                        <div class="status-badge status-created">Created (Bozza)</div>
                     </div>
-                    <!-- Stato: awaiting Learning Agreement approval -->
-                    <div class="status-badge status-awaiting">Awaiting L.A. Approval</div>
-                </div>
-                <div class="actions">
-                    <a href="#" class="btn-outline" onclick="alert('Apertura dettagli della pratica in corso...')">Vedi Dettagli</a>
+                    <div class="actions">
+                        <button class="btn-outline btn-danger" onclick="alert('Bozza eliminata')">Elimina</button>
+                        <!-- Riporterà l'utente al form pre-compilato -->
+                        <a href="nuova_richiesta.html" class="btn-outline">Modifica Bozza</a> 
+                    </div>
                 </div>
             </div>
 
-            <!-- Esempio 2: Pre-partenza completata -->
+            <!-- STATO 2: AWAITING L.A. APPROVAL (Bloccato, in attesa del docente) -->
             <div class="request-card">
-                <div class="request-info">
-                    <div class="university-name">UCLA</div>
-                    <div class="details">
-                        <span>📅 A.A. 2025/2026</span>
-                        <span>⏱️ Second Semester</span>
+                <div class="card-header">
+                    <div class="request-info">
+                        <div class="university-name">Waseda University</div>
+                        <div class="details"><span>📅 A.A. 2025/2026</span><span>⏱️ First Semester</span></div>
+                        <div class="status-badge status-awaiting-la">Awaiting Learning Agreement approval</div>
                     </div>
-                    <!-- Stato: pre-departure completed -->
-                    <div class="status-badge status-pre-departure">Pre-departure Completed</div>
-                </div>
-                <div class="actions">
-                    <a href="#" class="btn-outline">Vedi Dettagli</a>
+                    <div class="actions">
+                        <button class="btn-outline">Vedi Dettagli</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Esempio 3: Creata (bozza) -->
+            <!-- STATO 3: PRE-DEPARTURE COMPLETED (Bloccato, verificato dall'ufficio) -->
             <div class="request-card">
-                <div class="request-info">
-                    <div class="university-name">University of Sydney</div>
-                    <div class="details">
-                        <span>📅 A.A. 2026/2027</span>
-                        <span>⏱️ Entire Year</span>
+                <div class="card-header">
+                    <div class="request-info">
+                        <div class="university-name">UCLA</div>
+                        <div class="details"><span>📅 A.A. 2025/2026</span><span>⏱️ Second Semester</span></div>
+                        <div class="status-badge status-pre-departure">Pre-departure completed</div>
                     </div>
-                    <!-- Stato: created -->
-                    <div class="status-badge status-created">Created</div>
+                    <div class="actions">
+                        <button class="btn-outline">Vedi Dettagli</button>
+                    </div>
                 </div>
-                <div class="actions">
-                    <a href="#" class="btn-outline" style="color: #d93025; border-color: #fce8e6;">Elimina</a>
-                    <a href="#" class="btn-outline">Modifica</a>
+            </div>
+
+            <!-- STATO 4: MOBILITY IN PROGRESS (Possibilità di proporre modifiche via pannello) -->
+            <div class="request-card">
+                <div class="card-header">
+                    <div class="request-info">
+                        <div class="university-name">University of Tokyo</div>
+                        <div class="details"><span>📅 A.A. 2025/2026</span><span>⏱️ First Semester</span></div>
+                        <div class="status-badge status-in-progress">Mobility in progress</div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-outline" onclick="toggleEditPanel('panel-tokyo')">Proponi Modifica (L.A.)</button>
+                        <button class="btn-outline">Vedi Dettagli</button>
+                    </div>
+                </div>
+
+                <!-- Pannello di modifica visibile solo per questo stato -->
+                <div class="edit-panel" id="panel-tokyo">
+                    <h4>Proponi una modifica al Learning Agreement</h4>
+                    <div class="form-group">
+                        <label for="mod_desc">Descrizione della modifica:</label>
+                        <textarea id="mod_desc" placeholder="Descrivi le variazioni agli esami..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_pdf">Carica Learning Agreement aggiornato (PDF):</label>
+                        <input type="file" id="new_pdf" accept=".pdf">
+                    </div>
+                    <div class="panel-actions">
+                        <button class="btn-outline" onclick="toggleEditPanel('panel-tokyo')">Annulla</button>
+                        <button class="btn-primary" onclick="inviaModifica('panel-tokyo')">Invia al Docente</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATO 5: WAITING FOR EXAM SCORE APPROVAL (Bloccato, in attesa del docente per i voti) -->
+            <div class="request-card">
+                <div class="card-header">
+                    <div class="request-info">
+                        <div class="university-name">King's College London</div>
+                        <div class="details"><span>📅 A.A. 2024/2025</span><span>⏱️ Entire Year</span></div>
+                        <div class="status-badge status-waiting-score">Waiting for exam score approval</div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-outline">Vedi Dettagli</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATO 6: CLOSED (Pratica conclusa, bloccata) -->
+            <div class="request-card">
+                <div class="card-header">
+                    <div class="request-info">
+                        <div class="university-name">Sorbonne Université</div>
+                        <div class="details"><span>📅 A.A. 2024/2025</span><span>⏱️ First Semester</span></div>
+                        <div class="status-badge status-closed">Closed</div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-outline">Vedi Dettagli / Storico</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATO 7: CANCELED (Pratica annullata, bloccata) -->
+            <div class="request-card">
+                <div class="card-header">
+                    <div class="request-info">
+                        <div class="university-name">University of Melbourne</div>
+                        <div class="details"><span>📅 A.A. 2025/2026</span><span>⏱️ Second Semester</span></div>
+                        <div class="status-badge status-canceled">Canceled</div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-outline">Vedi Dettagli</button>
+                    </div>
                 </div>
             </div>
 
         </div>
     </main>
 
+    <script>
+        // Mostra/Nasconde il pannello di modifica per le pratiche "In Progress"
+        function toggleEditPanel(panelId) {
+            document.getElementById(panelId).classList.toggle('active');
+        }
+
+        function inviaModifica(panelId) {
+            alert("Modifica inviata con successo! Il docente referente la valuterà a breve.");
+            toggleEditPanel(panelId);
+        }
+    </script>
 </body>
 </html>

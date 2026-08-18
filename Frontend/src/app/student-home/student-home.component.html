@@ -1,0 +1,37 @@
+<header>
+  <div class="profile-container">
+    <!-- Il bottone calcola automaticamente le iniziali (es. Mario Rossi -> MR) -->
+    <button class="profile-btn" (click)="toggleMenu($event)" aria-label="Menu profilo">
+      {{ iniziali }}
+    </button>
+
+    <!-- Menù a tendina controllato da Angular -->
+    <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
+      <a href="#">Gestisci il tuo Account</a>
+      <a href="#">Impostazioni</a>
+      <a href="#">Aiuto e feedback</a>
+      <div class="divider"></div>
+      <!-- Questo link emette l'evento per il logout -->
+      <a href="#" class="logout" (click)="logout($event)">🚪 Log out</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <!-- Stampa i dati reali dell'utente dal database -->
+    <h1>Ciao {{ utente.first_name }} {{ utente.last_name }}</h1>
+  </div>
+
+  <div class="cards-container">
+    <div class="card" (click)="mostraMessaggio('Hai cliccato su Nuova richiesta')">
+      <h2>Nuova richiesta</h2>
+      <p>Avvia la compilazione di una nuova pratica, un modulo o una segnalazione.</p>
+    </div>
+
+    <div class="card" (click)="mostraMessaggio('Hai cliccato su Le mie richieste')">
+      <h2>Le mie richieste</h2>
+      <p>Controlla lo stato delle tue pratiche in corso e visualizza lo storico.</p>
+    </div>
+  </div>
+</main>
