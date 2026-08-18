@@ -115,9 +115,9 @@ CREATE TABLE Documents (
 
 -- 1. Popoliamo gli Utenti (1 Studente, 1 Professore, 1 Staff)
 INSERT INTO Users (role, first_name, last_name, matriculation_number, email, password_hash) VALUES
-                                                                                                ('STUDENT', 'Filippo', 'Bianchi', '907476', '907476@stud.unive.it', 'Papaya2026@'),
+                                                                                                ('STUDENT', 'Filippo', 'Schierato', '907476', '907476@stud.unive.it', 'Papaya2026@'),
                                                                                                 ('LECTURER', 'Mario', 'Rossi', NULL, 'mario.rossi@unive.it', 'hash_password_fittizio_2'),
-                                                                                                ('STAFF', 'Anna', 'Verdi', NULL, 'anna.verdi@unive.it', 'hash_password_fittizio_3');
+                                                                                                ('STAFF', 'Overseas', 'Office', NULL, 'overseaout@unive.it', 'hash_password_fittizio_3');
 
 -- 2. Popoliamo le Istituzioni Estere (Atenei Partner)
 INSERT INTO Institutions (name, country, city, website_url) VALUES

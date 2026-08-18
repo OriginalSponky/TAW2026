@@ -15,6 +15,10 @@ export class AppComponent implements OnInit {
   utenteLoggato: any = null;
   messaggioErrore: string = '';
 
+  inRegistrazione: boolean = false;
+  datiRegistrazione: any = null;
+  passwordConferma: string = '';
+
   constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
@@ -26,7 +30,7 @@ export class AppComponent implements OnInit {
     }
   }
 
-  // Classic Login(Database)
+  // Classic Login
   eseguiLogin() {
     fetch('http://localhost:3000/api/login', {
       method: 'POST',
@@ -35,21 +39,76 @@ export class AppComponent implements OnInit {
     })
       .then(async (response) => {
         if (!response.ok) {
-          throw new Error('Credenziali errate');
+          const errorMsg = await response.text();
+          throw new Error(errorMsg);
         }
         return response.json();
       })
       .then((data) => {
         this.messaggioErrore = '';
-        this.utenteLoggato = data;
-        localStorage.setItem('utenteLoggato', JSON.stringify(data));
+
+        if (data.action === 'LOGIN') {
+          // Login standard
+          this.utenteLoggato = data.user;
+          localStorage.setItem('utenteLoggato', JSON.stringify(data.user));
+        } else if (data.action === 'REQUIRES_REGISTRATION') {
+          //Registration check
+          this.inRegistrazione = true;
+          this.datiRegistrazione = data.prefill;
+          this.passwordConferma = '';
+        }
         this.cdr.detectChanges();
       })
       .catch((error) => {
-        this.messaggioErrore = 'Email o password non valide.';
+        this.messaggioErrore = error.message;
         this.utenteLoggato = null;
+        this.inRegistrazione = false;
         this.cdr.detectChanges();
       });
+  }
+
+  // Registration of new users
+  confermaRegistrazione() {
+    if (this.passwordConferma !== this.passwordInput) {
+      this.messaggioErrore = 'Le password non coincidono!';
+      return;
+    }
+    if (!this.datiRegistrazione.first_name || !this.datiRegistrazione.last_name) {
+      this.messaggioErrore = 'Per favore, compila Nome e Cognome.';
+      return;
+    }
+
+    fetch('http://localhost:3000/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: this.datiRegistrazione.email,
+        password: this.passwordConferma, // Salviamo la password confermata
+        first_name: this.datiRegistrazione.first_name,
+        last_name: this.datiRegistrazione.last_name,
+        role: this.datiRegistrazione.role,
+        matriculation_number: this.datiRegistrazione.matriculation_number,
+      }),
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Errore durante la registrazione.');
+        return res.json();
+      })
+      .then(() => {
+        // Registration done
+        this.inRegistrazione = false;
+        this.eseguiLogin();
+      })
+      .catch((err) => {
+        this.messaggioErrore = err.message;
+        this.cdr.detectChanges();
+      });
+  }
+
+  annullaRegistrazione() {
+    this.inRegistrazione = false;
+    this.messaggioErrore = '';
+    this.cdr.detectChanges();
   }
 
   // Google Auth Login

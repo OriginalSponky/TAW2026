@@ -1,6 +1,7 @@
 <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box;">
 
-  @if (!utenteLoggato) {
+  @if (!utenteLoggato && !inRegistrazione) {
+    <!-- Login Screen -->
     <div style="background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); width: 100%; max-width: 350px; text-align: center; box-sizing: border-box;">
 
       <h2 style="margin-top: 0; margin-bottom: 5px; color: #333333;">Oltre il Ponte</h2>
@@ -22,7 +23,7 @@
         {{ messaggioErrore }}
       </p>
 
-      <!-- Google Config-->
+      <!-- Google Config & Button-->
       <div style="display: flex; align-items: center; margin-bottom: 20px;">
         <div style="flex-grow: 1; height: 1px; background-color: #dddddd;"></div>
         <span style="padding: 0 10px; color: #888888; font-size: 14px;">oppure</span>
@@ -32,7 +33,48 @@
       <div id="google-btn-container" style="display: flex; justify-content: center; width: 100%;"></div>
 
     </div>
-  } @else {
+  }
+  @else if (inRegistrazione) {
+    <!-- Registration Phase -->
+    <div style="background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); border-top: 6px solid #fbbc05; width: 100%; max-width: 400px; text-align: left; box-sizing: border-box;">
+
+      <h2 style="color: #333333; margin-top: 0; margin-bottom: 5px;">Nuovo Utente</h2>
+      <p style="margin-top: 0; margin-bottom: 20px; color: #555555; font-size: 14px;">La tua email non è nel sistema. Conferma i tuoi dati per registrarti.</p>
+
+      <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <p style="margin: 0 0 5px 0; color: #555555; font-size: 14px;"><strong>Email:</strong> {{ datiRegistrazione.email }}</p>
+        <p style="margin: 0 0 5px 0; color: #555555; font-size: 14px;"><strong>Ruolo Assegnato:</strong> {{ datiRegistrazione.role }}</p>
+        @if (datiRegistrazione.role === 'STUDENT') {
+          <p style="margin: 0; color: #555555; font-size: 14px;"><strong>Matricola:</strong> {{ datiRegistrazione.matriculation_number }}</p>
+        }
+      </div>
+
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; color: #555555; font-size: 14px; font-weight: 600;">Nome *</label>
+        <input type="text" [(ngModel)]="datiRegistrazione.first_name" placeholder="Il tuo nome" style="width: 100%; padding: 10px; border: 1px solid #cccccc; border-radius: 8px; box-sizing: border-box;">
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 5px; color: #555555; font-size: 14px; font-weight: 600;">Cognome *</label>
+        <input type="text" [(ngModel)]="datiRegistrazione.last_name" placeholder="Il tuo cognome" style="width: 100%; padding: 10px; border: 1px solid #cccccc; border-radius: 8px; box-sizing: border-box;">
+      </div>
+
+      <div style="margin-bottom: 25px;">
+        <label style="display: block; margin-bottom: 5px; color: #555555; font-size: 14px; font-weight: 600;">Conferma Password *</label>
+        <input type="password" [(ngModel)]="passwordConferma" placeholder="Reinserisci la password" (keyup.enter)="confermaRegistrazione()" style="width: 100%; padding: 10px; border: 1px solid #cccccc; border-radius: 8px; box-sizing: border-box;">
+      </div>
+
+      <p style="color: #d93025; font-size: 14px; font-weight: bold; margin-bottom: 15px; text-align: center;">
+        {{ messaggioErrore }}
+      </p>
+
+      <button (click)="confermaRegistrazione()" style="width: 100%; padding: 12px; background-color: #fbbc05; color: #333; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 10px;">Conferma Registrazione</button>
+      <button (click)="annullaRegistrazione()" style="width: 100%; padding: 12px; background-color: transparent; color: #888; border: none; font-size: 14px; cursor: pointer;">Annulla</button>
+
+    </div>
+  }
+  @else {
+    <!-- Logged User Interface -->
     <div style="background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); border-top: 6px solid #4A90E2; width: 100%; max-width: 400px; text-align: left; box-sizing: border-box;">
 
       <h2 style="color: #333333; margin-top: 0; margin-bottom: 5px;">Benvenuto,</h2>
