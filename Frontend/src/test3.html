@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Mie Richieste - Ca' Foscari</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* RESET E STILI DI BASE */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
+        body { background-color: #f8f9fa; color: #202124; min-height: 100vh; padding-bottom: 50px; }
+
+        /* HEADER E PROFILO */
+        header {
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: #5f6368;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .back-btn:hover { color: #202124; }
+
+        .profile-container { position: relative; }
+        .profile-btn {
+            background-color: #4285f4; color: white; border: none; border-radius: 50%;
+            width: 40px; height: 40px; font-size: 16px; font-weight: 500; cursor: pointer;
+        }
+
+        /* LAYOUT PRINCIPALE */
+        main { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title { font-size: 2rem; font-weight: 400; }
+
+        .new-btn {
+            background-color: #1a73e8;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .new-btn:hover { background-color: #1557b0; }
+
+        /* LISTA RICHIESTE */
+        .requests-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* CARD RICHIESTA */
+        .request-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .request-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: #dadce0;
+        }
+
+        .request-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .university-name {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: #202124;
+        }
+
+        .details {
+            font-size: 14px;
+            color: #5f6368;
+            display: flex;
+            gap: 16px;
+        }
+
+        .details span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* BADGE STATO */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+            width: fit-content;
+        }
+
+        /* Colori per i vari stati richiesti dal progetto */
+        .status-created { background-color: #e8eaed; color: #3c4043; } /* Grigio */
+        .status-awaiting { background-color: #fef7e0; color: #b06000; } /* Giallo/Arancio */
+        .status-pre-departure { background-color: #e6f4ea; color: #137333; } /* Verde */
+        .status-in-progress { background-color: #e8f0fe; color: #1967d2; } /* Blu */
+        .status-closed { background-color: #f1f3f4; color: #5f6368; } /* Grigio scuro */
+
+        /* AZIONI */
+        .actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #dadce0;
+            color: #1a73e8;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn-outline:hover { background: #f8f9fa; }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .request-card { flex-direction: column; align-items: flex-start; gap: 20px; }
+            .actions { width: 100%; justify-content: flex-end; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="#" class="back-btn" onclick="alert('Torna alla dashboard')">← Dashboard</a>
+        <div class="profile-container">
+            <button class="profile-btn">NC</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="header-section">
+            <h1 class="page-title">Le Mie Richieste</h1>
+            <a href="nuova_richiesta.html" class="new-btn">+ Nuova Richiesta</a>
+        </div>
+
+        <div class="requests-list">
+
+            <!-- Esempio 1: In attesa di approvazione -->
+            <div class="request-card">
+                <div class="request-info">
+                    <div class="university-name">University of Tokyo</div>
+                    <div class="details">
+                        <span>📅 A.A. 2025/2026</span>
+                        <span>⏱️ First Semester</span>
+                    </div>
+                    <!-- Stato: awaiting Learning Agreement approval -->
+                    <div class="status-badge status-awaiting">Awaiting L.A. Approval</div>
+                </div>
+                <div class="actions">
+                    <a href="#" class="btn-outline" onclick="alert('Apertura dettagli della pratica in corso...')">Vedi Dettagli</a>
+                </div>
+            </div>
+
+            <!-- Esempio 2: Pre-partenza completata -->
+            <div class="request-card">
+                <div class="request-info">
+                    <div class="university-name">UCLA</div>
+                    <div class="details">
+                        <span>📅 A.A. 2025/2026</span>
+                        <span>⏱️ Second Semester</span>
+                    </div>
+                    <!-- Stato: pre-departure completed -->
+                    <div class="status-badge status-pre-departure">Pre-departure Completed</div>
+                </div>
+                <div class="actions">
+                    <a href="#" class="btn-outline">Vedi Dettagli</a>
+                </div>
+            </div>
+
+            <!-- Esempio 3: Creata (bozza) -->
+            <div class="request-card">
+                <div class="request-info">
+                    <div class="university-name">University of Sydney</div>
+                    <div class="details">
+                        <span>📅 A.A. 2026/2027</span>
+                        <span>⏱️ Entire Year</span>
+                    </div>
+                    <!-- Stato: created -->
+                    <div class="status-badge status-created">Created</div>
+                </div>
+                <div class="actions">
+                    <a href="#" class="btn-outline" style="color: #d93025; border-color: #fce8e6;">Elimina</a>
+                    <a href="#" class="btn-outline">Modifica</a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>

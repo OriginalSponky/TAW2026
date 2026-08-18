@@ -1,10 +1,10 @@
 <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box;">
 
   @if (!utenteLoggato && !inRegistrazione) {
-    <!-- Login Screen -->
+    <!-- User Login -->
     <div style="background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); width: 100%; max-width: 350px; text-align: center; box-sizing: border-box;">
 
-      <h2 style="margin-top: 0; margin-bottom: 5px; color: #333333;">Oltre il Ponte</h2>
+      <h2 style="margin-top: 0; margin-bottom: 5px; color: #333333;">Overseas Program</h2>
       <p style="margin-top: 0; margin-bottom: 25px; color: #555555; font-size: 14px;">Portale ufficiale Ca' Foscari per gli Erasmus</p>
 
       <div style="margin-bottom: 20px; text-align: left;">
@@ -22,20 +22,20 @@
       <p style="color: #d93025; font-size: 14px; font-weight: bold; margin-top: 5px; margin-bottom: 15px; min-height: 20px;">
         {{ messaggioErrore }}
       </p>
-
-      <!-- Google Config & Button-->
       <div style="display: flex; align-items: center; margin-bottom: 20px;">
         <div style="flex-grow: 1; height: 1px; background-color: #dddddd;"></div>
         <span style="padding: 0 10px; color: #888888; font-size: 14px;">oppure</span>
         <div style="flex-grow: 1; height: 1px; background-color: #dddddd;"></div>
       </div>
 
+      <!-- Google Button -->
       <div id="google-btn-container" style="display: flex; justify-content: center; width: 100%;"></div>
 
     </div>
   }
+
   @else if (inRegistrazione) {
-    <!-- Registration Phase -->
+    <!-- User Registration -->
     <div style="background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); border-top: 6px solid #fbbc05; width: 100%; max-width: 400px; text-align: left; box-sizing: border-box;">
 
       <h2 style="color: #333333; margin-top: 0; margin-bottom: 5px;">Nuovo Utente</h2>
@@ -59,12 +59,14 @@
         <input type="text" [(ngModel)]="datiRegistrazione.last_name" placeholder="Il tuo cognome" style="width: 100%; padding: 10px; border: 1px solid #cccccc; border-radius: 8px; box-sizing: border-box;">
       </div>
 
+    @if (!registrazioneDaGoogle) {
       <div style="margin-bottom: 25px;">
-        <label style="display: block; margin-bottom: 5px; color: #555555; font-size: 14px; font-weight: 600;">Conferma Password *</label>
-        <input type="password" [(ngModel)]="passwordConferma" placeholder="Reinserisci la password" (keyup.enter)="confermaRegistrazione()" style="width: 100%; padding: 10px; border: 1px solid #cccccc; border-radius: 8px; box-sizing: border-box;">
+        <label style="display: block; margin-bottom: 5px; color: #555555; font-size: 14px; font-weight: 600;">Conferma la password digitata in precedenza *</label>
+        <input type="text" [(ngModel)]="passwordConferma" placeholder="Riscrivi la password (visibile per sicurezza)" (keyup.enter)="confermaRegistrazione()" style="width: 100%; padding: 10px; border: 1px solid #cccccc; border-radius: 8px; box-sizing: border-box; background-color: #fff9e6;">
       </div>
+    }
 
-      <p style="color: #d93025; font-size: 14px; font-weight: bold; margin-bottom: 15px; text-align: center;">
+      <p style="color: #d93025; font-size: 14px; font-weight: bold; margin-bottom: 15px; text-align: center; min-height: 20px;">
         {{ messaggioErrore }}
       </p>
 
@@ -73,8 +75,9 @@
 
     </div>
   }
+
   @else {
-    <!-- Logged User Interface -->
+    <!-- Logged in profile -->
     <div style="background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); border-top: 6px solid #4A90E2; width: 100%; max-width: 400px; text-align: left; box-sizing: border-box;">
 
       <h2 style="color: #333333; margin-top: 0; margin-bottom: 5px;">Benvenuto,</h2>

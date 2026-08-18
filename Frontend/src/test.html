@@ -1,71 +1,224 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pagina di Login</title>
-  <!-- SCRIPT DI GOOGLE FONDAMENTALE (aggiunto) -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Richieste</title>
+    <!-- Importiamo il font Roboto di Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* RESET E STILI DI BASE */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #202124;
+            min-height: 100vh;
+        }
+
+        /* HEADER E PROFILO (Spostato a destra) */
+        header {
+            padding: 20px 24px;
+            display: flex;
+            justify-content: flex-end; /* Sposta il contenuto a destra */
+            position: relative;
+        }
+
+        .profile-container {
+            position: relative;
+        }
+
+        .profile-btn {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            font-size: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            transition: background-color 0.2s;
+        }
+
+        .profile-btn:hover {
+            background-color: #3b78e7;
+        }
+
+        /* MENU A TENDINA */
+        .dropdown {
+            position: absolute;
+            top: 60px;
+            right: 0; /* Allineato a destra rispetto al bottone */
+            background: white;
+            width: 220px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 100;
+        }
+
+        .dropdown.active {
+            display: flex;
+        }
+
+        .dropdown a {
+            text-decoration: none;
+            color: #3c4043;
+            padding: 12px 20px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .dropdown a:hover {
+            background-color: #f1f3f4;
+        }
+
+        .dropdown .divider {
+            height: 1px;
+            background-color: #dadce0;
+            margin: 4px 0;
+        }
+
+        .dropdown .logout {
+            color: #d93025;
+            font-weight: 500;
+        }
+
+        /* TITOLO PRINCIPALE */
+        .hero {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 60px;
+            padding: 0 20px;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 400;
+            color: #202124;
+        }
+
+        /* CONTENITORE CARDS */
+        .cards-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 0 20px;
+            flex-wrap: wrap;
+        }
+
+        /* STILE DELLE CARDS */
+        .card {
+            background: white;
+            border-radius: 12px;
+            width: 320px;
+            padding: 40px 24px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15), 0 6px 6px rgba(0,0,0,0.10);
+            border-color: #dadce0;
+            transform: translateY(-2px);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #202124;
+        }
+
+        .card p {
+            color: #5f6368;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh;">
+<body>
 
-  <div style="background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); width: 100%; max-width: 350px; text-align: center; box-sizing: border-box;">
+    <!-- Intestazione con Profilo a destra -->
+    <header>
+        <div class="profile-container">
+            <!-- Pulsante Profilo con Iniziale -->
+            <button class="profile-btn" id="profileBtn" aria-label="Menu profilo">NC</button>
 
-    <h2 style="margin-top: 0; margin-bottom: 5px; color: #333333;">Ciao User</h2>
-    <!-- Corretto h10 in p -->
-    <p style="margin-top: 0; margin-bottom: 25px; color: #555555; font-size: 14px;">Portale ufficiale Ca' Foscari per gli Erasmus</p>
+            <!-- Menù a tendina -->
+            <div class="dropdown" id="dropdownMenu">
+                <a href="#">Gestisci il tuo Account</a>
+                <a href="#">Impostazioni</a>
+                <a href="#">Aiuto e feedback</a>
+                <div class="divider"></div>
+                <a href="#" class="logout" onclick="alert('Log out effettuato!')">🚪 Log out</a>
+            </div>
+        </div>
+    </header>
 
-    <form action="#" method="POST">
+    <main>
+        <!-- Titolo Centrale -->
+        <div class="hero">
+            <h1>Ciao Nome Cognome</h1>
+        </div>
 
-      <div style="margin-bottom: 20px; text-align: left;">
-        <label for="email" style="display: block; margin-bottom: 8px; color: #555555; font-size: 14px; font-weight: 600;">Email</label>
-        <input type="email" id="email" name="email" placeholder="Inserisci la tua email" required style="width: 100%; padding: 12px; border: 1px solid #cccccc; border-radius: 8px; box-sizing: border-box; font-size: 14px;">
-      </div>
+        <!-- Opzioni (Cards) -->
+        <div class="cards-container">
 
-      <div style="margin-bottom: 20px; text-align: left;">
-        <label for="password" style="display: block; margin-bottom: 8px; color: #555555; font-size: 14px; font-weight: 600;">Password</label>
-        <input type="password" id="password" name="password" placeholder="Inserisci la tua password" required style="width: 100%; padding: 12px; border: 1px solid #cccccc; border-radius: 8px; box-sizing: border-box; font-size: 14px;">
-      </div>
+            <!-- Card: Nuova Richiesta -->
+            <div class="card" onclick="alert('Hai cliccato su Nuova richiesta')">
+                <h2>Nuova richiesta</h2>
+                <p>Avvia la compilazione di una nuova pratica, un modulo o una segnalazione.</p>
+            </div>
 
-      <!-- Riaggiunto margin-bottom: 20px al pulsante -->
-      <button type="submit" style="width: 100%; padding: 12px; background-color: #4A90E2; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 20px;">Accedi</button>
+            <!-- Card: Le mie richieste -->
+            <div class="card" onclick="alert('Hai cliccato su Le mie richieste')">
+                <h2>Le mie richieste</h2>
+                <p>Controlla lo stato delle tue pratiche in corso e visualizza lo storico.</p>
+            </div>
 
-      <!-- Divisore "oppure" -->
-      <div style="display: flex; align-items: center; margin-bottom: 20px;">
-        <div style="flex-grow: 1; height: 1px; background-color: #dddddd;"></div>
-        <span style="padding: 0 10px; color: #888888; font-size: 14px;">oppure</span>
-        <div style="flex-grow: 1; height: 1px; background-color: #dddddd;"></div>
-      </div>
+        </div>
+    </main>
 
-     <!-- 2. Configurazione "invisibile" di Google -->
-      <div id="g_id_onload"
-           data-client_id="815258409239-ud52hl573eknubjouh7j6v0id12bh55j.apps.googleusercontent.com"
-           data-context="signin"
-           data-ux_mode="popup"
-           data-callback="gestisciRispostaGoogle"
-           data-auto_prompt="false">
-      </div>
+    <!-- Script JavaScript per gestire l'apertura/chiusura del menù -->
+    <script>
+        const profileBtn = document.getElementById('profileBtn');
+        const dropdownMenu = document.getElementById('dropdownMenu');
 
-      <!-- 3. Il pulsante ufficiale generato da Google -->
-      <div class="g_id_signin"
-           data-type="standard"
-           data-shape="rectangular"
-           data-theme="outline"
-           data-text="signin_with"
-           data-size="large"
-           data-logo_alignment="left"
-           style="display: flex; justify-content: center; width: 100%;">
-      </div>
+        // Toggle del menù al clic sull'icona del profilo
+        profileBtn.addEventListener('click', function(event) {
+            event.stopPropagation(); // Evita che il clic si propaghi alla finestra
+            dropdownMenu.classList.toggle('active');
+        });
 
-    </form>
+        // Chiude il menù se si clicca in qualsiasi altra parte dello schermo
+        window.addEventListener('click', function(event) {
+            if (dropdownMenu.classList.contains('active')) {
+                dropdownMenu.classList.remove('active');
+            }
+        });
 
-  </div>
+        // Evita la chiusura se si clicca all'interno del menù stesso
+        dropdownMenu.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+    </script>
 
-  <script>
-    function gestisciRispostaGoogle(response) {
-      alert("Login con Google completato! Token ricevuto.");
-      console.log("Token ID JWT codificato: " + response.credential);
-    }
-  </script>
 </body>
 </html>

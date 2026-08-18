@@ -16,6 +16,7 @@ export class AppComponent implements OnInit {
   messaggioErrore: string = '';
 
   inRegistrazione: boolean = false;
+  registrazioneDaGoogle: boolean = false;
   datiRegistrazione: any = null;
   passwordConferma: string = '';
 
@@ -54,6 +55,7 @@ export class AppComponent implements OnInit {
         } else if (data.action === 'REQUIRES_REGISTRATION') {
           //Registration check
           this.inRegistrazione = true;
+          this.registrazioneDaGoogle = false;
           this.datiRegistrazione = data.prefill;
           this.passwordConferma = '';
         }
@@ -69,13 +71,23 @@ export class AppComponent implements OnInit {
 
   // Registration of new users
   confermaRegistrazione() {
-    if (this.passwordConferma !== this.passwordInput) {
-      this.messaggioErrore = 'Le password non coincidono!';
-      return;
-    }
     if (!this.datiRegistrazione.first_name || !this.datiRegistrazione.last_name) {
       this.messaggioErrore = 'Per favore, compila Nome e Cognome.';
       return;
+    }
+
+    let passwordDaSalvare = '';
+
+    if (this.registrazioneDaGoogle) {
+      // Randomly generated pw for google user
+      passwordDaSalvare =
+        Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    } else {
+      if (this.passwordConferma !== this.passwordInput) {
+        this.messaggioErrore = 'Le password non coincidono!';
+        return;
+      }
+      passwordDaSalvare = this.passwordConferma;
     }
 
     fetch('http://localhost:3000/api/register', {
@@ -83,7 +95,7 @@ export class AppComponent implements OnInit {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: this.datiRegistrazione.email,
-        password: this.passwordConferma, // Salviamo la password confermata
+        password: passwordDaSalvare,
         first_name: this.datiRegistrazione.first_name,
         last_name: this.datiRegistrazione.last_name,
         role: this.datiRegistrazione.role,
@@ -95,9 +107,23 @@ export class AppComponent implements OnInit {
         return res.json();
       })
       .then(() => {
-        // Registration done
         this.inRegistrazione = false;
-        this.eseguiLogin();
+
+        if (this.registrazioneDaGoogle) {
+          // Instant Login with Google
+          this.utenteLoggato = {
+            first_name: this.datiRegistrazione.first_name,
+            last_name: this.datiRegistrazione.last_name,
+            email: this.datiRegistrazione.email,
+            role: this.datiRegistrazione.role,
+            matriculation_number: this.datiRegistrazione.matriculation_number,
+          };
+          localStorage.setItem('utenteLoggato', JSON.stringify(this.utenteLoggato));
+          this.cdr.detectChanges();
+        } else {
+          // Manual Login
+          this.eseguiLogin();
+        }
       })
       .catch((err) => {
         this.messaggioErrore = err.message;
@@ -107,6 +133,7 @@ export class AppComponent implements OnInit {
 
   annullaRegistrazione() {
     this.inRegistrazione = false;
+    this.registrazioneDaGoogle = false;
     this.messaggioErrore = '';
     this.cdr.detectChanges();
   }
@@ -116,34 +143,50 @@ export class AppComponent implements OnInit {
     const token = response.credential;
     const payloadBase64 = token.split('.')[1];
     const decodedPayload = JSON.parse(atob(payloadBase64));
+
     const googleEmail = decodedPayload.email;
 
     fetch('http://localhost:3000/api/google-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: googleEmail }),
+      // Send info
+      body: JSON.stringify({
+        email: googleEmail,
+        given_name: decodedPayload.given_name,
+        family_name: decodedPayload.family_name,
+      }),
     })
       .then(async (res) => {
         if (!res.ok) {
-          throw new Error("L'email Google non è presente nel database dell'Ateneo.");
+          const errorMsg = await res.text();
+          throw new Error(errorMsg);
         }
         return res.json();
       })
       .then((data) => {
         this.messaggioErrore = '';
-        this.utenteLoggato = data;
 
-        localStorage.setItem('utenteLoggato', JSON.stringify(data));
+        if (data.action === 'REQUIRES_REGISTRATION') {
+          // Registration Screen
+          this.inRegistrazione = true;
+          this.registrazioneDaGoogle = true;
+          this.datiRegistrazione = data.prefill;
+          this.passwordInput = '';
+          this.passwordConferma = '';
+        } else if (data.action === 'LOGIN') {
+          // Regular Login
+          this.utenteLoggato = data.user;
+          localStorage.setItem('utenteLoggato', JSON.stringify(data.user));
+        }
+
         this.cdr.detectChanges();
       })
       .catch((error) => {
         this.messaggioErrore = error.message;
         this.utenteLoggato = null;
-
         if ((window as any).google) {
           (window as any).google.accounts.id.disableAutoSelect();
         }
-
         this.cdr.detectChanges();
       });
   }
