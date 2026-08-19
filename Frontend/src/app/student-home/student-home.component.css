@@ -1,166 +1,141 @@
-
-* {
-  box-sizing: border-box;
-  font-family: 'Roboto', sans-serif;
-}
+* { box-sizing: border-box; }
 
 :host {
   display: block;
-  background-color: #f8f9fa;
-  color: #202124;
-  min-height: 100vh;
   width: 100%;
 }
 
+
+/* HEADER & PROFILE */
 header {
-  background-color: #ffffff;
-  padding: 15px 30px;
+  background-color: var(--surface);
+  padding: 16px 32px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow-sm);
   position: sticky;
   top: 0;
   z-index: 100;
+  border-bottom: 1px solid var(--border);
 }
-
 
 .header-logo {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #1a73e8;
+  color: var(--primary);
   margin: 0;
   letter-spacing: -0.5px;
 }
 
-.profile-container {
-  position: relative;
-}
+.profile-container { position: relative; }
 
 .profile-btn {
-  background-color: #4285f4;
-  color: white;
-  border: none;
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid transparent;
   border-radius: 50%;
   width: 44px;
   height: 44px;
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  transition: background-color 0.2s, transform 0.1s;
+  transition: all 0.2s ease;
 }
 
 .profile-btn:hover {
-  background-color: #3b78e7;
+  background-color: var(--primary);
+  color: white;
   transform: scale(1.05);
+  box-shadow: var(--shadow-md);
 }
 
-.dropdown {
-  position: absolute;
-  top: 55px;
-  right: 0;
-  background: white;
-  width: 220px;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  display: none;
-  flex-direction: column;
-  overflow: hidden;
-  z-index: 100;
-}
-
-.dropdown.active {
-  display: flex;
-}
-
-.dropdown a {
-  text-decoration: none;
-  color: #3c4043;
-  padding: 12px 20px;
-  font-size: 14px;
-  transition: background 0.2s;
-}
-
-.dropdown a:hover {
-  background-color: #f1f3f4;
-}
-
-.dropdown .divider {
-  height: 1px;
-  background-color: #dadce0;
-  margin: 4px 0;
-}
-
-.dropdown .logout {
-  color: #d93025;
-  font-weight: 500;
-}
-
-
+/* LAYOUT & MAIN TEXT */
 main {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 60px 20px;
 }
 
 .hero {
   text-align: center;
-  margin-bottom: 50px;
+  margin-bottom: 60px;
 }
 
 .hero h1 {
-  font-size: 2.8rem;
-  font-weight: 400;
-  color: #202124;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--text-main);
   margin: 0;
+  letter-spacing: -1px; /* Stringe leggermente i titoli grandi (effetto premium) */
 }
 
-.cards-container {
+
+/* CARDS (Soft Shadows & Hover Effects) */
+.cards-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  align-items: center;
+}
+
+.cards-row {
   display: flex;
   justify-content: center;
   gap: 30px;
   flex-wrap: wrap;
+  width: 100%;
 }
 
 .card {
-  background: white;
-  border-radius: 12px;
-  width: 340px;
-  padding: 40px 24px;
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  width: 360px;
+  padding: 40px 30px;
   text-align: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  /* Soft Shadows */
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
   cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Mouse Hovering */
 .card:hover {
-  box-shadow: 0 10px 20px rgba(0,0,0,0.15), 0 6px 6px rgba(0,0,0,0.10);
-  border-color: #dadce0;
-  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg); /* L'ombra si espande */
+  border-color: var(--primary-light);
+  transform: translateY(-5px); /* La card si solleva di 5 pixel */
 }
 
 .card h2 {
   font-size: 1.5rem;
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 16px;
-  color: #202124;
+  color: var(--text-main);
 }
 
 .card p {
-  color: #5f6368;
-  font-size: 14px;
+  color: var(--text-muted);
+  font-size: 15px;
   line-height: 1.6;
   margin: 0;
 }
 
 
-.cards-layout { display: flex; flex-direction: column; gap: 30px; align-items: center; }
-.cards-row { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; width: 100%; }
+/* IN ERASMUS */
+.card-highlight {
+  border: 2px solid var(--primary);
+  background-color: var(--primary-light);
+}
 
-.card-highlight { border: 2px solid #1a73e8; background-color: #f8fbff; }
-.card-highlight:hover { box-shadow: 0 10px 20px rgba(26,115,232,0.2), 0 6px 6px rgba(26,115,232,0.15); transform: translateY(-4px); border-color: #1a73e8; }
+.card-highlight h2 {
+  color: var(--primary);
+}
+
+.card-highlight:hover {
+  box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.1), 0 8px 10px -6px rgba(37, 99, 235, 0.1);
+  border-color: var(--primary);
+}
