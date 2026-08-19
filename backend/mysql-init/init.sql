@@ -68,7 +68,7 @@ CREATE TABLE ExamsMapping (
     -- DATI DEL CORSO ESTERO
                               foreign_course_code VARCHAR(50) NOT NULL,
                               foreign_course_name VARCHAR(255) NOT NULL,
-                              foreign_course_credits DECIMAL(4,1) NOT NULL,
+                              foreign_course_credits INT NOT NULL,
 
     -- DATI DEL CORSO A CA' FOSCARI
                               unive_course_code VARCHAR(50) NOT NULL,

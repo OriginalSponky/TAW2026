@@ -8,15 +8,15 @@
 <main>
   <h1 class="page-title">Nuova Richiesta Overseas</h1>
 
-  <form (submit)="inviaModulo($event)">
+  <form (ngSubmit)="inviaModulo()">
 
-    <!-- SEZIONE 1 -->
+    <!-- Section 1 -->
     <div class="card">
       <h2>1. Dettagli della Mobilità</h2>
       <div class="form-grid">
         <div class="form-group">
           <label>Anno Accademico</label>
-          <select required>
+          <select [(ngModel)]="datiRichiesta.academic_year" name="academic_year" required>
             <option value="">Seleziona...</option>
             <option value="2025/2026">2025/2026</option>
             <option value="2026/2027">2026/2027</option>
@@ -24,41 +24,46 @@
         </div>
         <div class="form-group">
           <label>Periodo Previsto</label>
-          <select required>
+          <!-- Corrispondant values to the one in the database -->
+          <select [(ngModel)]="datiRichiesta.mobility_period" name="mobility_period" required>
             <option value="">Seleziona...</option>
-            <option value="First Semester">Primo Semestre</option>
-            <option value="Second Semester">Secondo Semestre</option>
+            <option value="FIRST_SEMESTER">Primo Semestre</option>
+            <option value="SECOND_SEMESTER">Secondo Semestre</option>
+            <option value="FULL_YEAR">Intero Anno</option>
           </select>
         </div>
         <div class="form-group">
           <label>Istituzione Ospitante</label>
-          <select required>
+          <select [(ngModel)]="datiRichiesta.institution_id" name="institution_id" required>
             <option value="">Seleziona dalla lista partner...</option>
-            <option value="University of Tokyo">University of Tokyo</option>
-            <option value="UCLA">UCLA</option>
+            <!-- Dynamic database generation -->
+            @for (inst of istituzioni; track inst.id) {
+              <option [value]="inst.id">{{ inst.name }} ({{ inst.country }})</option>
+            }
           </select>
         </div>
         <div class="form-group">
           <label>Docente Referente</label>
-          <select required>
+          <select [(ngModel)]="datiRichiesta.lecturer_id" name="lecturer_id" required>
             <option value="">Seleziona docente...</option>
-            <option value="Prof. Mario Rossi">Prof. Mario Rossi</option>
-            <option value="Prof. Filippo Bergamasco">Prof. Filippo Bergamasco</option>
+            <!-- Dynamic database generation -->
+            @for (prof of professori; track prof.id) {
+              <option [value]="prof.id">Prof. {{ prof.first_name }} {{ prof.last_name }}</option>
+            }
           </select>
         </div>
       </div>
     </div>
 
-    <!-- SEZIONE 2 (Resa dinamica da Angular) -->
+    <!-- Section 2 -->
     <div class="card">
       <h2>2. Mappatura Esami (Exam Mapping)</h2>
       <p style="font-size: 14px; color: #5f6368; margin-bottom: 20px;">Associa gli esami che intendi sostenere all'estero.</p>
 
-      <!-- Ciclo for per generare gli esami -->
+      <!-- Exam Generation -->
       @for (esame of esami; track $index) {
         <div class="exam-mapping-container">
 
-          <!-- Mostra il tasto rimuovi solo dal secondo blocco in poi -->
           @if ($index > 0) {
             <button type="button" class="remove-exam-btn" (click)="rimuoviEsame($index)">✖ Rimuovi</button>
           }
@@ -102,7 +107,7 @@
       </button>
     </div>
 
-    <!-- SEZIONE 3 -->
+    <!-- Section 3 -->
     <div class="card">
       <h2>3. Upload Documenti</h2>
       <div class="form-group full-width">
@@ -113,6 +118,11 @@
         <input type="file" accept=".pdf" required>
       </div>
     </div>
+
+    <!-- Submit Application Button -->
+    <p *ngIf="erroreSalvataggio" style="color: red; font-weight: bold; text-align: center; margin-bottom: 15px;">
+      {{ erroreSalvataggio }}
+    </p>
 
     <button type="submit" class="btn btn-primary">Invia Richiesta Overseas</button>
   </form>

@@ -24,7 +24,7 @@ app.post('/api/login', async (req, res) => {
 
     try {
         const [rows] = await dbPool.query('SELECT * FROM Users WHERE email = ?', [email]);
-        
+
         if (rows.length > 0) {
             const user = rows[0];
             let passwordCorretta = false;
@@ -122,6 +122,80 @@ app.post('/api/google-login', async (req, res) => {
     } catch (error) {
         console.error("Errore DB Google Login:", error);
         res.status(500).send("Errore interno");
+    }
+});
+
+// Application Request Route
+
+// Istitutions
+app.get('/api/institutions', async (req, res) => {
+    try {
+        const [rows] = await dbPool.query('SELECT id, name, country FROM Institutions');
+        res.json(rows);
+    } catch (error) {
+        res.status(500).send("Errore DB Istituzioni");
+    }
+});
+
+// Professors
+app.get('/api/lecturers', async (req, res) => {
+    try {
+        const [rows] = await dbPool.query("SELECT id, first_name, last_name FROM Users WHERE role = 'LECTURER'");
+        res.json(rows);
+    } catch (error) {
+        res.status(500).send("Errore DB Professori");
+    }
+});
+
+// Save Application Request
+app.post('/api/applications', async (req, res) => {
+    const { student_email, institution_id, lecturer_id, academic_year, mobility_period, exams } = req.body;
+
+    const connection = await dbPool.getConnection();
+    try {
+        // Transaction Start
+        await connection.beginTransaction();
+
+        // Student ID
+        const [users] = await connection.query('SELECT id FROM Users WHERE email = ?', [student_email]);
+        if (users.length === 0) throw new Error("Studente non trovato nel database.");
+        const student_id = users[0].id;
+
+        // Main Application Request
+        const [appResult] = await connection.query(
+            `INSERT INTO Applications 
+            (student_id, institution_id, lecturer_id, academic_year, mobility_period, status) 
+            VALUES (?, ?, ?, ?, ?, 'AWAITING_FOR_APPROVAL')`,
+            [student_id, institution_id, lecturer_id, academic_year, mobility_period]
+        );
+        const applicationId = appResult.insertId;
+
+        // Mapped exams connected to Application Id
+        for (const exam of exams) {
+            await connection.query(
+                `INSERT INTO ExamsMapping 
+                (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [applicationId, exam.foreignCode, exam.foreignName, exam.foreignCredits, exam.localCode, exam.localName, exam.localCredits]
+            );
+        }
+
+        // Learning Agreement attachment
+        await connection.query(
+            `INSERT INTO Documents (application_id, document_type, file_name, file_path, status) 
+             VALUES (?, 'LEARNING_AGREEMENT', 'documento_simulato.pdf', '/uploads/simulato.pdf', 'PENDING')`,
+            [applicationId]
+        );
+
+        await connection.commit();
+        res.json({ message: "Richiesta creata con successo!", applicationId });
+
+    } catch (error) {
+        await connection.rollback();
+        console.error("Errore salvataggio richiesta:", error);
+        res.status(500).send("Errore interno durante il salvataggio.");
+    } finally {
+        connection.release();
     }
 });
 
