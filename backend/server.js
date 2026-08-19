@@ -271,13 +271,66 @@ app.get('/api/applications/:id', async (req, res) => {
         const [examRows] = await dbPool.query(`
             SELECT * FROM ExamsMapping WHERE application_id = ?
         `, [appId]);
-        
+
         applicationData.exams = examRows;
 
         res.json(applicationData);
     } catch (error) {
         console.error("Errore recupero dettagli:", error);
         res.status(500).send("Errore interno");
+    }
+});
+
+// Delete a specific application
+app.delete('/api/applications/:id', async (req, res) => {
+    const appId = req.params.id;
+    try {
+        await dbPool.query('DELETE FROM Applications WHERE id = ?', [appId]);
+        res.json({ message: 'Application deleted successfully' });
+    } catch (error) {
+        console.error("Delete error:", error);
+        res.status(500).send("Internal server error during deletion");
+    }
+});
+
+// Update an existing application and its exams
+app.put('/api/applications/:id', async (req, res) => {
+    const appId = req.params.id;
+    const { institution_id, lecturer_id, academic_year, mobility_period, exams } = req.body;
+
+    const connection = await dbPool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // Update the main application details
+        await connection.query(
+            `UPDATE Applications 
+             SET institution_id = ?, lecturer_id = ?, academic_year = ?, mobility_period = ? 
+             WHERE id = ?`,
+            [institution_id, lecturer_id, academic_year, mobility_period, appId]
+        );
+
+        // Clear the old exams
+        await connection.query(`DELETE FROM ExamsMapping WHERE application_id = ?`, [appId]);
+
+        // Insert the updated exams
+        for (const exam of exams) {
+            await connection.query(
+                `INSERT INTO ExamsMapping 
+                (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [appId, exam.foreignCode, exam.foreignName, exam.foreignCredits, exam.localCode, exam.localName, exam.localCredits]
+            );
+        }
+
+        await connection.commit();
+        res.json({ message: "Application updated successfully!" });
+    } catch (error) {
+        await connection.rollback();
+        console.error("Update error:", error);
+        res.status(500).send("Internal server error during update");
+    } finally {
+        connection.release();
     }
 });
 

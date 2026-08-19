@@ -1,8 +1,6 @@
-/* RESET E STILI DI BASE */
 * { box-sizing: border-box; font-family: 'Roboto', sans-serif; }
 :host { display: block; background-color: #f8f9fa; color: #202124; min-height: 100vh; padding-bottom: 50px; }
 
-/* HEADER E PROFILO */
 header {
   padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;
   background-color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100;
@@ -17,15 +15,12 @@ header {
   width: 40px; height: 40px; font-size: 16px; font-weight: 500; cursor: pointer;
 }
 
-/* LAYOUT PRINCIPALE */
 main { max-width: 900px; margin: 40px auto; padding: 0 20px; }
 .page-title { margin-bottom: 30px; font-size: 2rem; font-weight: 400; }
 
-/* STILE DELLE CARDS (SEZIONI FORM) */
 .card { background: white; border-radius: 12px; padding: 30px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
 .card h2 { font-size: 1.25rem; margin-bottom: 20px; color: #4285f4; border-bottom: 1px solid #eee; padding-bottom: 10px; }
 
-/* GRIGLIE FORM */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .form-group { display: flex; flex-direction: column; gap: 8px; }
 .form-group.full-width { grid-column: 1 / -1; }
@@ -36,12 +31,10 @@ input[type="text"], input[type="number"], select, input[type="file"] {
 }
 input:focus, select:focus { border-color: #4285f4; box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2); }
 
-/* LINK DOWNLOAD */
 .upload-header { display: flex; justify-content: space-between; align-items: center; }
 .download-link { font-size: 14px; color: #1a73e8; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 4px; }
 .download-link:hover { text-decoration: underline; }
 
-/* MAPPATURA ESAMI */
 .exam-mapping-container { border: 1px solid #dadce0; border-radius: 8px; padding: 20px; margin-bottom: 16px; background-color: #fafbfc; position: relative;}
 .remove-exam-btn {
   position: absolute; top: 10px; right: 10px; background: none; border: none;
@@ -49,9 +42,24 @@ input:focus, select:focus { border-color: #4285f4; box-shadow: 0 0 0 2px rgba(66
 }
 .exam-section-title { font-size: 14px; font-weight: 700; color: #5f6368; margin: 15px 0 10px; text-transform: uppercase; }
 
-/* PULSANTI */
 .btn { padding: 10px 20px; border-radius: 6px; font-size: 15px; font-weight: 500; cursor: pointer; border: none; transition: background 0.2s; }
 .btn-outline { background: transparent; border: 1px solid #dadce0; color: #1a73e8; }
 .btn-outline:hover { background: #f8f9fa; }
 .btn-primary { background: #1a73e8; color: white; padding: 14px 24px; font-size: 16px; width: 100%; margin-top: 10px; }
 .btn-primary:hover { background: #1557b0; }
+
+.dropdown { position: absolute; top: 50px; right: 0; background: white; width: 220px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; flex-direction: column; overflow: hidden; z-index: 101; }
+.dropdown.active { display: flex; }
+.dropdown a { text-decoration: none; color: #3c4043; padding: 12px 20px; font-size: 14px; transition: background 0.2s; cursor: pointer; }
+.dropdown a:hover { background-color: #f1f3f4; }
+.dropdown .divider { height: 1px; background-color: #dadce0; margin: 4px 0; }
+.dropdown .logout { color: #d93025; font-weight: 500; }
+
+.error-banner { background-color: #fce8e6; color: #d93025; padding: 16px; border-radius: 8px; margin-bottom: 24px; font-weight: 500; display: none; border: 1px solid #fad2cf; }
+
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.modal { background: white; padding: 32px; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: 0 4px 24px rgba(0,0,0,0.2); text-align: center; }
+.modal h3 { margin-bottom: 16px; color: #202124; font-size: 1.5rem; margin-top: 0; }
+.modal p { color: #5f6368; margin-bottom: 24px; font-size: 15px; line-height: 1.5; }
+.modal-actions { display: flex; justify-content: center; gap: 16px; }
+.modal-actions .btn { width: auto; margin-top: 0; }

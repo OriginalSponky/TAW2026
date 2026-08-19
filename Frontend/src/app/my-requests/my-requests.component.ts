@@ -13,10 +13,13 @@ export class MyRequestsComponent implements OnInit {
   @Input() utente: any;
   @Output() onBack = new EventEmitter<void>();
   @Output() onNewRequest = new EventEmitter<void>();
+  @Output() onLogout = new EventEmitter<void>();
+  @Output() onEditRequest = new EventEmitter<number>();
 
   pannelloAttivo: number | null = null;
   richieste: any[] = [];
   richiestaSelezionata: number | null = null;
+  menuAperto: boolean = false;
   constructor(private cdr: ChangeDetectorRef) {}
 
   get iniziali(): string {
@@ -120,6 +123,31 @@ export class MyRequestsComponent implements OnInit {
 
   chiudiDettaglio() {
     this.richiestaSelezionata = null;
+  }
+
+  toggleMenu(event: Event) {
+    event.stopPropagation();
+    this.menuAperto = !this.menuAperto;
+  }
+
+  effettuaLogout(event: Event) {
+    event.preventDefault();
+    this.onLogout.emit();
+  }
+
+  modificaRichiesta(id: number) {
+    this.onEditRequest.emit(id);
+  }
+
+  eliminaRichiesta(id: number) {
+    if (confirm('Sei sicuro di voler eliminare questa richiesta? Questa azione è irreversibile.')) {
+      fetch(`http://localhost:3000/api/applications/${id}`, { method: 'DELETE' })
+        .then(() => {
+          this.richieste = this.richieste.filter((r) => r.id !== id);
+          this.cdr.detectChanges(); // Wake up Angular
+        })
+        .catch((err) => alert("Errore durante l'eliminazione."));
+    }
   }
 }
 

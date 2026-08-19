@@ -1,4 +1,4 @@
-<button class="btn-outline" (click)="onBack.emit()">← Torna alla lista</button>
+<button class="btn-outline back-header-btn" (click)="onBack.emit()">← Torna alla lista</button>
 
 @if (dettagli) {
   <div class="card">
@@ -24,29 +24,108 @@
   </div>
 
   <div class="card">
-    <h2>Learning Agreement (Esami)</h2>
+    <div class="card-header-flex">
+      <h2>Learning Agreement & Documenti</h2>
+      
+      @if (!isEditing && (dettagli.status === 'CREATED' || dettagli.status === 'AWAITING_FOR_APPROVAL')) {
+        <button class="btn-outline" (click)="attivaModifica()">✏️ Modifica</button>
+      }
+    </div>
 
     @for (esame of dettagli.exams; track esame.id) {
       <div class="exam-row">
         <div class="exam-half">
           <h4>✈️ CORSO ESTERO</h4>
           <div class="exam-details">
-            <p><strong>Codice:</strong> {{ esame.foreign_course_code }}</p>
-            <p><strong>Nome:</strong> {{ esame.foreign_course_name }}</p>
-            <p><strong>Crediti:</strong> {{ esame.foreign_course_credits }}</p>
+            @if (!isEditing) {
+              <p><strong>Codice:</strong> {{ esame.foreign_course_code }}</p>
+              <p><strong>Nome:</strong> {{ esame.foreign_course_name }}</p>
+              <p><strong>Crediti:</strong> {{ esame.foreign_course_credits }}</p>
+            } @else {
+              <label>Codice:</label>
+              <input type="text" [(ngModel)]="esame.foreign_course_code">
+              <label>Nome:</label>
+              <input type="text" [(ngModel)]="esame.foreign_course_name">
+              <label>Crediti:</label>
+              <input type="number" [(ngModel)]="esame.foreign_course_credits">
+            }
           </div>
         </div>
         <div class="exam-half">
           <h4>🏛️ CORSO CA' FOSCARI</h4>
           <div class="exam-details">
-            <p><strong>Codice:</strong> {{ esame.unive_course_code }}</p>
-            <p><strong>Nome:</strong> {{ esame.unive_course_title }}</p>
-            <p><strong>Crediti:</strong> {{ esame.unive_course_credits }}</p>
+            @if (!isEditing) {
+              <p><strong>Codice:</strong> {{ esame.unive_course_code }}</p>
+              <p><strong>Nome:</strong> {{ esame.unive_course_title }}</p>
+              <p><strong>Crediti:</strong> {{ esame.unive_course_credits }}</p>
+            } @else {
+              <label>Codice:</label>
+              <input type="text" [(ngModel)]="esame.unive_course_code">
+              <label>Nome:</label>
+              <input type="text" [(ngModel)]="esame.unive_course_title">
+              <label>Crediti:</label>
+              <input type="number" [(ngModel)]="esame.unive_course_credits">
+            }
           </div>
         </div>
+      </div>
+    }
+
+    <!-- DOCUMENT SECTION -->
+    <div class="document-section">
+      <h4>📄 Documento Allegato</h4>
+      @if (!isEditing) {
+        <div class="doc-view">
+          <p>Learning_Agreement.pdf</p>
+          <a href="#" class="doc-link">Scarica PDF</a>
+        </div>
+      } @else {
+        <div class="doc-edit">
+          <label>Sostituisci il Learning Agreement (PDF):</label>
+          <input type="file" accept=".pdf" (click)="$event.stopPropagation()">
+          <small>Caricando un nuovo file, quello precedente verrà sovrascritto.</small>
+        </div>
+      }
+    </div>
+
+    <!-- SAVE & CANCEL BUTTONS -->
+    @if (isEditing) {
+      <div class="edit-actions">
+        <button class="btn-outline" (click)="annullaModifica()">Annulla</button>
+        <button class="btn-primary" (click)="richiediSalvataggio()">💾 Salva Modifiche</button>
       </div>
     }
   </div>
 } @else {
   <p>Caricamento dettagli in corso...</p>
+}
+
+
+@if (mostraModale) {
+  <div class="modal-overlay">
+    <div class="modal">
+      
+      @if (!modificaCompletata) {
+        <!-- Confirmation -->
+        <h3>Conferma Modifiche</h3>
+        <p>Sei sicuro di voler salvare le modifiche apportate alla richiesta di mobilità?</p>
+        <div class="modal-actions">
+          <button type="button" class="btn-outline" (click)="chiudiModale()" [disabled]="isSubmitting">Annulla</button>
+          <button type="button" class="btn-primary" (click)="confermaSalvataggio()" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Salvataggio in corso...' : 'Conferma' }}
+          </button>
+        </div>
+      }
+      
+      @else {
+        <!-- Success -->
+        <h3>✅ Modifiche Salvate!</h3>
+        <p>I dati della tua pratica sono stati aggiornati correttamente e registrati a sistema.</p>
+        <div class="modal-actions">
+          <button type="button" class="btn-primary" (click)="chiudiSuccesso()">Torna ai Dettagli</button>
+        </div>
+      }
+
+    </div>
+  </div>
 }

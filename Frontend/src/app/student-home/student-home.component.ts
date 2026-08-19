@@ -16,6 +16,7 @@ export class StudentHomeComponent {
 
   menuAperto: boolean = false;
   vistaAttiva: string = 'dashboard';
+  idRichiestaDaModificare: number | null = null;
 
   get iniziali(): string {
     if (!this.utente) return '';
@@ -37,7 +38,8 @@ export class StudentHomeComponent {
     this.onLogout.emit();
   }
 
-  apriNuovaRichiesta() {
+  apriNuovaRichiesta(editId: number | null = null) {
+    this.idRichiestaDaModificare = editId;
     this.vistaAttiva = 'nuovaRichiesta';
   }
 
@@ -51,5 +53,23 @@ export class StudentHomeComponent {
 
   mostraMessaggio(msg: string) {
     alert(msg);
+  }
+
+  eseguiLogoutDalFiglio() {
+    this.onLogout.emit();
+  }
+  
+  gestisciRitornoDaRichiesta() {
+    if (this.idRichiestaDaModificare) {
+      this.vistaAttiva = 'leMieRichieste';
+      this.idRichiestaDaModificare = null; 
+    } else {
+      this.vistaAttiva = 'dashboard';
+    }
+  }
+  
+  vaiAlleMieRichiesteDopoSuccesso() {
+    this.vistaAttiva = 'leMieRichieste';
+    this.idRichiestaDaModificare = null;
   }
 }

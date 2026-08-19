@@ -1,9 +1,17 @@
 <!-- Show Homepage -->
 @if (vistaAttiva === 'dashboard') {
   <header>
+    <div class="header-logo">Overseas Program</div>
+
     <div class="profile-container">
-      <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
+      <button class="profile-btn" (click)="toggleMenu($event)" aria-label="Menu profilo">
+        {{ iniziali }}
+      </button>
       <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
+        <a href="#">Gestisci il tuo Account</a>
+        <a href="#">Impostazioni</a>
+        <a href="#">Aiuto e feedback</a>
+        <div class="divider"></div>
         <a href="#" class="logout" (click)="logout($event)">🚪 Log out</a>
       </div>
     </div>
@@ -31,15 +39,20 @@
 @else if (vistaAttiva === 'nuovaRichiesta') {
   <!-- Show Request Maker -->
   <app-new-request
-    [utente]="utente"
-    (onBack)="tornaAllaDashboard()">
+  [utente]="utente"
+  [editRequestId]="idRichiestaDaModificare"
+  (onBack)="gestisciRitornoDaRichiesta()"
+  (onSuccess)="vaiAlleMieRichiesteDopoSuccesso()"
+  (onLogout)="eseguiLogoutDalFiglio()">
   </app-new-request>
 }
 @else if (vistaAttiva === 'leMieRichieste') {
   <!-- Show My Requests -->
   <app-my-requests
-    [utente]="utente"
-    (onBack)="tornaAllaDashboard()"
-    (onNewRequest)="apriNuovaRichiesta()">
+  [utente]="utente"
+  (onBack)="tornaAllaDashboard()"
+  (onNewRequest)="apriNuovaRichiesta()"
+  (onEditRequest)="apriNuovaRichiesta($event)"
+  (onLogout)="eseguiLogoutDalFiglio()">
   </app-my-requests>
 }

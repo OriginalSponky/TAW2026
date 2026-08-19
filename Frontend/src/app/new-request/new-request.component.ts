@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -11,9 +11,14 @@ import { FormsModule } from '@angular/forms';
 })
 export class NewRequestComponent implements OnInit {
   @Input() utente: any;
+  @Input() editRequestId: number | null = null;
   @Output() onBack = new EventEmitter<void>();
+  @Output() onLogout = new EventEmitter<void>();
+  @Output() onSuccess = new EventEmitter<void>();
 
-  // Modello dei dati generali del form
+  constructor(private cdr: ChangeDetectorRef) {}
+
+  // Form data model
   datiRichiesta = {
     academic_year: '',
     mobility_period: '',
@@ -21,11 +26,11 @@ export class NewRequestComponent implements OnInit {
     lecturer_id: '',
   };
 
-  // Liste dinamiche caricate dal database
   istituzioni: any[] = [];
   professori: any[] = [];
   erroreSalvataggio: string = '';
 
+  // Dynamic exams array
   esami = [
     {
       foreignCode: '',
@@ -37,26 +42,69 @@ export class NewRequestComponent implements OnInit {
     },
   ];
 
+  // UI State variables
+  menuAperto: boolean = false;
+  mostraModale: boolean = false;
+  richiestaCompletata: boolean = false;
+  isSubmitting: boolean = false;
+
   get iniziali(): string {
     if (!this.utente) return '';
     return (this.utente.first_name.charAt(0) + this.utente.last_name.charAt(0)).toUpperCase();
   }
 
   ngOnInit() {
-    // Appena si apre la pagina, scarichiamo le liste per i menù a tendina
+    // Fetch dropdown data
     fetch('http://localhost:3000/api/institutions')
       .then((res) => res.json())
       .then((data) => (this.istituzioni = data));
-
     fetch('http://localhost:3000/api/lecturers')
       .then((res) => res.json())
       .then((data) => (this.professori = data));
+
+    // If we are in Edit Mode, fetch the existing application data!
+    if (this.editRequestId) {
+      fetch(`http://localhost:3000/api/applications/${this.editRequestId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          this.datiRichiesta = {
+            academic_year: data.academic_year,
+            mobility_period: data.mobility_period,
+            institution_id: data.institution_id,
+            lecturer_id: data.lecturer_id,
+          };
+
+          // Map database columns back to frontend variables
+          this.esami = data.exams.map((e: any) => ({
+            foreignCode: e.foreign_course_code,
+            foreignCredits: e.foreign_course_credits,
+            foreignName: e.foreign_course_name,
+            localCode: e.unive_course_code,
+            localCredits: e.unive_course_credits,
+            localName: e.unive_course_title,
+          }));
+        });
+    }
   }
+
+  // --- Header Navigation & Profile Actions ---
 
   tornaIndietro(event: Event) {
     event.preventDefault();
     this.onBack.emit();
   }
+
+  toggleMenu(event: Event) {
+    event.stopPropagation();
+    this.menuAperto = !this.menuAperto;
+  }
+
+  effettuaLogout(event: Event) {
+    event.preventDefault();
+    this.onLogout.emit(); // Bubble up the logout request to the parent
+  }
+
+  // --- Dynamic Exam Form ---
 
   aggiungiEsame() {
     this.esami.push({
@@ -73,18 +121,28 @@ export class NewRequestComponent implements OnInit {
     this.esami.splice(indice, 1);
   }
 
-  inviaModulo() {
+  // --- Submission & Modal Logic ---
+
+  validaEApriModale() {
+    // Basic validation check before opening the modal
     if (
       !this.datiRichiesta.academic_year ||
       !this.datiRichiesta.mobility_period ||
       !this.datiRichiesta.institution_id ||
       !this.datiRichiesta.lecturer_id
     ) {
-      this.erroreSalvataggio = 'Attenzione: devi selezionare tutte le opzioni nel riquadro 1!';
+      this.erroreSalvataggio = '⚠️ Attenzione: Compila tutti i campi obbligatori nella Sezione 1.';
       return;
     }
 
     this.erroreSalvataggio = '';
+    this.mostraModale = true; // Opens the modal overlay
+  }
+
+  confermaInvio() {
+    //Prevent double clicks
+    if (this.isSubmitting) return;
+    this.isSubmitting = true;
 
     const payload = {
       student_email: this.utente.email,
@@ -95,8 +153,14 @@ export class NewRequestComponent implements OnInit {
       exams: this.esami,
     };
 
-    fetch('http://localhost:3000/api/applications', {
-      method: 'POST',
+    const url = this.editRequestId
+      ? `http://localhost:3000/api/applications/${this.editRequestId}`
+      : 'http://localhost:3000/api/applications';
+
+    const method = this.editRequestId ? 'PUT' : 'POST';
+
+    fetch(url, {
+      method: method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
@@ -105,12 +169,25 @@ export class NewRequestComponent implements OnInit {
         return res.json();
       })
       .then((data) => {
-        alert('Perfetto! ' + data.message);
-        this.onBack.emit();
+        this.richiestaCompletata = true;
+        this.cdr.detectChanges();
       })
       .catch((error) => {
-        this.erroreSalvataggio = 'Si è verificato un errore: ' + error.message;
-        console.error('ERRORE DI RETE:', error);
+        this.mostraModale = false;
+        this.erroreSalvataggio = 'Errore di connessione: ' + error.message;
+        this.isSubmitting = false;
+        this.cdr.detectChanges();
       });
+  }
+
+  chiudiModale() {
+    this.mostraModale = false;
+  }
+
+  chiudiETornaAllaLista() {
+    this.mostraModale = false;
+    this.richiestaCompletata = false;
+    this.isSubmitting = false;
+    this.onSuccess.emit();
   }
 }

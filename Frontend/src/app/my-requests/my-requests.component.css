@@ -56,3 +56,11 @@ input[type="file"] { padding: 10px; border: 1px dashed #dadce0; border-radius: 6
   .card-header { flex-direction: column; align-items: flex-start; gap: 20px; }
   .actions { width: 100%; justify-content: flex-start; }
 }
+
+/* DROPDOWN MENU */
+.dropdown { position: absolute; top: 50px; right: 0; background: white; width: 220px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; flex-direction: column; overflow: hidden; z-index: 101; }
+.dropdown.active { display: flex; }
+.dropdown a { text-decoration: none; color: #3c4043; padding: 12px 20px; font-size: 14px; transition: background 0.2s; cursor: pointer; }
+.dropdown a:hover { background-color: #f1f3f4; }
+.dropdown .divider { height: 1px; background-color: #dadce0; margin: 4px 0; }
+.dropdown .logout { color: #d93025; font-weight: 500; }
