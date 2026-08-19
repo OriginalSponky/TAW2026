@@ -82,8 +82,8 @@ main {
 .form-section {
   background: var(--surface);
   border-radius: var(--radius-xl);
-  padding: 32px;
-  margin-bottom: 32px;
+  padding: 48px 40px;
+  margin-bottom: 40px;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border);
   transition: box-shadow 0.3s ease;
@@ -98,8 +98,8 @@ main {
   font-weight: 600;
   color: var(--primary);
   margin-top: 0;
-  margin-bottom: 24px;
-  padding-bottom: 12px;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
   border-bottom: 1px dashed var(--border);
 }
 
@@ -113,7 +113,8 @@ main {
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .form-group.full-width {
@@ -227,9 +228,10 @@ input[type="file"] {
 }
 
 .submit-container {
-  margin-top: 40px;
+  margin-top: 48px;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
+  width: 100%;
 }
 
 .btn-primary {

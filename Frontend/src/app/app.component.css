@@ -1,0 +1,246 @@
+/* HOST & WRAPPER (Full Screen Layout)*/
+:host {
+  display: block;
+}
+
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--bg-color);
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+}
+
+/* DECORATIVE BACKGROUND SHAPES*/
+.bg-shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 0;
+  opacity: 0.5;
+}
+
+.shape-1 {
+  width: 400px;
+  height: 400px;
+  background-color: var(--primary-light);
+  top: -100px;
+  left: -100px;
+}
+
+.shape-2 {
+  width: 300px;
+  height: 300px;
+  background-color: #e0e7ff;
+  bottom: -50px;
+  right: -50px;
+}
+
+/* LOGIN CARD MAIN*/
+.login-card {
+  background: var(--surface);
+  width: 100%;
+  max-width: 400px;
+  padding: 48px 40px 32px 40px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.registration-card {
+  border-top: 6px solid var(--warning);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* HEADER & TYPOGRAPHY*/
+.login-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.logo-placeholder {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.login-header h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+}
+
+.login-header p {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* FORM GROUPS & INPUTS*/
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-family: inherit;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--primary);
+  background-color: var(--surface);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.highlight-input {
+  background-color: var(--warning-light) !important;
+  border-color: #fcd34d !important;
+}
+
+.highlight-input:focus {
+  box-shadow: 0 0 0 3px var(--warning-light) !important;
+}
+
+/* INFO BOX (Registration)*/
+.info-box {
+  background-color: var(--bg-color);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.info-box p {
+  margin: 0 0 8px 0;
+  color: var(--text-main);
+  font-size: 14px;
+}
+
+.info-box p:last-child { margin-bottom: 0; }
+.info-box strong { color: var(--text-muted); font-weight: 600; }
+
+/* UTILITIES (Divider, Errors, Google)*/
+.error-message {
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  min-height: 20px;
+  margin: 0 0 16px 0;
+}
+
+.divider-container {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.divider-line {
+  flex-grow: 1;
+  height: 1px;
+  background-color: var(--border);
+}
+
+.divider-container span {
+  padding: 0 16px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.google-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* BUTTONS*/
+.btn-block {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-warning {
+  background-color: var(--warning);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-warning:hover {
+  background-color: #d97706;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.btn-outline:hover {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+}
+
+/* RESPONSIVE DESIGN*/
+@media (max-width: 480px) {
+  .login-card {
+    padding: 32px 24px;
+  }
+}

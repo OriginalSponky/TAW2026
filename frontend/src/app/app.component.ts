@@ -8,6 +8,7 @@ import { StudentHomeComponent } from './student-home/student-home.component';
   standalone: true,
   imports: [CommonModule, FormsModule, StudentHomeComponent],
   templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnInit {
   emailInput: string = '';

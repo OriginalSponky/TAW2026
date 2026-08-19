@@ -1,83 +1,100 @@
-<!-- Login Page -->
+<!-- LOGIN PAGE-->
 @if (!utenteLoggato && !inRegistrazione) {
-  <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box;">
-    <div style="background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); width: 100%; max-width: 350px; text-align: center; box-sizing: border-box;">
+  <div class="login-wrapper">
+    <!-- Decorative background elements -->
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
 
-      <h2 style="margin-top: 0; margin-bottom: 5px; color: #333333;">Overseas Program</h2>
-      <p style="margin-top: 0; margin-bottom: 25px; color: #555555; font-size: 14px;">Portale ufficiale Ca' Foscari per gli Erasmus</p>
-
-      <div style="margin-bottom: 20px; text-align: left;">
-        <label for="email" style="display: block; margin-bottom: 8px; color: #555555; font-size: 14px; font-weight: 600;">Email</label>
-        <input type="email" id="email" [(ngModel)]="emailInput" placeholder="Inserisci la tua email" style="width: 100%; padding: 12px; border: 1px solid #cccccc; border-radius: 8px; box-sizing: border-box; font-size: 14px;">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="logo-placeholder">🏛️ Ca' Foscari</div>
+        <h2>Overseas Program</h2>
+        <p>Portale ufficiale per gli Erasmus</p>
       </div>
 
-      <div style="margin-bottom: 20px; text-align: left;">
-        <label for="password" style="display: block; margin-bottom: 8px; color: #555555; font-size: 14px; font-weight: 600;">Password</label>
-        <input type="password" id="password" [(ngModel)]="passwordInput" placeholder="Inserisci la tua password" (keyup.enter)="eseguiLogin()" style="width: 100%; padding: 12px; border: 1px solid #cccccc; border-radius: 8px; box-sizing: border-box; font-size: 14px;">
-      </div>
+      <form class="login-form">
+        <div class="form-group">
+          <label for="email">Email Istituzionale</label>
+          <input type="email" id="email" name="email" [(ngModel)]="emailInput" placeholder="Inserisci la tua email" required>
+        </div>
 
-      <button (click)="eseguiLogin()" style="width: 100%; padding: 12px; background-color: #4A90E2; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 5px;">Accedi</button>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" [(ngModel)]="passwordInput" placeholder="Inserisci la tua password" (keyup.enter)="eseguiLogin()" required>
+        </div>
 
-      <p style="color: #d93025; font-size: 14px; font-weight: bold; margin-top: 5px; margin-bottom: 15px; min-height: 20px;">
-        {{ messaggioErrore }}
-      </p>
+        <button type="button" class="btn-primary btn-block" (click)="eseguiLogin()">
+          Accedi
+        </button>
 
-      <div style="display: flex; align-items: center; margin-bottom: 20px;">
-        <div style="flex-grow: 1; height: 1px; background-color: #dddddd;"></div>
-        <span style="padding: 0 10px; color: #888888; font-size: 14px;">oppure</span>
-        <div style="flex-grow: 1; height: 1px; background-color: #dddddd;"></div>
-      </div>
+        <p class="error-message">{{ messaggioErrore }}</p>
 
-      <div id="google-btn-container" style="display: flex; justify-content: center; width: 100%;"></div>
+        <div class="divider-container">
+          <div class="divider-line"></div>
+          <span>oppure</span>
+          <div class="divider-line"></div>
+        </div>
 
+        <!-- Google Login Container -->
+        <div id="google-btn-container" class="google-btn-wrapper"></div>
+      </form>
     </div>
   </div>
 }
+
 @else if (inRegistrazione) {
-  <!-- Registrazione -->
-  <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box;">
-    <div style="background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); border-top: 6px solid #fbbc05; width: 100%; max-width: 400px; text-align: left; box-sizing: border-box;">
+  <!-- REGISTRATION PAGE-->
+  <div class="login-wrapper">
+    <!-- Decorative background elements -->
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
 
-      <h2 style="color: #333333; margin-top: 0; margin-bottom: 5px;">Nuovo Utente</h2>
-      <p style="margin-top: 0; margin-bottom: 20px; color: #555555; font-size: 14px;">La tua email non è nel sistema. Conferma i tuoi dati per registrarti.</p>
+    <div class="login-card registration-card">
+      <div class="login-header">
+        <h2>Nuovo Utente</h2>
+        <p>La tua email non è nel sistema. Conferma i tuoi dati per registrarti.</p>
+      </div>
 
-      <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-        <p style="margin: 0 0 5px 0; color: #555555; font-size: 14px;"><strong>Email:</strong> {{ datiRegistrazione.email }}</p>
-        <p style="margin: 0 0 5px 0; color: #555555; font-size: 14px;"><strong>Ruolo Assegnato:</strong> {{ datiRegistrazione.role }}</p>
+      <div class="info-box">
+        <p><strong>Email:</strong> {{ datiRegistrazione.email }}</p>
+        <p><strong>Ruolo Assegnato:</strong> {{ datiRegistrazione.role }}</p>
         @if (datiRegistrazione.role === 'STUDENT') {
-          <p style="margin: 0; color: #555555; font-size: 14px;"><strong>Matricola:</strong> {{ datiRegistrazione.matriculation_number }}</p>
+          <p><strong>Matricola:</strong> {{ datiRegistrazione.matriculation_number }}</p>
         }
       </div>
 
-      <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 5px; color: #555555; font-size: 14px; font-weight: 600;">Nome *</label>
-        <input type="text" [(ngModel)]="datiRegistrazione.first_name" placeholder="Il tuo nome" style="width: 100%; padding: 10px; border: 1px solid #cccccc; border-radius: 8px; box-sizing: border-box;">
-      </div>
-
-      <div style="margin-bottom: 20px;">
-        <label style="display: block; margin-bottom: 5px; color: #555555; font-size: 14px; font-weight: 600;">Cognome *</label>
-        <input type="text" [(ngModel)]="datiRegistrazione.last_name" placeholder="Il tuo cognome" style="width: 100%; padding: 10px; border: 1px solid #cccccc; border-radius: 8px; box-sizing: border-box;">
-      </div>
-
-      @if (!registrazioneDaGoogle) {
-        <div style="margin-bottom: 25px;">
-          <label style="display: block; margin-bottom: 5px; color: #555555; font-size: 14px; font-weight: 600;">Conferma la password digitata in precedenza *</label>
-          <input type="text" [(ngModel)]="passwordConferma" placeholder="Riscrivi la password (visibile per sicurezza)" (keyup.enter)="confermaRegistrazione()" style="width: 100%; padding: 10px; border: 1px solid #cccccc; border-radius: 8px; box-sizing: border-box; background-color: #fff9e6;">
+      <form class="login-form">
+        <div class="form-group">
+          <label>Nome *</label>
+          <input type="text" name="firstName" [(ngModel)]="datiRegistrazione.first_name" placeholder="Il tuo nome" required>
         </div>
-      }
 
-      <p style="color: #d93025; font-size: 14px; font-weight: bold; margin-bottom: 15px; text-align: center; min-height: 20px;">
-        {{ messaggioErrore }}
-      </p>
+        <div class="form-group">
+          <label>Cognome *</label>
+          <input type="text" name="lastName" [(ngModel)]="datiRegistrazione.last_name" placeholder="Il tuo cognome" required>
+        </div>
 
-      <button (click)="confermaRegistrazione()" style="width: 100%; padding: 12px; background-color: #fbbc05; color: #333; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 10px;">Conferma Registrazione</button>
-      <button (click)="annullaRegistrazione()" style="width: 100%; padding: 12px; background-color: transparent; color: #888; border: none; font-size: 14px; cursor: pointer;">Annulla</button>
+        @if (!registrazioneDaGoogle) {
+          <div class="form-group">
+            <label>Conferma la password digitata *</label>
+            <input type="text" name="passwordConfirm" [(ngModel)]="passwordConferma" placeholder="Riscrivi la password (visibile per sicurezza)" (keyup.enter)="confermaRegistrazione()" class="highlight-input" required>
+          </div>
+        }
 
+        <p class="error-message">{{ messaggioErrore }}</p>
+
+        <button type="button" class="btn-warning btn-block" (click)="confermaRegistrazione()">
+          Conferma Registrazione
+        </button>
+        <button type="button" class="btn-outline btn-block" (click)="annullaRegistrazione()" style="margin-top: 8px;">
+          Annulla
+        </button>
+      </form>
     </div>
   </div>
 }
 @else {
-  <!-- Dashboard -->
+  <!-- DASHBOARD-->
   <app-student-home
     [utente]="utenteLoggato"
     (onLogout)="eseguiLogout()">
