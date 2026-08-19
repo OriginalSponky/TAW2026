@@ -199,9 +199,6 @@ app.post('/api/applications', async (req, res) => {
     }
 });
 
-app.listen(3000, () => {
-    console.log('Backend in ascolto sulla porta 3000');
-});
 
 // Add user to database
 app.post('/api/register', async (req, res) => {
@@ -251,4 +248,39 @@ app.get('/api/applications', async (req, res) => {
         console.error("Errore recupero richieste:", error);
         res.status(500).send("Errore interno");
     }
+});
+
+// Single Application details
+app.get('/api/applications/:id', async (req, res) => {
+    const appId = req.params.id;
+    try {
+        const [appRows] = await dbPool.query(`
+            SELECT a.*, i.name AS institution_name, i.country, i.city
+            FROM Applications a
+            JOIN Institutions i ON a.institution_id = i.id
+            WHERE a.id = ?
+        `, [appId]);
+
+        if (appRows.length === 0) {
+            return res.status(404).send("Richiesta non trovata");
+        }
+
+        const applicationData = appRows[0];
+
+        // All exams related
+        const [examRows] = await dbPool.query(`
+            SELECT * FROM ExamsMapping WHERE application_id = ?
+        `, [appId]);
+        
+        applicationData.exams = examRows;
+
+        res.json(applicationData);
+    } catch (error) {
+        console.error("Errore recupero dettagli:", error);
+        res.status(500).send("Errore interno");
+    }
+});
+
+app.listen(3000, () => {
+    console.log('Backend in ascolto sulla porta 3000');
 });

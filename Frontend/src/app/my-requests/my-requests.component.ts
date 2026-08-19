@@ -1,10 +1,11 @@
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RequestDetailComponent } from '../request-detail/request-detail.component';
 
 @Component({
   selector: 'app-my-requests',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RequestDetailComponent],
   templateUrl: './my-requests.component.html',
   styleUrls: ['./my-requests.component.css'],
 })
@@ -15,6 +16,7 @@ export class MyRequestsComponent implements OnInit {
 
   pannelloAttivo: number | null = null;
   richieste: any[] = [];
+  richiestaSelezionata: number | null = null;
   constructor(private cdr: ChangeDetectorRef) {}
 
   get iniziali(): string {
@@ -112,4 +114,13 @@ export class MyRequestsComponent implements OnInit {
         return 'Stato Sconosciuto';
     }
   }
+  apriDettaglio(id: number) {
+    this.richiestaSelezionata = id;
+  }
+
+  chiudiDettaglio() {
+    this.richiestaSelezionata = null;
+  }
 }
+
+

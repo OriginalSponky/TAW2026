@@ -1,0 +1,52 @@
+<button class="btn-outline" (click)="onBack.emit()">← Torna alla lista</button>
+
+@if (dettagli) {
+  <div class="card">
+    <h2>Dettagli Mobilità</h2>
+    <div class="info-grid">
+      <div class="info-item">
+        <label>Istituzione Ospitante</label>
+        <p>{{ dettagli.institution_name }} ({{ dettagli.country }})</p>
+      </div>
+      <div class="info-item">
+        <label>Stato Pratica</label>
+        <p><strong>{{ dettagli.status }}</strong></p>
+      </div>
+      <div class="info-item">
+        <label>Anno Accademico</label>
+        <p>{{ dettagli.academic_year }}</p>
+      </div>
+      <div class="info-item">
+        <label>Periodo</label>
+        <p>{{ dettagli.mobility_period }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Learning Agreement (Esami)</h2>
+
+    @for (esame of dettagli.exams; track esame.id) {
+      <div class="exam-row">
+        <div class="exam-half">
+          <h4>✈️ CORSO ESTERO</h4>
+          <div class="exam-details">
+            <p><strong>Codice:</strong> {{ esame.foreign_course_code }}</p>
+            <p><strong>Nome:</strong> {{ esame.foreign_course_name }}</p>
+            <p><strong>Crediti:</strong> {{ esame.foreign_course_credits }}</p>
+          </div>
+        </div>
+        <div class="exam-half">
+          <h4>🏛️ CORSO CA' FOSCARI</h4>
+          <div class="exam-details">
+            <p><strong>Codice:</strong> {{ esame.unive_course_code }}</p>
+            <p><strong>Nome:</strong> {{ esame.unive_course_title }}</p>
+            <p><strong>Crediti:</strong> {{ esame.unive_course_credits }}</p>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+} @else {
+  <p>Caricamento dettagli in corso...</p>
+}

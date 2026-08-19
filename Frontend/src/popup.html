@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuova Richiesta Overseas - Ca' Foscari</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* RESET E STILI DI BASE */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
+        body { background-color: #f8f9fa; color: #202124; min-height: 100vh; padding-bottom: 50px; }
+
+        /* HEADER E PROFILO */
+        header {
+            padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;
+            background-color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100;
+        }
+
+        .back-btn { text-decoration: none; color: #5f6368; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+        .back-btn:hover { color: #202124; }
+        
+        .profile-container { position: relative; }
+        .profile-btn { 
+            background-color: #4285f4; color: white; border: none; border-radius: 50%; 
+            width: 40px; height: 40px; font-size: 16px; font-weight: 500; cursor: pointer; 
+        }
+
+        /* MENU A TENDINA (DROPDOWN) */
+        .dropdown {
+            position: absolute; top: 50px; right: 0; background: white; width: 220px;
+            border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none;
+            flex-direction: column; overflow: hidden; z-index: 101;
+        }
+        .dropdown.active { display: flex; }
+        .dropdown a { text-decoration: none; color: #3c4043; padding: 12px 20px; font-size: 14px; transition: background 0.2s; }
+        .dropdown a:hover { background-color: #f1f3f4; }
+        .dropdown .divider { height: 1px; background-color: #dadce0; margin: 4px 0; }
+        .dropdown .logout { color: #d93025; font-weight: 500; }
+
+        /* LAYOUT PRINCIPALE */
+        main { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        .page-title { margin-bottom: 30px; font-size: 2rem; font-weight: 400; }
+
+        /* BANNER DI ERRORE */
+        .error-banner {
+            background-color: #fce8e6; color: #d93025; padding: 16px; border-radius: 8px;
+            margin-bottom: 24px; font-weight: 500; display: none; border: 1px solid #fad2cf;
+        }
+
+        /* STILE DELLE CARDS */
+        .card { background: white; border-radius: 12px; padding: 30px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+        .card h2 { font-size: 1.25rem; margin-bottom: 20px; color: #4285f4; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+
+        /* GRIGLIE FORM */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        
+        label { font-size: 14px; font-weight: 500; color: #3c4043; }
+        input[type="text"], input[type="number"], select, input[type="file"] { padding: 12px; border: 1px solid #dadce0; border-radius: 6px; font-size: 15px; outline: none; transition: border-color 0.2s; }
+        input:focus, select:focus { border-color: #4285f4; box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2); }
+
+        /* LINK DOWNLOAD E MAPPATURA */
+        .upload-header { display: flex; justify-content: space-between; align-items: center; }
+        .download-link { font-size: 14px; color: #1a73e8; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+        .download-link:hover { text-decoration: underline; }
+        
+        .exam-mapping-container { border: 1px solid #dadce0; border-radius: 8px; padding: 20px; margin-bottom: 16px; background-color: #fafbfc; position: relative;}
+        .remove-exam-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #d93025; font-weight: 500; cursor: pointer; font-size: 14px; }
+        .exam-section-title { font-size: 14px; font-weight: 700; color: #5f6368; margin: 15px 0 10px; text-transform: uppercase; }
+        
+        /* PULSANTI */
+        .btn { padding: 10px 20px; border-radius: 6px; font-size: 15px; font-weight: 500; cursor: pointer; border: none; transition: background 0.2s; }
+        .btn-outline { background: transparent; border: 1px solid #dadce0; color: #1a73e8; }
+        .btn-outline:hover { background: #f8f9fa; }
+        .btn-primary { background: #1a73e8; color: white; padding: 14px 24px; font-size: 16px; width: 100%; margin-top: 10px; }
+        .btn-primary:hover { background: #1557b0; }
+
+        /* MODALE DI CONFERMA */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal {
+            background: white; padding: 32px; border-radius: 12px; width: 90%; max-width: 450px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.2); text-align: center;
+        }
+        .modal h3 { margin-bottom: 16px; color: #202124; font-size: 1.5rem; }
+        .modal p { color: #5f6368; margin-bottom: 24px; font-size: 15px; line-height: 1.5; }
+        .modal-actions { display: flex; justify-content: center; gap: 16px; }
+        .modal-actions .btn { width: auto; margin-top: 0; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="le_mie_richieste.html" class="back-btn">← Torna alle mie richieste</a>
+        
+        <!-- PROFILO CON DROPDOWN -->
+        <div class="profile-container">
+            <button class="profile-btn" id="profileBtn">NC</button>
+            <div class="dropdown" id="dropdownMenu">
+                <a href="#">Gestisci il tuo Account</a>
+                <a href="#">Impostazioni</a>
+                <a href="#">Aiuto e feedback</a>
+                <div class="divider"></div>
+                <a href="#" class="logout" onclick="alert('Log out effettuato!')">🚪 Log out</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <h1 class="page-title">Nuova Richiesta Overseas</h1>
+
+        <!-- BANNER DI ERRORE (nascosto di default) -->
+        <div id="errorBanner" class="error-banner">
+            ⚠️ Attenzione: Compila tutti i campi obbligatori prima di procedere.
+        </div>
+
+        <form id="applicationForm">
+            
+            <!-- SEZIONE 1: DETTAGLI GENERALI -->
+            <div class="card">
+                <h2>1. Dettagli della Mobilità</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="academic_year">Anno Accademico</label>
+                        <select id="academic_year" required>
+                            <option value="">Seleziona...</option>
+                            <option value="2025/2026">2025/2026</option>
+                            <option value="2026/2027">2026/2027</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="mobility_period">Periodo Previsto</label>
+                        <select id="mobility_period" required>
+                            <option value="">Seleziona...</option>
+                            <option value="First Semester">Primo Semestre</option>
+                            <option value="Second Semester">Secondo Semestre</option>
+                            <option value="Entire Year">Intero Anno</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="host_institution">Istituzione Ospitante</label>
+                        <select id="host_institution" required>
+                            <option value="">Seleziona dalla lista partner...</option>
+                            <option value="University of Tokyo">University of Tokyo (Giappone)</option>
+                            <option value="UCLA">UCLA (USA)</option>
+                            <option value="University of Sydney">University of Sydney (Australia)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="referent_lecturer">Docente Referente</label>
+                        <select id="referent_lecturer" required>
+                            <option value="">Seleziona docente Ca' Foscari...</option>
+                            <option value="Prof. Mario Rossi">Prof. Mario Rossi</option>
+                            <option value="Prof.ssa Laura Bianchi">Prof.ssa Laura Bianchi</option>
+                            <option value="Prof. Filippo Bergamasco">Prof. Filippo Bergamasco</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEZIONE 2: MAPPATURA ESAMI -->
+            <div class="card">
+                <h2>2. Mappatura Esami (Exam Mapping)</h2>
+                <p style="font-size: 14px; color: #5f6368; margin-bottom: 20px;">
+                    Associa gli esami che intendi sostenere all'estero con quelli del tuo piano di studi a Ca' Foscari.
+                </p>
+
+                <div id="exams-list">
+                    <div class="exam-mapping-container">
+                        <div class="exam-section-title">✈️ Corso Estero (Host Institution)</div>
+                        <div class="form-grid">
+                            <div class="form-group"><label>Codice Insegnamento</label><input type="text" name="foreign_code[]" required></div>
+                            <div class="form-group"><label>Crediti</label><input type="number" name="foreign_credits[]" required min="1"></div>
+                            <div class="form-group full-width"><label>Nome del Corso</label><input type="text" name="foreign_name[]" required></div>
+                        </div>
+
+                        <div class="exam-section-title" style="margin-top: 25px;">🏛️ Corso Ca' Foscari</div>
+                        <div class="form-grid">
+                            <div class="form-group"><label>Codice Corso</label><input type="text" name="local_code[]" required></div>
+                            <div class="form-group"><label>Crediti</label><input type="number" name="local_credits[]" required min="1"></div>
+                            <div class="form-group full-width"><label>Titolo del Corso</label><input type="text" name="local_name[]" required></div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline" onclick="addExamMapping()">+ Aggiungi un altro esame</button>
+            </div>
+
+            <!-- SEZIONE 3: DOCUMENTI -->
+            <div class="card">
+                <h2>3. Upload Documenti</h2>
+                <div class="form-group full-width">
+                    <div class="upload-header">
+                        <label for="learning_agreement">Learning Agreement (PDF)</label>
+                        <a href="LEARNING_AGREEMENT.png" download="LEARNING_AGREEMENT.png" class="download-link">⬇️ Scarica il template</a>
+                    </div>
+                    <input type="file" id="learning_agreement" accept=".pdf" required>
+                    <p style="font-size: 12px; color: #5f6368; margin-top: 4px;">Compila il template, firmalo e caricalo qui in formato PDF prima della partenza.</p>
+                </div>
+            </div>
+
+            <!-- ATTENZIONE: Type modificato a "button" per gestire la validazione via JavaScript -->
+            <button type="button" class="btn btn-primary" onclick="validateAndSubmit()">Invia Richiesta Overseas</button>
+        </form>
+    </main>
+
+    <!-- STRUTTURA DEL MODALE -->
+    <div id="customModal" class="modal-overlay">
+        <div class="modal">
+            <div id="modalConfirmStep">
+                <h3>Conferma Invio</h3>
+                <p>Sei sicuro di voler inviare la tua richiesta di mobilità? Assicurati di aver inserito correttamente la mappatura degli esami e il Learning Agreement.</p>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal()">Annulla</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmSubmission()">Conferma e Invia</button>
+                </div>
+            </div>
+            <div id="modalSuccessStep" style="display: none;">
+                <h3>✅ Richiesta Inviata!</h3>
+                <p>La tua pratica è stata salvata. Lo stato attuale è: <strong>Awaiting Learning Agreement approval</strong>.</p>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-primary" onclick="closeAndReset()">Vai alle mie richieste</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // GESTIONE DEL MENU PROFILO (DROPDOWN)
+        const profileBtn = document.getElementById('profileBtn');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+
+        profileBtn.addEventListener('click', function(event) {
+            event.stopPropagation(); 
+            dropdownMenu.classList.toggle('active');
+        });
+
+        window.addEventListener('click', function(event) {
+            if (dropdownMenu.classList.contains('active')) {
+                dropdownMenu.classList.remove('active');
+            }
+        });
+
+        dropdownMenu.addEventListener('click', function(event) {
+            event.stopPropagation(); 
+        });
+
+        // GESTIONE MAPPATURA ESAMI
+        function addExamMapping() {
+            const container = document.getElementById('exams-list');
+            const newExam = document.createElement('div');
+            newExam.className = 'exam-mapping-container';
+            newExam.innerHTML = `
+                <button type="button" class="remove-exam-btn" onclick="this.parentElement.remove()">✖ Rimuovi</button>
+                <div class="exam-section-title">✈️ Corso Estero (Host Institution)</div>
+                <div class="form-grid">
+                    <div class="form-group"><label>Codice Insegnamento</label><input type="text" name="foreign_code[]" required></div>
+                    <div class="form-group"><label>Crediti</label><input type="number" name="foreign_credits[]" required min="1"></div>
+                    <div class="form-group full-width"><label>Nome del Corso</label><input type="text" name="foreign_name[]" required></div>
+                </div>
+                <div class="exam-section-title" style="margin-top: 25px;">🏛️ Corso Ca' Foscari</div>
+                <div class="form-grid">
+                    <div class="form-group"><label>Codice Corso</label><input type="text" name="local_code[]" required></div>
+                    <div class="form-group"><label>Crediti</label><input type="number" name="local_credits[]" required min="1"></div>
+                    <div class="form-group full-width"><label>Titolo del Corso</label><input type="text" name="local_name[]" required></div>
+                </div>
+            `;
+            container.appendChild(newExam);
+        }
+
+        // VALIDAZIONE E GESTIONE MODALE
+        function validateAndSubmit() {
+            const form = document.getElementById('applicationForm');
+            const errorBanner = document.getElementById('errorBanner');
+            
+            // Controlla se il form è valido secondo gli attributi "required"
+            if (!form.checkValidity()) {
+                // Se non è valido, mostra il banner rosso...
+                errorBanner.style.display = 'block';
+                // ...e attiva i suggerimenti nativi del browser sul campo mancante
+                form.reportValidity(); 
+                return; // Ferma l'esecuzione (non mostra il modale)
+            }
+
+            // Se è valido, nascondi il banner (se era visibile) e mostra il modale
+            errorBanner.style.display = 'none';
+            document.getElementById('customModal').style.display = 'flex';
+            document.getElementById('modalConfirmStep').style.display = 'block';
+            document.getElementById('modalSuccessStep').style.display = 'none';
+        }
+
+        function confirmSubmission() {
+            document.getElementById('modalConfirmStep').style.display = 'none';
+            document.getElementById('modalSuccessStep').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').style.display = 'none';
+        }
+
+        function closeAndReset() {
+            closeModal();
+            document.getElementById('applicationForm').reset();
+            // window.location.href = 'le_mie_richieste.html';
+        }
+    </script>
+</body>
+</html>
