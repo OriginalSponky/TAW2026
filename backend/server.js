@@ -222,3 +222,33 @@ app.post('/api/register', async (req, res) => {
         res.status(500).send("Errore durante la creazione dell'account.");
     }
 });
+
+// Application List Retrival
+app.get('/api/applications', async (req, res) => {
+    const studentEmail = req.query.email;
+
+    if (!studentEmail) {
+        return res.status(400).send("Email mancante");
+    }
+
+    try {
+        const [rows] = await dbPool.query(`
+            SELECT 
+                a.id, 
+                a.academic_year, 
+                a.mobility_period, 
+                a.status, 
+                i.name AS institution_name 
+            FROM Applications a
+            JOIN Institutions i ON a.institution_id = i.id
+            JOIN Users student ON a.student_id = student.id
+            WHERE student.email = ?
+            ORDER BY a.created_at DESC
+        `, [studentEmail]);
+
+        res.json(rows);
+    } catch (error) {
+        console.error("Errore recupero richieste:", error);
+        res.status(500).send("Errore interno");
+    }
+});

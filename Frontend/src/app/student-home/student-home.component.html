@@ -21,7 +21,7 @@
         <p>Avvia la compilazione di una nuova pratica, un modulo o una segnalazione.</p>
       </div>
 
-      <div class="card" (click)="mostraMessaggio('Hai cliccato su Le mie richieste')">
+      <div class="card" (click)="apriLeMieRichieste()">
         <h2>Le mie richieste</h2>
         <p>Controlla lo stato delle tue pratiche in corso e visualizza lo storico.</p>
       </div>
@@ -34,4 +34,12 @@
     [utente]="utente"
     (onBack)="tornaAllaDashboard()">
   </app-new-request>
+}
+@else if (vistaAttiva === 'leMieRichieste') {
+  <!-- Show My Requests -->
+  <app-my-requests
+    [utente]="utente"
+    (onBack)="tornaAllaDashboard()"
+    (onNewRequest)="apriNuovaRichiesta()">
+  </app-my-requests>
 }

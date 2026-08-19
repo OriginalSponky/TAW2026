@@ -1,0 +1,58 @@
+/* RESET E STILI DI BASE */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
+:host { display: block; background-color: #f8f9fa; color: #202124; min-height: 100vh; padding-bottom: 50px; }
+
+/* HEADER */
+header { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; background-color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+.back-btn { text-decoration: none; color: #5f6368; font-weight: 500; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.profile-btn { background-color: #4285f4; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-weight: 500; cursor: pointer; }
+
+/* LAYOUT */
+main { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+.header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+.page-title { font-size: 2rem; font-weight: 400; }
+.new-btn { background-color: #1a73e8; color: white; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 500; transition: background 0.2s; cursor: pointer;}
+.new-btn:hover { background-color: #1557b0; }
+
+/* LISTA RICHIESTE E CARD */
+.requests-list { display: flex; flex-direction: column; gap: 20px; }
+.request-card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); border: 1px solid transparent; transition: all 0.2s; overflow: hidden; }
+.request-card:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-color: #dadce0; }
+.card-header { padding: 24px; display: flex; justify-content: space-between; align-items: center; }
+.university-name { font-size: 1.25rem; font-weight: 500; color: #202124; margin-bottom: 8px; }
+.details { font-size: 14px; color: #5f6368; display: flex; gap: 16px; margin-bottom: 8px; }
+
+/* BADGE */
+.status-badge { display: inline-block; padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; text-transform: uppercase; }
+.status-created { background-color: #e8eaed; color: #3c4043; }
+.status-awaiting-la { background-color: #fef7e0; color: #b06000; }
+.status-pre-departure { background-color: #e6f4ea; color: #137333; }
+.status-in-progress { background-color: #e8f0fe; color: #1967d2; }
+.status-waiting-score { background-color: #f3e8fd; color: #681da8; }
+.status-closed { background-color: #f1f3f4; color: #5f6368; }
+.status-canceled { background-color: #fce8e6; color: #d93025; }
+
+/* PULSANTI E AZIONI */
+.actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end;}
+.btn-outline { background: transparent; border: 1px solid #dadce0; color: #1a73e8; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.2s; text-decoration: none; }
+.btn-outline:hover { background: #f8f9fa; }
+.btn-danger { color: #d93025; border-color: #fce8e6; }
+.btn-danger:hover { background: #fce8e6; }
+.btn-primary { background-color: #1a73e8; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; }
+.btn-primary:hover { background-color: #1557b0; }
+
+/* PANNELLO DI MODIFICA */
+.edit-panel { display: none; background-color: #fafbfc; border-top: 1px solid #dadce0; padding: 20px 24px; flex-direction: column; gap: 16px; }
+.edit-panel.active { display: flex; }
+.edit-panel h4 { font-size: 16px; color: #3c4043; margin-bottom: 4px; }
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+label { font-size: 14px; font-weight: 500; color: #5f6368; }
+textarea { width: 100%; padding: 12px; border: 1px solid #dadce0; border-radius: 6px; font-size: 14px; outline: none; resize: vertical; min-height: 80px; }
+textarea:focus { border-color: #4285f4; }
+input[type="file"] { padding: 10px; border: 1px dashed #dadce0; border-radius: 6px; background: white; }
+.panel-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; }
+
+@media (max-width: 600px) {
+  .card-header { flex-direction: column; align-items: flex-start; gap: 20px; }
+  .actions { width: 100%; justify-content: flex-start; }
+}

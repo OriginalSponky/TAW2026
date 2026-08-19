@@ -74,9 +74,15 @@ export class NewRequestComponent implements OnInit {
   }
 
   inviaModulo() {
-    console.log('Bottone cliccato! Preparazione dati in corso...');
-    console.log('Dati della tendina:', this.datiRichiesta);
-    console.log('Dati esami:', this.esami);
+    if (
+      !this.datiRichiesta.academic_year ||
+      !this.datiRichiesta.mobility_period ||
+      !this.datiRichiesta.institution_id ||
+      !this.datiRichiesta.lecturer_id
+    ) {
+      this.erroreSalvataggio = 'Attenzione: devi selezionare tutte le opzioni nel riquadro 1!';
+      return;
+    }
 
     this.erroreSalvataggio = '';
 

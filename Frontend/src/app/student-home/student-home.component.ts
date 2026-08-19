@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NewRequestComponent } from '../new-request/new-request.component';
+import { MyRequestsComponent } from '../my-requests/my-requests.component';
 
 @Component({
   selector: 'app-student-home',
   standalone: true,
-  imports: [CommonModule, NewRequestComponent],
+  imports: [CommonModule, NewRequestComponent, MyRequestsComponent],
   templateUrl: './student-home.component.html',
   styleUrls: ['./student-home.component.css'],
 })
@@ -42,6 +43,10 @@ export class StudentHomeComponent {
 
   tornaAllaDashboard() {
     this.vistaAttiva = 'dashboard';
+  }
+
+  apriLeMieRichieste() {
+    this.vistaAttiva = 'leMieRichieste';
   }
 
   mostraMessaggio(msg: string) {
