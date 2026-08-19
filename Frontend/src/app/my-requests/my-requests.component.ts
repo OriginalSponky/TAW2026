@@ -29,7 +29,6 @@ export class MyRequestsComponent implements OnInit {
 
   ngOnInit() {
     const emailSicura = encodeURIComponent(this.utente.email);
-    console.log("🔎 Cerco richieste nel Database per l'email:", this.utente.email);
 
     fetch(`http://localhost:3000/api/applications?email=${emailSicura}`)
       .then((res) => {
@@ -37,7 +36,6 @@ export class MyRequestsComponent implements OnInit {
         return res.json();
       })
       .then((data) => {
-        console.log('📥 Dati ricevuti dal Database:', data);
         this.richieste = data;
         this.cdr.detectChanges();
       })

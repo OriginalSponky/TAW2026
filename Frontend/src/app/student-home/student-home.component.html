@@ -22,17 +22,29 @@
       <h1>Ciao {{ utente.first_name }} {{ utente.last_name }}</h1>
     </div>
 
-    <div class="cards-container">
-      <!-- Change Page -->
-      <div class="card" (click)="apriNuovaRichiesta()">
-        <h2>Nuova richiesta</h2>
-        <p>Avvia la compilazione di una nuova pratica, un modulo o una segnalazione.</p>
+    <div class="cards-layout">
+      <!-- TOP ROW: Always visible -->
+      <div class="cards-row top-row">
+        <div class="card" (click)="apriNuovaRichiesta()">
+          <h2>➕ Nuova richiesta</h2>
+          <p>Avvia la compilazione di una nuova pratica, un modulo o una segnalazione.</p>
+        </div>
+
+        <div class="card" (click)="apriLeMieRichieste()">
+          <h2>📁 Le mie richieste</h2>
+          <p>Controlla lo stato delle tue pratiche in corso e visualizza lo storico.</p>
+        </div>
       </div>
 
-      <div class="card" (click)="apriLeMieRichieste()">
-        <h2>Le mie richieste</h2>
-        <p>Controlla lo stato delle tue pratiche in corso e visualizza lo storico.</p>
-      </div>
+      <!-- BOTTOM ROW: Visible only if there is an active Application -->
+      @if (praticaAttiva) {
+        <div class="cards-row bottom-row">
+          <div class="card card-highlight" (click)="apriGestioneErasmus()">
+            <h2>✈️ In Erasmus</h2>
+            <p>Gestisci la tua mobilità in corso, aggiorna il L.A. o carica il Transcript of Records.</p>
+          </div>
+        </div>
+      }
     </div>
   </main>
 }
@@ -55,4 +67,13 @@
   (onEditRequest)="apriNuovaRichiesta($event)"
   (onLogout)="eseguiLogoutDalFiglio()">
   </app-my-requests>
+}
+@else if (vistaAttiva === 'gestioneErasmus') {
+  <!-- Inject the Active Mobility component -->
+  <app-active-mobility
+    [utente]="utente"
+    [pratica]="praticaAttiva"
+    (onBack)="tornaAllaDashboard()"
+    (onLogout)="eseguiLogoutDalFiglio()">
+  </app-active-mobility>
 }

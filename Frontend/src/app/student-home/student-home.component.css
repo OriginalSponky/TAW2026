@@ -9,16 +9,16 @@
   background-color: #f8f9fa;
   color: #202124;
   min-height: 100vh;
-  width: 100%; 
+  width: 100%;
 }
 
 header {
-  background-color: #ffffff; 
+  background-color: #ffffff;
   padding: 15px 30px;
   display: flex;
-  justify-content: space-between; 
+  justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -28,7 +28,7 @@ header {
 .header-logo {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #1a73e8; 
+  color: #1a73e8;
   margin: 0;
   letter-spacing: -0.5px;
 }
@@ -102,8 +102,8 @@ header {
 
 
 main {
-  max-width: 1200px; 
-  margin: 0 auto; 
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 40px 20px;
 }
 
@@ -157,3 +157,10 @@ main {
   line-height: 1.6;
   margin: 0;
 }
+
+
+.cards-layout { display: flex; flex-direction: column; gap: 30px; align-items: center; }
+.cards-row { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; width: 100%; }
+
+.card-highlight { border: 2px solid #1a73e8; background-color: #f8fbff; }
+.card-highlight:hover { box-shadow: 0 10px 20px rgba(26,115,232,0.2), 0 6px 6px rgba(26,115,232,0.15); transform: translateY(-4px); border-color: #1a73e8; }

@@ -1,12 +1,20 @@
-import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  HostListener,
+  OnInit,
+  ChangeDetectorRef, } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NewRequestComponent } from '../new-request/new-request.component';
 import { MyRequestsComponent } from '../my-requests/my-requests.component';
+import { ActiveMobilityComponent } from '../active-mobility/active-mobility.component';
 
 @Component({
   selector: 'app-student-home',
   standalone: true,
-  imports: [CommonModule, NewRequestComponent, MyRequestsComponent],
+  imports: [CommonModule, NewRequestComponent, MyRequestsComponent, ActiveMobilityComponent],
   templateUrl: './student-home.component.html',
   styleUrls: ['./student-home.component.css'],
 })
@@ -17,6 +25,28 @@ export class StudentHomeComponent {
   menuAperto: boolean = false;
   vistaAttiva: string = 'dashboard';
   idRichiestaDaModificare: number | null = null;
+  praticaAttiva: any = null;
+
+  constructor(private cdr: ChangeDetectorRef) {}
+
+  ngOnInit() {
+    // Check if the user has an active mobility when the dashboard loads
+    if (this.utente && this.utente.email) {
+      const emailSicura = encodeURIComponent(this.utente.email);
+      fetch(`http://localhost:3000/api/applications?email=${emailSicura}`)
+        .then((res) => res.json())
+        .then((data) => {
+          const activeStatuses = [
+            'PRE_DEPARTURE_COMPLETED',
+            'MOBILITY_IN_PROGRESS',
+            'WAITING_FOR_EXAM_SCORE_APPROVAL',
+          ];
+          this.praticaAttiva = data.find((req: any) => activeStatuses.includes(req.status));
+          this.cdr.detectChanges();
+        })
+        .catch((err) => console.error('Error fetching active mobility:', err));
+    }
+  }
 
   get iniziali(): string {
     if (!this.utente) return '';
@@ -51,23 +81,23 @@ export class StudentHomeComponent {
     this.vistaAttiva = 'leMieRichieste';
   }
 
-  mostraMessaggio(msg: string) {
-    alert(msg);
+  apriGestioneErasmus() {
+    this.vistaAttiva = 'gestioneErasmus';
   }
 
   eseguiLogoutDalFiglio() {
     this.onLogout.emit();
   }
-  
+
   gestisciRitornoDaRichiesta() {
     if (this.idRichiestaDaModificare) {
       this.vistaAttiva = 'leMieRichieste';
-      this.idRichiestaDaModificare = null; 
+      this.idRichiestaDaModificare = null;
     } else {
       this.vistaAttiva = 'dashboard';
     }
   }
-  
+
   vaiAlleMieRichiesteDopoSuccesso() {
     this.vistaAttiva = 'leMieRichieste';
     this.idRichiestaDaModificare = null;

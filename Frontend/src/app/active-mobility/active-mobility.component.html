@@ -1,0 +1,98 @@
+<header>
+  <a href="#" class="back-btn" (click)="tornaIndietro($event)">← Torna alla Home</a>
+  <div class="profile-container">
+    <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
+    <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
+      <a href="#">Il mio profilo</a>
+      <a href="#">Impostazioni</a>
+      <div class="divider"></div>
+      <a href="#" class="logout" (click)="effettuaLogout($event)">🚪 Log out</a>
+    </div>
+  </div>
+</header>
+
+<main (click)="menuAperto = false">
+  <h1 class="page-title">Gestione Pratiche Erasmus</h1>
+
+  <div class="card" [ngClass]="pratica?.status === 'PRE_DEPARTURE_COMPLETED' ? 'card-predeparture' : 'card-inprogress'">
+    <div class="card-header">
+      <div>
+        <h2>{{ pratica?.institution_name || 'University of Tokyo' }}</h2>
+        <p class="desc">A.A. {{ pratica?.academic_year }} - {{ pratica?.mobility_period }}</p>
+      </div>
+      <div class="status-badge" [ngClass]="pratica?.status === 'PRE_DEPARTURE_COMPLETED' ? 'badge-warning' : 'badge-info'">
+        {{ pratica?.status }}
+      </div>
+    </div>
+
+    <!-- Initial Actions (Pre-departure) -->
+    @if (pratica?.status === 'PRE_DEPARTURE_COMPLETED') {
+      <div class="actions">
+        <p style="width: 100%; font-size: 14px; color: #3c4043; margin-bottom: 8px;">
+          L'Ufficio Overseas ha confermato la tua partenza.
+        </p>
+        <button class="btn btn-danger-outline" (click)="showCancelModal = true">❌ Rinuncia</button>
+        <button class="btn btn-primary" (click)="togglePanel('dates')">✅ Accetta e Inserisci Date</button>
+      </div>
+
+      <!-- Dates Panel -->
+      @if (pannelloAttivo === 'dates') {
+        <div class="collapsible-panel active">
+          <div class="actions right">
+            <button class="btn btn-outline" (click)="togglePanel('')">Annulla</button>
+            <button class="btn btn-primary" (click)="startMobility()">Salva e Avvia</button>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- Active Mobility Actions -->
+    @if (pratica?.status === 'MOBILITY_IN_PROGRESS') {
+      <div class="actions" style="border-top: 1px solid #eee; padding-top: 16px; margin-top: 16px;">
+        <button class="btn btn-outline" (click)="togglePanel('dates')">📅 Modifica Date</button>
+        <button class="btn btn-outline" (click)="togglePanel('la')">📝 Modifica L.A.</button>
+        <button class="btn btn-success" (click)="togglePanel('tor')">🎓 Carica Transcript (ToR)</button>
+      </div>
+
+      <!-- LA Panel -->
+      @if (pannelloAttivo === 'la') {
+        <div class="collapsible-panel active">
+          <button class="btn btn-primary" (click)="openSuccessModal('Modifica L.A. inviata!')">Invia</button>
+        </div>
+      }
+
+      <!-- ToR Panel -->
+      @if (pannelloAttivo === 'tor') {
+        <div class="collapsible-panel active" style="border-color: #137333;">
+          <button class="btn btn-success" (click)="openSuccessModal('Transcript inviato!')">Invia Voti</button>
+        </div>
+      }
+    }
+  </div>
+</main>
+
+<!-- MODALS -->
+@if (showCancelModal) {
+  <div class="modal-overlay" style="display: flex;">
+    <div class="modal">
+      <h3>⚠️ Conferma Rinuncia</h3>
+      <p>Sei sicuro di voler rinunciare alla mobilità?</p>
+      <div class="modal-actions">
+        <button class="btn btn-outline" (click)="closeModals()">Annulla</button>
+        <button class="btn btn-danger-outline" (click)="executeCancel()">Conferma Rinuncia</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showSuccessModal) {
+  <div class="modal-overlay" style="display: flex;">
+    <div class="modal">
+      <h3>✅ Operazione completata</h3>
+      <p>{{ successMessage }}</p>
+      <div class="modal-actions">
+        <button class="btn btn-primary" (click)="closeModals()">Chiudi</button>
+      </div>
+    </div>
+  </div>
+}
