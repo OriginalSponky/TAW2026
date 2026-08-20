@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; 
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-request-detail',
@@ -53,11 +53,11 @@ export class RequestDetailComponent implements OnInit {
   richiediSalvataggio() {
     this.mostraModale = true;
   }
-  
+
   chiudiModale() {
     this.mostraModale = false;
   }
-  
+
   confermaSalvataggio() {
     if (this.isSubmitting) return; // Prevent double clicks
     this.isSubmitting = true;
@@ -99,13 +99,28 @@ export class RequestDetailComponent implements OnInit {
         this.cdr.detectChanges();
       });
   }
-  
+
   chiudiSuccesso() {
     this.mostraModale = false;
     this.modificaCompletata = false;
-    this.isEditing = false; 
-    
+    this.isEditing = false;
+
     this.dettagli = null;
     this.caricaDettagli();
+  }
+
+  // --- UTILS ---
+  formattaPeriodo(periodo: string): string {
+    if (!periodo) return '';
+    switch (periodo) {
+      case 'FIRST_SEMESTER':
+        return 'First Semester';
+      case 'SECOND_SEMESTER':
+        return 'Second Semester';
+      case 'FULL_YEAR':
+        return 'Full Year';
+      default:
+        return periodo;
+    }
   }
 }

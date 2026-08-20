@@ -23,13 +23,15 @@
         {{ dettagli.status }}
     </span>
       </div>
+      <!-- ANNO ACCADEMICO -->
       <div class="info-item">
-        <label>Anno Accademico</label>
-        <p>{{ dettagli.academic_year }}</p>
+        <label>ANNO ACCADEMICO</label>
+        <p>📅 A.A. {{ dettagli?.academic_year }}</p>
       </div>
+      <!-- PERIODO PREVISTO -->
       <div class="info-item">
-        <label>Periodo</label>
-        <p>{{ dettagli.mobility_period }}</p>
+        <label>PERIODO</label>
+        <p>⏱️ {{ formattaPeriodo(dettagli?.mobility_period) }}</p>
       </div>
     </div>
   </div>

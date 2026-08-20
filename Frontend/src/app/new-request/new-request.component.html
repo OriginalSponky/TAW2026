@@ -29,42 +29,47 @@
     <div class="card">
       <h2>1. Dettagli della Mobilità</h2>
       <div class="form-grid">
-        <div class="form-group">
-          <label>Anno Accademico</label>
-          <select [(ngModel)]="datiRichiesta.academic_year" name="academic_year" required>
-            <option value="">Seleziona...</option>
-            <option value="2025/2026">2025/2026</option>
-            <option value="2026/2027">2026/2027</option>
-          </select>
+        <!-- ANNO ACCADEMICO-->
+          <div class="form-group">
+            <label>Anno Accademico</label>
+            <select [(ngModel)]="datiRichiesta.academic_year" name="academic_year" [class.is-invalid]="showValidationErrors && !datiRichiesta.academic_year">
+              <option value="" disabled selected>Seleziona...</option>
+              @for (anno of anniAccademici; track anno) {
+                <option [value]="anno">{{ anno }}</option>
+              }
+            </select>
+          </div>
+          <!-- PERIODO PREVISTO-->
+          <div class="form-group">
+            <label>Periodo Previsto</label>
+            <select [(ngModel)]="datiRichiesta.mobility_period" name="mobility_period" [class.is-invalid]="showValidationErrors && !datiRichiesta.mobility_period">
+              <option value="" disabled selected>Seleziona...</option>
+              <option value="FIRST_SEMESTER">Primo Semestre</option>
+              <option value="SECOND_SEMESTER">Secondo Semestre</option>
+              <option value="FULL_YEAR">Intero Anno</option>
+            </select>
+          </div>
+          <!-- ISTITUZIONE OSPITANTE-->
+          <div class="form-group">
+            <label>Istituzione Ospitante</label>
+            <select [(ngModel)]="datiRichiesta.institution_id" name="institution_id" [class.is-invalid]="showValidationErrors && !datiRichiesta.institution_id">
+              <option value="" disabled selected>Seleziona dalla lista partner...</option>
+              @for (inst of istituzioni; track inst.id) {
+                <option [value]="inst.id">{{ inst.name }}</option>
+              }
+            </select>
+          </div>
+          <!-- DOCENTE REFERENTE-->
+          <div class="form-group">
+            <label>Docente Referente</label>
+            <select [(ngModel)]="datiRichiesta.lecturer_id" name="lecturer_id" [class.is-invalid]="showValidationErrors && !datiRichiesta.lecturer_id">
+              <option value="" disabled selected>Seleziona docente...</option>
+              @for (prof of professori; track prof.id) {
+                <option [value]="prof.id">Prof. {{ prof.first_name }} {{ prof.last_name }}</option>
+              }
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Periodo Previsto</label>
-          <select [(ngModel)]="datiRichiesta.mobility_period" name="mobility_period" required>
-            <option value="">Seleziona...</option>
-            <option value="FIRST_SEMESTER">Primo Semestre</option>
-            <option value="SECOND_SEMESTER">Secondo Semestre</option>
-            <option value="FULL_YEAR">Intero Anno</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Istituzione Ospitante</label>
-          <select [(ngModel)]="datiRichiesta.institution_id" name="institution_id" required>
-            <option value="">Seleziona dalla lista partner...</option>
-            @for (inst of istituzioni; track inst.id) {
-              <option [value]="inst.id">{{ inst.name }} ({{ inst.country }})</option>
-            }
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Docente Referente</label>
-          <select [(ngModel)]="datiRichiesta.lecturer_id" name="lecturer_id" required>
-            <option value="">Seleziona docente...</option>
-            @for (prof of professori; track prof.id) {
-              <option [value]="prof.id">Prof. {{ prof.first_name }} {{ prof.last_name }}</option>
-            }
-          </select>
-        </div>
-      </div>
     </div>
 
     <!-- SECTION 2: Exam Mapping -->
@@ -74,22 +79,48 @@
 
       @for (esame of esami; track $index) {
         <div class="exam-mapping-container">
+
           @if ($index > 0) {
-            <button type="button" class="remove-exam-btn" (click)="rimuoviEsame($index)">✖ Rimuovi</button>
+            <button type="button" class="remove-exam-btn" (click)="rimuoviEsame($index)">✖ Rimuovi Esame</button>
           }
+          <!-- CORSO ESTERO -->
           <div class="exam-section-title">✈️ Corso Estero (Host Institution)</div>
           <div class="form-grid">
-            <div class="form-group"><label>Codice Insegnamento</label><input type="text" [(ngModel)]="esame.foreignCode" name="fcode_{{$index}}" required></div>
-            <div class="form-group"><label>Crediti</label><input type="number" [(ngModel)]="esame.foreignCredits" name="fcred_{{$index}}" required min="1"></div>
-            <div class="form-group full-width"><label>Nome del Corso</label><input type="text" [(ngModel)]="esame.foreignName" name="fname_{{$index}}" required></div>
+            <div class="form-group">
+              <label>Codice Insegnamento</label>
+              <input type="text" [(ngModel)]="esame.foreignCode" name="fcode_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.foreignCode">
+            </div>
+
+            <div class="form-group">
+              <label>Crediti</label>
+              <input type="number" [(ngModel)]="esame.foreignCredits" name="fcred_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.foreignCredits">
+            </div>
+
+            <div class="form-group full-width">
+              <label>Nome del Corso</label>
+              <input type="text" [(ngModel)]="esame.foreignName" name="fname_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.foreignName">
+            </div>
           </div>
 
-          <div class="exam-section-title" style="margin-top: 25px;">🏛️ Corso Ca' Foscari</div>
+          <!-- CORSO CA' FOSCARI -->
+          <div class="exam-section-title">🏛️ Corso Ca' Foscari</div>
           <div class="form-grid">
-            <div class="form-group"><label>Codice Corso</label><input type="text" [(ngModel)]="esame.localCode" name="lcode_{{$index}}" required></div>
-            <div class="form-group"><label>Crediti</label><input type="number" [(ngModel)]="esame.localCredits" name="lcred_{{$index}}" required min="1"></div>
-            <div class="form-group full-width"><label>Titolo del Corso</label><input type="text" [(ngModel)]="esame.localName" name="lname_{{$index}}" required></div>
+            <div class="form-group">
+              <label>Codice Corso</label>
+              <input type="text" [(ngModel)]="esame.localCode" name="lcode_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.localCode">
+            </div>
+
+            <div class="form-group">
+              <label>Crediti</label>
+              <input type="number" [(ngModel)]="esame.localCredits" name="lcred_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.localCredits">
+            </div>
+
+            <div class="form-group full-width">
+              <label>Titolo del Corso</label>
+              <input type="text" [(ngModel)]="esame.localName" name="lname_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.localName">
+            </div>
           </div>
+
         </div>
       }
       <button type="button" class="btn btn-outline" (click)="aggiungiEsame()">+ Aggiungi un altro esame</button>
@@ -109,7 +140,7 @@
     </div>
 
     <div class="submit-container">
-      <button class="btn-primary" (click)="confermaInvio()">Invia Richiesta Overseas</button>
+      <button class="btn-primary" (click)="validaEApriModale()">Invia Richiesta Overseas</button>
     </div>
   </form>
 </main>
@@ -142,6 +173,23 @@
         </div>
       }
 
+    </div>
+  </div>
+}
+
+<!-- ERROR VALIDATION MODAL -->
+@if (showErrorModal) {
+  <div class="modal-overlay">
+    <div class="modal">
+      <h3 style="color: var(--danger); margin-top: 0; margin-bottom: 12px; font-size: 1.5rem;">⚠️ Dati Incompleti</h3>
+      <p style="color: var(--text-muted); margin-bottom: 32px; font-size: 15px; line-height: 1.6;">
+        Attenzione: Ci sono campi obbligatori vuoti! Compila i campi evidenziati in rosso prima di procedere con l'invio della richiesta.
+      </p>
+      <div class="modal-actions" style="display: flex; justify-content: center;">
+        <button type="button" class="btn-primary" style="background-color: var(--danger); border: none;" (click)="showErrorModal = false">
+          Ho capito
+        </button>
+      </div>
     </div>
   </div>
 }

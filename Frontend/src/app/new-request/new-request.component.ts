@@ -19,7 +19,7 @@ export class NewRequestComponent implements OnInit {
   constructor(private cdr: ChangeDetectorRef) {}
 
   // Form data model
-  datiRichiesta = {
+  datiRichiesta: any = {
     academic_year: '',
     mobility_period: '',
     institution_id: '',
@@ -47,6 +47,9 @@ export class NewRequestComponent implements OnInit {
   mostraModale: boolean = false;
   richiestaCompletata: boolean = false;
   isSubmitting: boolean = false;
+  showValidationErrors: boolean = false;
+  anniAccademici: string[] = ['2025/2026', '2026/2027', '2027/2028'];
+  showErrorModal: boolean = false;
 
   get iniziali(): string {
     if (!this.utente) return '';
@@ -124,19 +127,40 @@ export class NewRequestComponent implements OnInit {
   // --- Submission & Modal Logic ---
 
   validaEApriModale() {
-    // Basic validation check before opening the modal
-    if (
-      !this.datiRichiesta.academic_year ||
-      !this.datiRichiesta.mobility_period ||
-      !this.datiRichiesta.institution_id ||
-      !this.datiRichiesta.lecturer_id
-    ) {
-      this.erroreSalvataggio = '⚠️ Attenzione: Compila tutti i campi obbligatori nella Sezione 1.';
+    // Check basic details
+    const isValidBasic =
+      this.datiRichiesta.academic_year &&
+      this.datiRichiesta.mobility_period &&
+      this.datiRichiesta.institution_id &&
+      this.datiRichiesta.lecturer_id;
+
+    //Check exams
+    let areExamsValid = this.esami.length > 0;
+    for (const e of this.esami) {
+      if (
+        !e.foreignCode ||
+        !e.foreignName ||
+        !e.foreignCredits ||
+        !e.localCode ||
+        !e.localName ||
+        !e.localCredits
+      ) {
+        areExamsValid = false;
+        break;
+      }
+    }
+
+    // Validation result
+    if (!isValidBasic || !areExamsValid) {
+      this.showValidationErrors = true;
+      this.showErrorModal = true;
       return;
     }
 
-    this.erroreSalvataggio = '';
-    this.mostraModale = true; // Opens the modal overlay
+    // Valid, send request
+    this.showValidationErrors = false;
+    this.showErrorModal = false;
+    this.mostraModale = true;
   }
 
   confermaInvio() {

@@ -161,9 +161,13 @@ input[type="file"] {
   background-color: var(--bg-color);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 24px;
-  margin-bottom: 24px;
+  padding: 32px 24px 24px 24px;
+  margin-bottom: 32px;
   position: relative;
+}
+
+.exam-mapping-container .exam-section-title:first-of-type {
+  margin-top: 0;
 }
 
 .exam-mapping-header {
@@ -179,18 +183,39 @@ input[type="file"] {
   color: var(--text-main);
 }
 
-.remove-exam-btn {
-  background: none;
-  border: none;
-  color: var(--danger);
+.exam-section-title {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 32px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.remove-exam-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background-color: var(--danger-light);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .remove-exam-btn:hover {
-  text-decoration: underline;
-  color: var(--danger-hover);
+  background-color: var(--danger);
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .exam-split {
@@ -322,4 +347,14 @@ input[type="file"] {
   .form-grid { grid-template-columns: 1fr; }
   .exam-split { grid-template-columns: 1fr; gap: 24px; }
   .submit-container { margin-top: 24px; }
+}
+
+/* VALIDATION ERRORS*/
+.is-invalid {
+  border-color: var(--danger) !important;
+  background-color: var(--danger-light) !important;
+}
+
+.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
 }
