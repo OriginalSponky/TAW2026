@@ -2,12 +2,35 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
+// UPLOAD CONFIG
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + '-' + file.originalname);
+    }
+});
+
+const upload = multer({ storage: storage });
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+//DB CONFIG
 const dbPool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: 'express_user',
@@ -148,44 +171,44 @@ app.get('/api/lecturers', async (req, res) => {
 });
 
 // Save Application Request
-app.post('/api/applications', async (req, res) => {
+app.post('/api/applications', upload.single('learning_agreement_file'), async (req, res) => {
     const { student_email, institution_id, lecturer_id, academic_year, mobility_period, exams } = req.body;
+    const file = req.file;
+
+    let parsedExams = [];
+    try { parsedExams = JSON.parse(exams); } catch (e) { }
 
     const connection = await dbPool.getConnection();
     try {
-        // Transaction Start
         await connection.beginTransaction();
 
-        // Student ID
         const [users] = await connection.query('SELECT id FROM Users WHERE email = ?', [student_email]);
         if (users.length === 0) throw new Error("Studente non trovato nel database.");
         const student_id = users[0].id;
 
-        // Main Application Request
         const [appResult] = await connection.query(
-            `INSERT INTO Applications 
-            (student_id, institution_id, lecturer_id, academic_year, mobility_period, status) 
-            VALUES (?, ?, ?, ?, ?, 'AWAITING_FOR_APPROVAL')`,
+            `INSERT INTO Applications (student_id, institution_id, lecturer_id, academic_year, mobility_period, status)
+             VALUES (?, ?, ?, ?, ?, 'AWAITING_FOR_APPROVAL')`,
             [student_id, institution_id, lecturer_id, academic_year, mobility_period]
         );
         const applicationId = appResult.insertId;
 
-        // Mapped exams connected to Application Id
-        for (const exam of exams) {
+        for (const exam of parsedExams) {
             await connection.query(
-                `INSERT INTO ExamsMapping 
-                (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
                 [applicationId, exam.foreignCode, exam.foreignName, exam.foreignCredits, exam.localCode, exam.localName, exam.localCredits]
             );
         }
 
-        // Learning Agreement attachment
-        await connection.query(
-            `INSERT INTO Documents (application_id, document_type, file_name, file_path, status) 
-             VALUES (?, 'LEARNING_AGREEMENT', 'documento_simulato.pdf', '/uploads/simulato.pdf', 'PENDING')`,
-            [applicationId]
-        );
+        if (file) {
+            const filePathDB = '/uploads/' + file.filename;
+            await connection.query(
+                `INSERT INTO Documents (application_id, document_type, file_name, file_path, status)
+                 VALUES (?, 'LEARNING_AGREEMENT', ?, ?, 'PENDING')`,
+                [applicationId, file.originalname, filePathDB]
+            );
+        }
 
         await connection.commit();
         res.json({ message: "Richiesta creata con successo!", applicationId });
@@ -257,7 +280,7 @@ app.get('/api/applications/:id', async (req, res) => {
         const [appRows] = await dbPool.query(`
             SELECT a.*, i.name AS institution_name, i.country, i.city
             FROM Applications a
-            JOIN Institutions i ON a.institution_id = i.id
+                     JOIN Institutions i ON a.institution_id = i.id
             WHERE a.id = ?
         `, [appId]);
 
@@ -267,12 +290,17 @@ app.get('/api/applications/:id', async (req, res) => {
 
         const applicationData = appRows[0];
 
-        // All exams related
         const [examRows] = await dbPool.query(`
             SELECT * FROM ExamsMapping WHERE application_id = ?
         `, [appId]);
-
         applicationData.exams = examRows;
+
+        const [docRows] = await dbPool.query(`
+            SELECT id, document_type, file_name, file_path, status, upload_date 
+            FROM Documents 
+            WHERE application_id = ?
+        `, [appId]);
+        applicationData.documents = docRows;
 
         res.json(applicationData);
     } catch (error) {
@@ -294,15 +322,18 @@ app.delete('/api/applications/:id', async (req, res) => {
 });
 
 // Update an existing application and its exams
-app.put('/api/applications/:id', async (req, res) => {
+app.put('/api/applications/:id', upload.single('learning_agreement_file'), async (req, res) => {
     const appId = req.params.id;
     const { institution_id, lecturer_id, academic_year, mobility_period, exams } = req.body;
+    const file = req.file;
+
+    let parsedExams = [];
+    try { parsedExams = JSON.parse(exams); } catch (e) { }
 
     const connection = await dbPool.getConnection();
     try {
         await connection.beginTransaction();
 
-        // Update the main application details
         await connection.query(
             `UPDATE Applications 
              SET institution_id = ?, lecturer_id = ?, academic_year = ?, mobility_period = ? 
@@ -310,16 +341,24 @@ app.put('/api/applications/:id', async (req, res) => {
             [institution_id, lecturer_id, academic_year, mobility_period, appId]
         );
 
-        // Clear the old exams
         await connection.query(`DELETE FROM ExamsMapping WHERE application_id = ?`, [appId]);
 
-        // Insert the updated exams
-        for (const exam of exams) {
+        for (const exam of parsedExams) {
             await connection.query(
-                `INSERT INTO ExamsMapping 
-                (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits) 
+                `INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits) 
                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
                 [appId, exam.foreignCode, exam.foreignName, exam.foreignCredits, exam.localCode, exam.localName, exam.localCredits]
+            );
+        }
+
+        // Se in fase di modifica è stato caricato un nuovo file, lo aggiorniamo
+        if (file) {
+            const filePathDB = '/uploads/' + file.filename;
+            await connection.query(`DELETE FROM Documents WHERE application_id = ? AND document_type = 'LEARNING_AGREEMENT'`, [appId]);
+            await connection.query(
+                `INSERT INTO Documents (application_id, document_type, file_name, file_path, status)
+                 VALUES (?, 'LEARNING_AGREEMENT', ?, ?, 'PENDING')`,
+                [appId, file.originalname, filePathDB]
             );
         }
 

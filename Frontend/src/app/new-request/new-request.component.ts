@@ -28,7 +28,6 @@ export class NewRequestComponent implements OnInit {
 
   istituzioni: any[] = [];
   professori: any[] = [];
-  erroreSalvataggio: string = '';
 
   // Dynamic exams array
   esami = [
@@ -50,6 +49,11 @@ export class NewRequestComponent implements OnInit {
   showValidationErrors: boolean = false;
   anniAccademici: string[] = ['2025/2026', '2026/2027', '2027/2028'];
   showErrorModal: boolean = false;
+  isDragging: boolean = false;
+
+  // Variabile per il file PDF
+  fileSelezionato: File | null = null;
+  erroreSalvataggio: string = '';
 
   get iniziali(): string {
     if (!this.utente) return '';
@@ -57,15 +61,14 @@ export class NewRequestComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Fetch dropdown data
     fetch('http://localhost:3000/api/institutions')
       .then((res) => res.json())
       .then((data) => (this.istituzioni = data));
+
     fetch('http://localhost:3000/api/lecturers')
       .then((res) => res.json())
       .then((data) => (this.professori = data));
 
-    // If we are in Edit Mode, fetch the existing application data!
     if (this.editRequestId) {
       fetch(`http://localhost:3000/api/applications/${this.editRequestId}`)
         .then((res) => res.json())
@@ -76,8 +79,6 @@ export class NewRequestComponent implements OnInit {
             institution_id: data.institution_id,
             lecturer_id: data.lecturer_id,
           };
-
-          // Map database columns back to frontend variables
           this.esami = data.exams.map((e: any) => ({
             foreignCode: e.foreign_course_code,
             foreignCredits: e.foreign_course_credits,
@@ -89,8 +90,6 @@ export class NewRequestComponent implements OnInit {
         });
     }
   }
-
-  // --- Header Navigation & Profile Actions ---
 
   tornaIndietro(event: Event) {
     event.preventDefault();
@@ -104,10 +103,8 @@ export class NewRequestComponent implements OnInit {
 
   effettuaLogout(event: Event) {
     event.preventDefault();
-    this.onLogout.emit(); // Bubble up the logout request to the parent
+    this.onLogout.emit();
   }
-
-  // --- Dynamic Exam Form ---
 
   aggiungiEsame() {
     this.esami.push({
@@ -124,19 +121,22 @@ export class NewRequestComponent implements OnInit {
     this.esami.splice(indice, 1);
   }
 
-  // --- Submission & Modal Logic ---
-
   validaEApriModale() {
-    // Check basic details
-    const isValidBasic =
+    console.log('--- 2. INIZIO VALIDAZIONE (validaEApriModale) ---');
+    console.log('Dati base inseriti:', this.datiRichiesta);
+    console.log('Esami inseriti:', this.esami);
+
+    const isValidBasic = !!(
       this.datiRichiesta.academic_year &&
       this.datiRichiesta.mobility_period &&
       this.datiRichiesta.institution_id &&
-      this.datiRichiesta.lecturer_id;
+      this.datiRichiesta.lecturer_id
+    );
+    console.log('Controllo dati base (tutti pieni?):', isValidBasic);
 
-    //Check exams
     let areExamsValid = this.esami.length > 0;
-    for (const e of this.esami) {
+    for (let i = 0; i < this.esami.length; i++) {
+      const e = this.esami[i];
       if (
         !e.foreignCode ||
         !e.foreignName ||
@@ -146,57 +146,76 @@ export class NewRequestComponent implements OnInit {
         !e.localCredits
       ) {
         areExamsValid = false;
+        console.log(`❌ ERRORE: L'esame n.${i + 1} ha dei campi vuoti!`, e);
         break;
       }
     }
+    console.log('Controllo esami (tutti pieni?):', areExamsValid);
 
-    // Validation result
     if (!isValidBasic || !areExamsValid) {
+      console.warn('⚠️ Validazione fallita: apro il modale rosso di errore.');
       this.showValidationErrors = true;
       this.showErrorModal = true;
       return;
     }
 
-    // Valid, send request
+    console.log('✅ Validazione superata: apro il modale di conferma finale.');
     this.showValidationErrors = false;
     this.showErrorModal = false;
     this.mostraModale = true;
   }
 
   confermaInvio() {
-    //Prevent double clicks
+    console.log('--- 3. INIZIO INVIO AL SERVER (confermaInvio) ---');
     if (this.isSubmitting) return;
-    this.isSubmitting = true;
 
-    const payload = {
-      student_email: this.utente.email,
-      institution_id: this.datiRichiesta.institution_id,
-      lecturer_id: this.datiRichiesta.lecturer_id,
-      academic_year: this.datiRichiesta.academic_year,
-      mobility_period: this.datiRichiesta.mobility_period,
-      exams: this.esami,
-    };
+    if (!this.fileSelezionato && !this.editRequestId) {
+      console.error(
+        "❌ ERRORE BLOCCANTE: Nessun file PDF salvato in memoria al momento dell'invio!",
+      );
+      alert('Devi caricare il Learning Agreement prima di inviare!');
+      this.mostraModale = false;
+      return;
+    }
+
+    this.isSubmitting = true;
+    console.log('Costruzione del pacchetto dati (FormData)...');
+
+    const formData = new FormData();
+    formData.append('student_email', this.utente?.email || 'Nessuna email');
+    formData.append('institution_id', this.datiRichiesta.institution_id);
+    formData.append('lecturer_id', this.datiRichiesta.lecturer_id);
+    formData.append('academic_year', this.datiRichiesta.academic_year);
+    formData.append('mobility_period', this.datiRichiesta.mobility_period);
+    formData.append('exams', JSON.stringify(this.esami));
+
+    if (this.fileSelezionato) {
+      formData.append('learning_agreement_file', this.fileSelezionato);
+      console.log('Allegato al pacchetto il file:', this.fileSelezionato.name);
+    }
 
     const url = this.editRequestId
       ? `http://localhost:3000/api/applications/${this.editRequestId}`
       : 'http://localhost:3000/api/applications';
-
     const method = this.editRequestId ? 'PUT' : 'POST';
+    console.log(`🚀 Lancio richiesta HTTP -> Metodo: ${method} | Indirizzo: ${url}`);
 
     fetch(url, {
       method: method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: formData,
     })
       .then(async (res) => {
+        console.log('📩 Risposta arrivata dal server! Codice Status:', res.status);
         if (!res.ok) throw new Error(await res.text());
         return res.json();
       })
       .then((data) => {
+        console.log('✅ SUCCESSO! Il server ha risposto:', data);
         this.richiestaCompletata = true;
         this.cdr.detectChanges();
       })
       .catch((error) => {
+        console.error('❌ ERRORE FATALE DI RETE O DAL SERVER:', error.message);
         this.mostraModale = false;
         this.erroreSalvataggio = 'Errore di connessione: ' + error.message;
         this.isSubmitting = false;
@@ -214,4 +233,68 @@ export class NewRequestComponent implements OnInit {
     this.isSubmitting = false;
     this.onSuccess.emit();
   }
+
+  // --- FUNZIONI PER I DOCUMENTI ---
+
+  onFileSelected(event: any) {
+    console.log('--- 1. EVENTO onFileSelected SCATTATO ---');
+    console.log("File passati dall'input:", event.target.files);
+
+    const file: File = event.target.files[0];
+    if (file) {
+      console.log(
+        '📄 File rilevato -> Nome:',
+        file.name,
+        '| Tipo:',
+        file.type,
+        '| Peso:',
+        file.size,
+        'bytes',
+      );
+      if (file.type === 'application/pdf') {
+        this.fileSelezionato = file;
+        console.log('✅ File ACCETTATO e salvato in memoria.');
+      } else {
+        console.error('❌ ERRORE: Il file non è un PDF!');
+        alert('Per favore, seleziona solo file PDF.');
+        this.fileSelezionato = null;
+      }
+    } else {
+      console.warn('⚠️ Nessun file selezionato (finestra chiusa senza scegliere nulla?).');
+    }
+  }
+  scaricaTemplate() {
+    window.open('/templates/LEARNING_AGREEMENT_TEMPLATE.pdf', '_blank');
+  }
+
+  // --- FUNZIONI DRAG & DROP ---
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file.type === 'application/pdf') {
+        this.fileSelezionato = file;
+      } else {
+        alert('Per favore, trascina solo file PDF.');
+        this.fileSelezionato = null;
+      }
+    }
+  }
 }
+

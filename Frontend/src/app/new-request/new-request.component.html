@@ -126,16 +126,47 @@
       <button type="button" class="btn btn-outline" (click)="aggiungiEsame()">+ Aggiungi un altro esame</button>
     </div>
 
-    <!-- SECTION 3 -->
+    <!-- SECTION 3: Upload Documenti -->
     <div class="card">
       <h2>3. Upload Documenti</h2>
       <div class="form-group full-width">
-        <div class="upload-header">
-          <label>Learning Agreement (PDF)</label>
-          <a href="LEARNING_AGREEMENT.png" download class="download-link">⬇️ Scarica il template</a>
+
+        <!-- DOWNLOAD TEMPLATE -->
+        <div class="template-download-section">
+          <div class="template-info">
+            <span class="icon" style="font-size: 28px;">📄</span>
+            <div style="display: flex; flex-direction: column;">
+              <strong style="color: var(--text-main); font-size: 15px;">Learning Agreement Template</strong>
+              <span style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Scarica, compila e firma prima di procedere.</span>
+            </div>
+          </div>
+          <button type="button" class="btn-download" (click)="scaricaTemplate()">
+            <span>⬇️</span> Scarica
+          </button>
         </div>
-        <!-- Prevent click from bubbling up and interrupting the file dialog -->
-        <input type="file" accept=".pdf" (click)="$event.stopPropagation()">
+
+        <!-- PURE DRAG & DROP ZONE -->
+        <div class="drag-drop-zone"
+             [class.active-glow]="isDragging"
+             (dragover)="onDragOver($event)"
+             (dragleave)="onDragLeave($event)"
+             (drop)="onDrop($event)">
+
+          <div class="upload-content">
+            <div class="upload-circle">
+              <span class="icon" style="font-size: 32px;">📥</span>
+            </div>
+
+            @if (!fileSelezionato) {
+              <h4 style="margin: 16px 0 8px 0; color: var(--primary); font-size: 18px;">Trascina qui il tuo PDF</h4>
+              <p style="margin: 0; color: var(--text-muted); font-size: 14px;">Rilascia il documento all'interno dell'area tratteggiata</p>
+            } @else {
+              <h4 style="margin: 16px 0 8px 0; color: var(--success); font-size: 18px;">✅ Acquisito!</h4>
+              <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 15px;">{{ fileSelezionato.name }}</p>
+            }
+          </div>
+        </div>
+
       </div>
     </div>
 
