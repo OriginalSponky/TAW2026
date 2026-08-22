@@ -84,6 +84,8 @@ export class MyRequestsComponent implements OnInit {
         return 'status-pre-departure';
       case 'MOBILITY_IN_PROGRESS':
         return 'status-in-progress';
+      case 'AWAITING_MODIFICATION_APPROVAL':
+        return 'status-awaiting-modification';
       case 'WAITING_FOR_EXAM_SCORE_APPROVAL':
         return 'status-waiting-score';
       case 'CLOSED':
@@ -105,8 +107,10 @@ export class MyRequestsComponent implements OnInit {
         return 'Pre-departure completed';
       case 'MOBILITY_IN_PROGRESS':
         return 'Mobility in progress';
+      case 'AWAITING_MODIFICATION_APPROVAL':
+        return 'Awaiting modification approval';
       case 'WAITING_FOR_EXAM_SCORE_APPROVAL':
-        return 'Waiting for exam score approval';
+        return 'Awaiting exam score approval';
       case 'CLOSED':
         return 'Closed';
       case 'CANCELED':

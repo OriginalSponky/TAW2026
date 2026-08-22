@@ -110,3 +110,44 @@ input[type="file"]::file-selector-button:hover {
   background-color: var(--primary);
   color: white;
 }
+
+/* BADGE STATI GLOBALI (Pratiche Erasmus)*/
+.status-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: fit-content;
+  line-height: 1.4;
+}
+
+/* 1. Pratica creata ma non inviata */
+.status-created { background-color: var(--bg-color); color: var(--text-muted); border: 1px solid var(--border); }
+
+/* 2. In attesa di approvazione iniziale */
+.status-awaiting-la { background-color: var(--warning-light); color: var(--warning); border: 1px solid #fde68a; }
+
+/* 3. Pre-partenza (LA approvato) */
+.status-pre-departure { background-color: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+
+/* 4. Mobilità in corso */
+.status-in-progress { background-color: var(--primary-light); color: var(--primary); border: 1px solid #bfdbfe; }
+
+/* 5. In attesa di revisione/modifica LA in corso d'opera */
+.status-awaiting-modification { background-color: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+
+/* 6. In attesa di approvazione voti finali */
+.status-waiting-score { background-color: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+
+/* 7. Pratica conclusa con successo */
+.status-closed { background-color: #dcfce7; color: var(--success); border: 1px solid #bbf7d0; }
+
+/* 8. Pratica rifiutata o annullata */
+.status-canceled { background-color: var(--danger-light); color: var(--danger); border: 1px solid #fecaca; }
+
+/* Badge accessori generici per file (PENDING/REJECTED) */
+.badge-warning { background-color: var(--warning-light); color: var(--warning); border: 1px solid #fde68a; }
+.badge-danger { background-color: var(--danger-light); color: var(--danger); border: 1px solid #fecaca; }

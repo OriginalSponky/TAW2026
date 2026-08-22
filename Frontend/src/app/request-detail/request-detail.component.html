@@ -10,18 +10,18 @@
       </div>
       <div class="info-item">
         <label>Stato Pratica</label>
-        <!-- Dynamic badge styling based on status -->
         <span class="status-badge" [ngClass]="{
-        'status-created': dettagli.status === 'CREATED',
-        'status-awaiting-la': dettagli.status === 'AWAITING_FOR_APPROVAL',
-        'status-pre-departure': dettagli.status === 'PRE_DEPARTURE_COMPLETED',
-        'status-in-progress': dettagli.status === 'MOBILITY_IN_PROGRESS',
-        'status-waiting-score': dettagli.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
-        'status-closed': dettagli.status === 'CLOSED',
-        'status-canceled': dettagli.status === 'CANCELED'
-    }">
-        {{ dettagli.status }}
-    </span>
+            'status-created': dettagli.status === 'CREATED',
+            'status-awaiting-la': dettagli.status === 'AWAITING_FOR_APPROVAL',
+            'status-pre-departure': dettagli.status === 'PRE_DEPARTURE_COMPLETED',
+            'status-in-progress': dettagli.status === 'MOBILITY_IN_PROGRESS',
+            'status-awaiting-modification': dettagli.status === 'AWAITING_MODIFICATION_APPROVAL',
+            'status-waiting-score': dettagli.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+            'status-closed': dettagli.status === 'CLOSED',
+            'status-canceled': dettagli.status === 'CANCELED'
+        }">
+          {{ formattaStato(dettagli.status) }}
+        </span>
       </div>
       <!-- ANNO ACCADEMICO -->
       <div class="info-item">

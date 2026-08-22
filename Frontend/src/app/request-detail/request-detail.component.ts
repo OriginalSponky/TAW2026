@@ -48,13 +48,15 @@ export class RequestDetailComponent implements OnInit {
   scaricaDocumento(event: Event) {
     event.preventDefault();
 
-    const doc = this.dettagli?.documents?.find((d: any) => d.document_type === 'LEARNING_AGREEMENT');
+    const doc = this.dettagli?.documents?.find(
+      (d: any) => d.document_type === 'LEARNING_AGREEMENT',
+    );
 
     if (doc && doc.file_path) {
       const url = 'http://localhost:3000' + doc.file_path;
 
       fetch(url, { method: 'HEAD' })
-        .then(response => {
+        .then((response) => {
           if (response.ok) {
             window.open(url, '_blank');
           } else {
@@ -63,12 +65,11 @@ export class RequestDetailComponent implements OnInit {
             this.cdr.detectChanges();
           }
         })
-        .catch(error => {
+        .catch((error) => {
           this.mostraErroreFile = true;
           this.mostraModale = true;
           this.cdr.detectChanges();
         });
-
     } else {
       this.mostraErroreFile = true;
       this.mostraModale = true;
@@ -161,5 +162,9 @@ export class RequestDetailComponent implements OnInit {
       default:
         return periodo;
     }
+  }
+  formattaStato(status: string): string {
+    if (!status) return '';
+    return status.replace(/_/g, ' ');
   }
 }

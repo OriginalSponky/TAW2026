@@ -185,25 +185,25 @@
             </div>
           }
 
+          <!-- PANNELLO DI CORREZIONE (Puntato dal bottone Rifiuto) -->
           @if (activePanel === 'correction') {
-            <!-- PRACTICE REJECTED MODIFICATION PANEL -->
-            <div class="collapsible-panel" style="border: 2px solid var(--danger);">
-              <h3 style="color: var(--danger); margin-top: 0;">Correggi i Dati Rifiutati</h3>
+            <div class="collapsible-panel" style="border: 2px solid #ef4444; border-radius: 8px; padding: 24px;">
+              <h3 style="color: #ef4444; margin-top: 0; font-size: 1.25rem;">Correggi i Dati Rifiutati</h3>
               <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">Modifica gli esami o i dati richiesti e carica il nuovo documento corretto.</p>
 
               @for (esame of nuoviEsamiLA; track $index) {
-                <div class="exam-row" style="border-color: var(--danger-light);">
-                  <button class="remove-btn" (click)="rimuoviEsameLA($index)">✖ Rimuovi</button>
-                  <h4 style="color: var(--danger); margin-top: 0;">Esame #{{ $index + 1 }}</h4>
+                <div class="exam-row" style="border: 1px solid var(--border); padding: 20px; border-radius: 6px; position: relative;">
+                  <button class="remove-btn" (click)="rimuoviEsameLA($index)">✕ Rimuovi</button>
+                  <h4 style="color: #ef4444; margin-top: 0; margin-bottom: 16px; font-size: 1.1rem;">Esame #{{ $index + 1 }}</h4>
 
-                  <label class="section-label">✈️ Corso Estero</label>
+                  <label class="section-label" style="color: var(--primary); font-weight: 600; font-size: 11px;">✈️ CORSO ESTERO</label>
                   <div class="exam-details-grid">
                     <div class="form-group"><label>Codice</label><input type="text" [(ngModel)]="esame.foreignCode"></div>
                     <div class="form-group" style="grid-column: span 2;"><label>Nome</label><input type="text" [(ngModel)]="esame.foreignName"></div>
                     <div class="form-group"><label>CFU</label><input type="number" [(ngModel)]="esame.foreignCredits"></div>
                   </div>
 
-                  <label class="section-label" style="margin-top: 16px;">🏛️ Equivalente Ca' Foscari</label>
+                  <label class="section-label" style="color: var(--text-muted); font-weight: 600; font-size: 11px; margin-top: 20px;">🏛️ EQUIVALENTE CA' FOSCARI</label>
                   <div class="exam-details-grid">
                     <div class="form-group"><label>Codice</label><input type="text" [(ngModel)]="esame.localCode"></div>
                     <div class="form-group" style="grid-column: span 2;"><label>Nome</label><input type="text" [(ngModel)]="esame.localName"></div>
@@ -212,13 +212,14 @@
                 </div>
               }
 
-              <button class="btn-outline" style="margin-bottom: 24px;" (click)="aggiungiEsameLA()">+ Aggiungi Insegnamento</button>
+              <button class="btn-outline" style="color: var(--primary); border-color: var(--primary); margin-bottom: 24px;" (click)="aggiungiEsameLA()">+ Aggiungi Insegnamento</button>
 
-              <div class="form-group full-width">
-                <label>Carica il Documento Corretto (PDF):</label>
+              <div class="form-group full-width" style="margin-bottom: 32px;">
+                <label style="color: var(--text-main); font-weight: 500; font-size: 14px;">Carica il Documento Corretto (PDF):</label>
                 <input type="file" accept=".pdf" (change)="onFileLASelected($event)">
               </div>
-              <div class="actions right">
+
+              <div class="actions right" style="border-top: 1px solid var(--border); padding-top: 20px;">
                 <button class="btn-outline" (click)="togglePanel('correction')">Annulla</button>
                 <button class="btn-primary" (click)="apriModaleConferma('resubmit_modification')">Invia Nuova Revisione</button>
               </div>
@@ -228,45 +229,68 @@
       </div>
     }
 
-    <!-- VISTA 2: STATO MODIFICHE E FEEDBACK -->
+    <!-- VISTA 2: STATO MODIFICHE E FEEDBACK PUNTATO SUI DOCUMENTI -->
     @if (activeView === 'modifications') {
-      @if (richiestaAttiva.la_rejection_reason) {
-        <!-- REJECTED -->
-        <div class="card card-rejected">
-          <div class="card-header-flex">
-            <div>
-              <h2>Revisione Pratica Necessaria</h2>
-              <p class="desc">La tua precedente proposta non è stata accettata.</p>
-            </div>
-            <div class="status-badge badge-danger">RIFIUTATA</div>
+      <div class="card">
+        <h2 style="margin-bottom: 24px; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">📄</span> Cronologia dei File Inviati
+        </h2>
+
+        @if (richiestaAttiva.documents && richiestaAttiva.documents.length > 0) {
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            @for (doc of richiestaAttiva.documents; track doc.id) {
+
+              <!-- Contenitore Singolo Documento -->
+              <div style="border: 1px solid var(--border); border-radius: 8px; background: var(--surface); overflow: hidden;">
+
+                <!-- Intestazione File -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px;">
+                  <div>
+                    <strong style="font-size: 15px; color: var(--text-main); display: block; margin-bottom: 4px;">
+                      {{ doc.document_type === 'LEARNING_AGREEMENT' ? 'Learning Agreement' : 'Transcript of Records' }}
+                    </strong>
+                    <span style="font-size: 13px; color: var(--text-muted);">
+                      {{ doc.file_name }} • Caricato il: {{ doc.upload_date | date:'dd/MM/yyyy HH:mm' }}
+                    </span>
+                  </div>
+
+                  <!-- Badge dinamico per il documento (PENDING, APPROVED, REJECTED) -->
+                  <div class="status-badge" style="margin-top: 0; padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 700;" [ngClass]="{
+                    'badge-warning': doc.status === 'PENDING',
+                    'badge-danger': doc.status === 'REJECTED',
+                    'status-closed': doc.status === 'APPROVED'
+                  }">
+                    {{ doc.status === 'PENDING' ? 'IN ATTESA' : (doc.status === 'APPROVED' ? 'APPROVATO' : 'RIFIUTATO') }}
+                  </div>
+                </div>
+
+                <!-- Dettagli se il file è stato RIFIUTATO -->
+                @if (doc.status === 'REJECTED') {
+                  <div style="padding: 16px; background-color: #fff1f2; border-top: 1px solid #fee2e2;">
+                    <strong style="color: #ef4444; font-size: 14px; display: block; margin-bottom: 8px;">Motivazione del Rifiuto:</strong>
+                    <p style="margin: 0 0 16px 0; font-size: 14px; color: #ef4444;">
+                      "{{ doc.rejection_reason }}"
+                    </p>
+
+                    <!-- Nascondo il pulsante se c'è già una proposta in attesa di essere valutata dal prof! -->
+                    @if (!hasPendingModifications) {
+                      <button style="background: transparent; border: 1px solid var(--primary); color: var(--primary); border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;" (click)="apriCorrezione()">
+                        Modifica e Reinvia
+                      </button>
+                    } @else {
+                      <p style="margin:0; font-size: 13px; color: var(--text-muted);"><em>Hai già inviato una nuova revisione, attendi l'esito.</em></p>
+                    }
+                  </div>
+                }
+              </div>
+            }
           </div>
-          <div class="reason-box">
-            <strong style="color: var(--danger);">Motivazione del Rifiuto (Docente Referente/Ufficio):</strong><br>
-            "{{ richiestaAttiva.la_rejection_reason }}"
+        } @else {
+          <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+            <p>Nessun documento caricato al momento.</p>
           </div>
-          <div class="actions">
-            <button class="btn-outline" style="color: var(--primary); border-color: var(--primary);" (click)="apriCorrezione()">Vai alla Mobilità per Correggere</button>
-          </div>
-        </div>
-      }
-      @else if (richiestaAttiva.status === 'AWAITING_MODIFICATION_APPROVAL' || richiestaAttiva.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL') {
-        <!-- WAITING -->
-        <div class="card">
-          <div class="card-header-flex">
-            <div>
-              <h2>Pratica in Valutazione</h2>
-              <p class="desc">I tuoi documenti sono stati inviati all'ufficio competente.</p>
-            </div>
-            <div class="status-badge badge-warning">IN ATTESA</div>
-          </div>
-          <p style="font-size: 14px; color: var(--text-main);">Il sistema ha registrato le tue modifiche. Riceverai una notifica non appena il docente prenderà una decisione in merito.</p>
-        </div>
-      }
-      @else {
-        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
-          <p>Nessuna notifica o modifica in sospeso al momento.</p>
-        </div>
-      }
+        }
+      </div>
     }
 
   } @else {
@@ -298,5 +322,14 @@
         </button>
       </div>
     </div>
+  </div>
+}
+
+<!-- ALERT POPUP DI SISTEMA (Sostituisce alert() nativo) -->
+@if (mostraAlert) {
+  <div class="custom-alert" [ngClass]="alertType === 'success' ? 'alert-success' : 'alert-error'">
+    <div class="alert-icon">{{ alertType === 'success' ? '✅' : '❌' }}</div>
+    <div class="alert-message">{{ alertMessage }}</div>
+    <button class="close-alert" (click)="chiudiFeedback()">✖</button>
   </div>
 }

@@ -10,41 +10,49 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./active-mobility.component.css'],
 })
 export class ActiveMobilityComponent implements OnInit {
-  // --- HEADER & USER ---
   @Input() utente: any;
   @Input() pratica: any;
   @Output() onBack = new EventEmitter<void>();
   @Output() onLogout = new EventEmitter<void>();
+
   menuAperto: boolean = false;
+  activeView: 'activeMobility' | 'modifications' = 'activeMobility';
+  activePanel: string | null = null;
+  richiestaAttiva: any = null;
+
+  nuoviEsamiLA: any[] = [];
+  esamiToR: any[] = [];
+  mostraModale: boolean = false;
+  modalConfig: any = { icon: '', title: '', text: '', action: '', btnClass: '', btnText: '' };
+
+  // NUOVA GESTIONE POPUP DI SUCCESSO/ERRORE INTERNO
+  mostraAlert: boolean = false;
+  alertType: 'success' | 'error' = 'success';
+  alertMessage: string = '';
+
+  motivoRinuncia: string = '';
+  motivoVariazioneLA: string = '';
+  isSubmitting: boolean = false;
+  fileLA: File | null = null;
+  fileToR: File | null = null;
+
+  constructor(private cdr: ChangeDetectorRef) {}
 
   get iniziali(): string {
-    if (!this.utente) return 'ST'; // ST di default per 'Student Test'
+    if (!this.utente) return 'ST';
     return (this.utente.first_name.charAt(0) + this.utente.last_name.charAt(0)).toUpperCase();
   }
 
-  toggleMenu(event: Event) {
-    event.stopPropagation();
-    this.menuAperto = !this.menuAperto;
-  }
-
-  effettuaLogout(event: Event) {
-    event.preventDefault();
-    this.onLogout.emit();
-  }
-
-  activeView: 'activeMobility' | 'modifications' = 'activeMobility';
-  activePanel: string | null = null;
-
-  richiestaAttiva: any = null;
-
-  // --- CONTROLLO DINAMICO NOTIFICHE ---
   get hasNotifiche(): boolean {
-    if (!this.richiestaAttiva) return false;
-    return (
-      !!this.richiestaAttiva.la_rejection_reason ||
-      this.richiestaAttiva.status === 'AWAITING_MODIFICATION_APPROVAL' ||
-      this.richiestaAttiva.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' ||
-      this.richiestaAttiva.status === 'AWAITING_FOR_APPROVAL'
+    if (!this.richiestaAttiva || !this.richiestaAttiva.documents) return false;
+    return this.richiestaAttiva.documents.some((doc: any) => doc.status === 'REJECTED');
+  }
+
+  // NUOVA PROPRIETÀ: Controlla se lo studente ha già mandato un LA che sta aspettando il prof
+  get hasPendingModifications(): boolean {
+    if (!this.richiestaAttiva || !this.richiestaAttiva.documents) return false;
+    return this.richiestaAttiva.documents.some(
+      (doc: any) => doc.document_type === 'LEARNING_AGREEMENT' && doc.status === 'PENDING',
     );
   }
 
@@ -52,22 +60,6 @@ export class ActiveMobilityComponent implements OnInit {
     if (!status) return '';
     return status.replace(/_/g, ' ');
   }
-
-  nuoviEsamiLA: any[] = [];
-  esamiToR: any[] = [];
-
-  mostraModale: boolean = false;
-  modalConfig: any = { icon: '', title: '', text: '', action: '', btnClass: '', btnText: '' };
-
-  motivoRinuncia: string = '';
-  motivoVariazioneLA: string = '';
-  isSubmitting: boolean = false;
-
-  // --- File Variables ---
-  fileLA: File | null = null;
-  fileToR: File | null = null;
-
-  constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     if (this.pratica && this.pratica.id) {
@@ -82,6 +74,11 @@ export class ActiveMobilityComponent implements OnInit {
         return res.json();
       })
       .then((data) => {
+        if (data.documents && data.documents.length > 0) {
+          data.documents.sort((a: any, b: any) => {
+            return new Date(b.upload_date).getTime() - new Date(a.upload_date).getTime();
+          });
+        }
         this.richiestaAttiva = data;
         this.cdr.detectChanges();
       })
@@ -94,12 +91,9 @@ export class ActiveMobilityComponent implements OnInit {
 
   togglePanel(panel: string) {
     this.activePanel = this.activePanel === panel ? null : panel;
-
     if (panel === 'la' && this.nuoviEsamiLA.length === 0) this.aggiungiEsameLA();
     if (panel === 'tor' && this.esamiToR.length === 0) this.aggiungiEsameToR();
   }
-
-  // --- DYNAMIC EXAM LINES ---
 
   aggiungiEsameLA() {
     this.nuoviEsamiLA.push({
@@ -111,11 +105,9 @@ export class ActiveMobilityComponent implements OnInit {
       localCredits: null,
     });
   }
-
   rimuoviEsameLA(indice: number) {
     this.nuoviEsamiLA.splice(indice, 1);
   }
-
   aggiungiEsameToR() {
     this.esamiToR.push({
       foreignCode: '',
@@ -128,21 +120,34 @@ export class ActiveMobilityComponent implements OnInit {
       date: '',
     });
   }
-
   rimuoviEsameToR(indice: number) {
     this.esamiToR.splice(indice, 1);
   }
 
-  // --- MODALS ---
+  apriCorrezione() {
+    this.cambiaVista('activeMobility');
+    this.activePanel = 'correction';
+    if (this.richiestaAttiva.exams && this.richiestaAttiva.exams.length > 0) {
+      this.nuoviEsamiLA = this.richiestaAttiva.exams.map((e: any) => ({
+        foreignCode: e.foreign_course_code,
+        foreignName: e.foreign_course_name,
+        foreignCredits: e.foreign_course_credits,
+        localCode: e.unive_course_code,
+        localName: e.unive_course_title,
+        localCredits: e.unive_course_credits,
+      }));
+    } else {
+      this.aggiungiEsameLA();
+    }
+  }
 
   apriModaleConferma(azione: string) {
     this.modalConfig.action = azione;
     this.motivoRinuncia = '';
-
     switch (azione) {
       case 'start_mobility':
         if (!this.richiestaAttiva.arrival_date || !this.richiestaAttiva.departure_date) {
-          alert('Inserisci entrambe le date per proseguire.');
+          this.mostraFeedback('error', 'Inserisci entrambe le date per proseguire.');
           return;
         }
         this.modalConfig = {
@@ -195,7 +200,6 @@ export class ActiveMobilityComponent implements OnInit {
         };
         break;
     }
-
     this.mostraModale = true;
   }
 
@@ -203,26 +207,20 @@ export class ActiveMobilityComponent implements OnInit {
     this.mostraModale = false;
   }
 
-  // CORRECTIONS
-  apriCorrezione() {
-    this.cambiaVista('activeMobility');
-    this.activePanel = 'correction';
-
-    if (this.richiestaAttiva.exams) {
-      this.nuoviEsamiLA = this.richiestaAttiva.exams.map((e: any) => ({
-        foreignCode: e.foreign_course_code,
-        foreignName: e.foreign_course_name,
-        foreignCredits: e.foreign_course_credits,
-        localCode: e.unive_course_code,
-        localName: e.unive_course_title,
-        localCredits: e.unive_course_credits,
-      }));
-    } else {
-      this.aggiungiEsameLA();
-    }
+  // NUOVA FUNZIONE PER I FEEDBACK INTERNI
+  mostraFeedback(tipo: 'success' | 'error', messaggio: string) {
+    this.alertType = tipo;
+    this.alertMessage = messaggio;
+    this.mostraAlert = true;
+    setTimeout(() => {
+      this.chiudiFeedback();
+    }, 4000);
   }
 
-  // DATABASE CALLS FOR ACTIONS
+  chiudiFeedback() {
+    this.mostraAlert = false;
+  }
+
   eseguiAzione() {
     if (this.isSubmitting) return;
     this.isSubmitting = true;
@@ -230,7 +228,6 @@ export class ActiveMobilityComponent implements OnInit {
     const appId = this.richiestaAttiva.id;
     let fetchPromise: Promise<any>;
 
-    // START OR UPDATE DATES
     if (
       this.modalConfig.action === 'start_mobility' ||
       this.modalConfig.action === 'update_dates'
@@ -245,54 +242,39 @@ export class ActiveMobilityComponent implements OnInit {
           start_mobility: isStart,
         }),
       });
-    }
-    // RENUNCIATION
-    else if (this.modalConfig.action === 'reject_mobility') {
+    } else if (this.modalConfig.action === 'reject_mobility') {
       fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/cancel`, {
         method: 'PUT',
       });
-    }
-    // LEARNING AGREEMENT MODIFICATION
-    else if (this.modalConfig.action === 'submit_la') {
+    } else if (this.modalConfig.action === 'submit_la') {
       const formData = new FormData();
       formData.append('exams', JSON.stringify(this.nuoviEsamiLA));
       formData.append('reason', this.motivoVariazioneLA);
       if (this.fileLA) formData.append('learning_agreement_file', this.fileLA);
-
       fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/modify-la`, {
         method: 'PUT',
         body: formData,
       });
-    }
-    // GRADES UPDATE (ToR)
-    else if (this.modalConfig.action === 'submit_tor') {
+    } else if (this.modalConfig.action === 'submit_tor') {
       const formData = new FormData();
       formData.append('exams', JSON.stringify(this.esamiToR));
       if (this.fileToR) formData.append('tor_file', this.fileToR);
-
       fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/tor`, {
         method: 'POST',
         body: formData,
       });
-    }
-    // RE-SEND
-    else if (this.modalConfig.action === 'resubmit_modification') {
+    } else if (this.modalConfig.action === 'resubmit_modification') {
       const formData = new FormData();
       formData.append('exams', JSON.stringify(this.nuoviEsamiLA));
       if (this.fileLA) formData.append('learning_agreement_file', this.fileLA);
-
       fetchPromise = fetch(
         `http://localhost:3000/api/applications/${appId}/resubmit-modification`,
-        {
-          method: 'PUT',
-          body: formData,
-        },
+        { method: 'PUT', body: formData },
       );
     } else {
       return;
     }
 
-    // Response Managment
     fetchPromise
       .then((res) => {
         if (!res.ok) throw new Error("Errore durante l'operazione server");
@@ -301,13 +283,13 @@ export class ActiveMobilityComponent implements OnInit {
       .then(() => {
         this.activePanel = null;
         this.mostraModale = false;
-        alert('✅ Operazione registrata con successo nel database!');
-
+        // SOSTITUITO ALERT CON MODALE INTERNO
+        this.mostraFeedback('success', 'Operazione registrata con successo!');
         this.caricaDatiReali(appId);
       })
       .catch((err) => {
-        alert(err.message);
         this.mostraModale = false;
+        this.mostraFeedback('error', err.message);
       })
       .finally(() => {
         this.isSubmitting = false;
@@ -318,12 +300,17 @@ export class ActiveMobilityComponent implements OnInit {
     event.preventDefault();
     this.onBack.emit();
   }
-
-  // FILE MANAGMENT
+  toggleMenu(event: Event) {
+    event.stopPropagation();
+    this.menuAperto = !this.menuAperto;
+  }
+  effettuaLogout(event: Event) {
+    event.preventDefault();
+    this.onLogout.emit();
+  }
   onFileLASelected(event: any) {
     if (event.target.files.length > 0) this.fileLA = event.target.files[0];
   }
-
   onFileToRSelected(event: any) {
     if (event.target.files.length > 0) this.fileToR = event.target.files[0];
   }

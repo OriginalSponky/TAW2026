@@ -188,7 +188,7 @@ app.post('/api/applications', upload.single('learning_agreement_file'), async (r
 
         const [appResult] = await connection.query(
             `INSERT INTO Applications (student_id, institution_id, lecturer_id, academic_year, mobility_period, status)
-             VALUES (?, ?, ?, ?, ?, 'AWAITING_FOR_APPROVAL')`,
+             VALUES (?, ?, ?, ?, ?, 'CREATED')`,
             [student_id, institution_id, lecturer_id, academic_year, mobility_period]
         );
         const applicationId = appResult.insertId;
@@ -296,8 +296,7 @@ app.get('/api/applications/:id', async (req, res) => {
         applicationData.exams = examRows;
 
         const [docRows] = await dbPool.query(`
-            SELECT id, document_type, file_name, file_path, status, upload_date 
-            FROM Documents 
+            SELECT * FROM Documents
             WHERE application_id = ?
         `, [appId]);
         applicationData.documents = docRows;
