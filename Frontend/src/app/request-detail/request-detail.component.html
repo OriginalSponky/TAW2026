@@ -89,8 +89,8 @@
       <h4>📄 Documento Allegato</h4>
       @if (!isEditing) {
         <div class="doc-view">
-          <p>Learning_Agreement.pdf</p>
-          <a href="#" class="doc-link">Scarica PDF</a>
+          <p>{{ getNomeDocumento() }}</p>
+          <a href="#" class="doc-link" (click)="scaricaDocumento($event)">Scarica PDF</a>
         </div>
       } @else {
         <div class="doc-edit">
@@ -118,7 +118,16 @@
   <div class="modal-overlay">
     <div class="modal">
 
-      @if (!modificaCompletata) {
+      <!-- File Error-->
+      @if (mostraErroreFile) {
+        <h3 style="color: var(--danger);">⚠️ File Non Trovato</h3>
+        <p>Il documento richiesto non è presente oppure non è stato caricato correttamente nel sistema.</p>
+        <div class="modal-actions">
+          <button type="button" class="btn-primary" (click)="chiudiModale()">Ho capito</button>
+        </div>
+      }
+
+      @else if (!modificaCompletata) {
         <!-- Confirmation -->
         <h3>Conferma Modifiche</h3>
         <p>Sei sicuro di voler salvare le modifiche apportate alla richiesta di mobilità?</p>

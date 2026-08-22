@@ -19,6 +19,7 @@ export class RequestDetailComponent implements OnInit {
   mostraModale: boolean = false;
   isSubmitting: boolean = false;
   modificaCompletata: boolean = false;
+  mostraErroreFile: boolean = false;
 
   constructor(private cdr: ChangeDetectorRef) {}
 
@@ -34,6 +35,28 @@ export class RequestDetailComponent implements OnInit {
         this.cdr.detectChanges();
       })
       .catch((err) => console.error('Errore fetch dettagli:', err));
+  }
+
+  // --- LOGICA DOWNLOAD E VISUALIZZAZIONE FILE ---
+
+  getNomeDocumento(): string {
+    if (!this.dettagli || !this.dettagli.documents) return 'Nessun file caricato';
+    const doc = this.dettagli.documents.find((d: any) => d.document_type === 'LEARNING_AGREEMENT');
+    return doc ? doc.file_name : 'Nessun file caricato';
+  }
+
+  scaricaDocumento(event: Event) {
+    event.preventDefault();
+
+    const doc = this.dettagli?.documents?.find((d: any) => d.document_type === 'LEARNING_AGREEMENT');
+
+    if (doc && doc.file_path) {
+      const url = 'http://localhost:3000' + doc.file_path;
+      window.open(url, '_blank');
+    } else {
+      this.mostraErroreFile = true;
+      this.mostraModale = true;
+    }
   }
 
   // --- EDIT MODE LOGIC ---
