@@ -180,30 +180,22 @@
 @if (mostraModale) {
   <div class="modal-overlay">
     <div class="modal">
-
-
       @if (!richiestaCompletata) {
-        <!-- Confirmation Step -->
-        <h3>Conferma Invio</h3>
+        <h3 style="font-size: 1.5rem; margin-bottom: 12px;">🚀 Conferma Invio 📤</h3>
         <p>Sei sicuro di voler inviare la tua richiesta di mobilità? Assicurati di aver inserito correttamente la mappatura degli esami.</p>
-        <div class="modal-actions">
-          <button type="button" class="btn btn-outline" (click)="chiudiModale()" [disabled]="isSubmitting">Annulla</button>
-          <!-- Button locks and changes text while processing -->
-          <button type="button" class="btn btn-primary" (click)="confermaInvio()" [disabled]="isSubmitting">
+        <div class="modal-actions" style="display: flex; gap: 12px; width: 100%;">
+          <button type="button" class="btn btn-outline" style="flex: 1; justify-content: center; padding: 12px;" (click)="chiudiModale()" [disabled]="isSubmitting">Annulla</button>
+          <button type="button" class="btn btn-primary" style="flex: 1; justify-content: center; padding: 12px;" (click)="confermaInvio()" [disabled]="isSubmitting">
             {{ isSubmitting ? 'Invio in corso...' : 'Conferma e Invia' }}
           </button>
         </div>
-      }
-
-      @else {
-        <!-- Success Step -->
+      } @else {
         <h3>✅ Richiesta Inviata!</h3>
         <p>La tua pratica è stata salvata con successo. Lo stato attuale è: <strong>Awaiting Learning Agreement approval</strong>.</p>
         <div class="modal-actions">
           <button type="button" class="btn btn-primary" (click)="chiudiETornaAllaLista()">Vai alle mie richieste</button>
         </div>
       }
-
     </div>
   </div>
 }

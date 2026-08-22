@@ -109,13 +109,48 @@
         <p style="color: var(--text-muted); font-size: 14px;">Nessun esame associato a questa richiesta.</p>
       }
 
-      <!-- Sezione File Originale -->
+      <!-- Sezione File Originale o Sostituzione in Modifica -->
       <div class="document-section">
         <h4>Documento Ufficiale</h4>
-        <div class="doc-view">
-          <p>📄 {{ getNomeDocumento() }}</p>
-          <a href="#" class="doc-link" (click)="scaricaDocumento($event)">Scarica/Visualizza</a>
-        </div>
+
+        @if (!isEditing) {
+          <div class="doc-view">
+            <p>📄 {{ getNomeDocumento() }}</p>
+            <a href="#" class="doc-link" (click)="scaricaDocumento($event)">Scarica/Visualizza</a>
+          </div>
+        } @else {
+          <div class="doc-edit">
+            <label style="font-size: 13px; font-weight: 500; color: var(--text-muted); display: block; margin-bottom: 8px;">
+              Sostituisci il Learning Agreement (PDF facoltativo):
+            </label>
+
+            <!-- DRAG & DROP ZONE UGUALE A NEW-REQUEST -->
+            <div class="drag-drop-zone"
+                 [class.active-glow]="isDragging"
+                 (dragover)="onDragOver($event)"
+                 (dragleave)="onDragLeave($event)"
+                 (drop)="onDrop($event)"
+                 (click)="fileInput.click()">
+
+              <input type="file" #fileInput accept=".pdf" style="display: none;" (change)="onFileSelected($event)">
+
+              <div class="upload-content">
+                <div class="upload-circle">
+                  <span class="icon" style="font-size: 32px;">📥</span>
+                </div>
+
+                @if (!fileSelezionato) {
+                  <h4 style="margin: 16px 0 8px 0; color: var(--primary); font-size: 18px;">Trascina qui il tuo PDF</h4>
+                  <p style="margin: 0; color: var(--text-muted); font-size: 14px;">Rilascia il documento all'interno dell'area tratteggiata</p>
+                } @else {
+                  <h4 style="margin: 16px 0 8px 0; color: var(--success); font-size: 18px;">✅ Acquisito!</h4>
+                  <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 15px;">{{ fileSelezionato.name }}</p>
+                }
+              </div>
+            </div>
+
+          </div>
+        }
       </div>
 
       <!-- Pulsanti in fondo per la Modalità Modifica -->

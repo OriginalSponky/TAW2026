@@ -24,6 +24,10 @@ export class RequestDetailComponent implements OnInit {
   alertType: 'success' | 'error' = 'success';
   alertMessage: string = '';
 
+  // --- VARIABILI PER IL DRAG & DROP ---
+  isDragging: boolean = false;
+  fileSelezionato: File | null = null;
+
   constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
@@ -40,7 +44,6 @@ export class RequestDetailComponent implements OnInit {
       .catch((err) => console.error('Errore fetch dettagli:', err));
   }
 
-  // --- FUNZIONE PER GESTIRE IL TOAST ---
   mostraFeedback(tipo: 'success' | 'error', messaggio: string) {
     this.alertType = tipo;
     this.alertMessage = messaggio;
@@ -54,7 +57,6 @@ export class RequestDetailComponent implements OnInit {
     this.mostraAlert = false;
   }
 
-  // --- DOWNLOAD AND FILE VISUALIZZATION ---
   getNomeDocumento(): string {
     if (!this.dettagli || !this.dettagli.documents) return 'Nessun file caricato';
     const doc = this.dettagli.documents.find((d: any) => d.document_type === 'LEARNING_AGREEMENT');
@@ -63,41 +65,53 @@ export class RequestDetailComponent implements OnInit {
 
   scaricaDocumento(event: Event) {
     event.preventDefault();
-
     const doc = this.dettagli?.documents?.find(
       (d: any) => d.document_type === 'LEARNING_AGREEMENT',
     );
 
     if (doc && doc.file_path) {
       const url = 'http://localhost:3000' + doc.file_path;
-
       fetch(url, { method: 'HEAD' })
         .then((response) => {
           if (response.ok) {
             window.open(url, '_blank');
           } else {
-            // SOSTITUITO MODALE DI ERRORE CON TOAST
-            this.mostraFeedback('error', 'Il file non è disponibile o è stato rimosso dal server.');
+            this.mostraFeedback('error', 'Il file non è disponibile sul server.');
             this.cdr.detectChanges();
           }
         })
-        .catch((error) => {
+        .catch(() => {
           this.mostraFeedback('error', 'Impossibile connettersi al server dei file.');
           this.cdr.detectChanges();
         });
     } else {
-      this.mostraFeedback('error', 'Nessun percorso file associato a questo documento.');
+      this.mostraFeedback('error', 'Nessun percorso file associato.');
     }
   }
 
-  // --- EDIT MODE LOGIC ---
+  // Intercetta la scelta del nuovo file PDF
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      if (file.type === 'application/pdf') {
+        this.fileSelezionato = file;
+        this.mostraFeedback('success', 'Nuovo file pronto: ' + file.name);
+      } else {
+        this.mostraFeedback('error', 'Seleziona un file in formato PDF.');
+        this.fileSelezionato = null;
+      }
+    }
+  }
+
   attivaModifica() {
     this.dettagliBackup = JSON.parse(JSON.stringify(this.dettagli));
+    this.fileSelezionato = null;
     this.isEditing = true;
   }
 
   annullaModifica() {
     this.dettagli = JSON.parse(JSON.stringify(this.dettagliBackup));
+    this.fileSelezionato = null;
     this.isEditing = false;
   }
 
@@ -113,35 +127,41 @@ export class RequestDetailComponent implements OnInit {
     if (this.isSubmitting) return;
     this.isSubmitting = true;
 
-    const payload = {
-      institution_id: this.dettagli.institution_id,
-      lecturer_id: this.dettagli.lecturer_id,
-      academic_year: this.dettagli.academic_year,
-      mobility_period: this.dettagli.mobility_period,
-      exams: this.dettagli.exams.map((e: any) => ({
-        foreignCode: e.foreign_course_code,
-        foreignName: e.foreign_course_name,
-        foreignCredits: e.foreign_course_credits,
-        localCode: e.unive_course_code,
-        localName: e.unive_course_title,
-        localCredits: e.unive_course_credits,
-      })),
-    };
+    // Usiamo FormData anziché JSON per permettere al backend di ricevere sia gli esami che il file PDF aggiornato
+    const formData = new FormData();
+    formData.append('institution_id', this.dettagli.institution_id);
+    formData.append('lecturer_id', this.dettagli.lecturer_id);
+    formData.append('academic_year', this.dettagli.academic_year);
+    formData.append('mobility_period', this.dettagli.mobility_period);
+
+    const examsPayload = this.dettagli.exams.map((e: any) => ({
+      foreignCode: e.foreign_course_code,
+      foreignName: e.foreign_course_name,
+      foreignCredits: e.foreign_course_credits,
+      localCode: e.unive_course_code,
+      localName: e.unive_course_title,
+      localCredits: e.unive_course_credits,
+    }));
+
+    formData.append('exams', JSON.stringify(examsPayload));
+
+    if (this.fileSelezionato) {
+      formData.append('learning_agreement_file', this.fileSelezionato);
+    }
 
     fetch(`http://localhost:3000/api/applications/${this.requestId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: formData, // Invio tramite FormData corretto
     })
       .then((res) => {
         if (!res.ok) throw new Error('Errore durante il salvataggio');
         return res.json();
       })
-      .then((data) => {
-        // SOSTITUITO IL MODALE DI SUCCESSO BLU CON IL TOAST E CHIUSURA AUTOMATICA
+      .then(() => {
         this.mostraModale = false;
         this.isEditing = false;
-        this.mostraFeedback('success', 'Modifiche alla bozza salvate con successo!');
+        this.fileSelezionato = null;
+        this.mostraFeedback('success', 'Modifiche salvate con successo!');
         this.caricaDettagli();
       })
       .catch((err) => {
@@ -154,7 +174,6 @@ export class RequestDetailComponent implements OnInit {
       });
   }
 
-  // --- UTILS ---
   formattaPeriodo(periodo: string): string {
     if (!periodo) return '';
     switch (periodo) {
@@ -172,5 +191,36 @@ export class RequestDetailComponent implements OnInit {
   formattaStato(status: string): string {
     if (!status) return '';
     return status.replace(/_/g, ' ');
+  }
+
+  // Funzioni Drag & Drop
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file.type === 'application/pdf') {
+        this.fileSelezionato = file;
+        this.mostraFeedback('success', 'File ' + file.name + ' acquisito con successo!');
+      } else {
+        this.mostraFeedback('error', 'Per favore, trascina solo file in formato PDF.');
+        this.fileSelezionato = null;
+      }
+    }
   }
 }
