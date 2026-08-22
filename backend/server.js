@@ -417,20 +417,23 @@ app.put('/api/applications/:id/modify-la', upload.single('learning_agreement_fil
     try {
         await connection.beginTransaction();
 
-        await connection.query(`UPDATE Applications SET status = 'AWAITING_FOR_APPROVAL' WHERE id = ?`, [appId]);
-        await connection.query(`DELETE FROM ExamsMapping WHERE application_id = ?`, [appId]);
+        await connection.query(`UPDATE Applications SET status = 'AWAITING_MODIFICATION_APPROVAL' WHERE id = ?`, [appId]);
+
+        await connection.query(`DELETE FROM ExamsMapping WHERE application_id = ? AND is_proposed_change = TRUE`, [appId]);
 
         for (const exam of parsedExams) {
+            const isProposed = exam.is_proposed_change ? true : false;
+
             await connection.query(
-                `INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                [appId, exam.foreignCode, exam.foreignName, exam.foreignCredits, exam.localCode, exam.localName, exam.localCredits]
+                `INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits, is_proposed_change)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [appId, exam.foreignCode, exam.foreignName, exam.foreignCredits, exam.localCode, exam.localName, exam.localCredits, isProposed]
             );
         }
 
         if (file) {
             await connection.query(
-                `INSERT INTO Documents (application_id, document_type, file_name, file_path, status, modification_description) 
+                `INSERT INTO Documents (application_id, document_type, file_name, file_path, status, modification_description)
                  VALUES (?, 'LEARNING_AGREEMENT', ?, ?, 'PENDING', ?)`,
                 [appId, file.originalname, '/uploads/' + file.filename, reason]
             );
@@ -440,6 +443,7 @@ app.put('/api/applications/:id/modify-la', upload.single('learning_agreement_fil
         res.json({ message: "Proposta inviata con successo" });
     } catch (error) {
         await connection.rollback();
+        console.error("Errore Modify-LA:", error);
         res.status(500).send("Errore server");
     } finally { connection.release(); }
 });
@@ -489,7 +493,12 @@ app.put('/api/applications/:id/resubmit-modification', upload.single('learning_a
     const { exams } = req.body;
     const file = req.file;
     let parsedExams = [];
-    try { parsedExams = JSON.parse(exams); } catch (e) { }
+
+    try {
+        parsedExams = JSON.parse(exams);
+    } catch (e) {
+        console.error("Errore parsing JSON esami:", e);
+    }
 
     const connection = await dbPool.getConnection();
     try {
@@ -500,18 +509,36 @@ app.put('/api/applications/:id/resubmit-modification', upload.single('learning_a
             [appId]
         );
 
-        await connection.query(`DELETE FROM ExamsMapping WHERE application_id = ?`, [appId]);
+        // Cancella le vecchie proposte rifiutate
+        await connection.query(`DELETE FROM ExamsMapping WHERE application_id = ? AND is_proposed_change = TRUE`, [appId]);
+
         for (const exam of parsedExams) {
+            const isProposed = exam.is_proposed_change ? true : false;
+
+            const examDate = (exam.date && exam.date.trim() !== '') ? exam.date : null;
+            const examScore = (exam.score && exam.score.trim() !== '') ? exam.score : null;
+
             await connection.query(
-                `INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits, score_obtained, exam_date) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [appId, exam.foreignCode, exam.foreignName, exam.foreignCredits, exam.localCode, exam.localName, exam.localCredits, exam.score, exam.date]
+                `INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits, score_obtained, exam_date, is_proposed_change)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    appId,
+                    exam.foreignCode || '',
+                    exam.foreignName || '',
+                    exam.foreignCredits || 0,
+                    exam.localCode || '',
+                    exam.localName || '',
+                    exam.localCredits || 0,
+                    examScore,
+                    examDate,
+                    isProposed
+                ]
             );
         }
 
         if (file) {
             await connection.query(
-                `INSERT INTO Documents (application_id, document_type, file_name, file_path, status) 
+                `INSERT INTO Documents (application_id, document_type, file_name, file_path, status)
                  VALUES (?, 'LEARNING_AGREEMENT', ?, ?, 'PENDING')`,
                 [appId, file.originalname, '/uploads/' + file.filename]
             );
@@ -521,8 +548,11 @@ app.put('/api/applications/:id/resubmit-modification', upload.single('learning_a
         res.json({ message: "Nuova revisione inviata con successo!" });
     } catch (error) {
         await connection.rollback();
-        res.status(500).send("Errore server durante il reinvio");
-    } finally { connection.release(); }
+        console.error("🔴 ERRORE CRITICO NEL SERVER (Resubmit):", error);
+        res.status(500).send("Errore server durante il reinvio: " + error.message);
+    } finally {
+        connection.release();
+    }
 });
 
 app.listen(3000, () => {

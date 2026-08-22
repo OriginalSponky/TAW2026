@@ -18,8 +18,11 @@ export class RequestDetailComponent implements OnInit {
   isEditing: boolean = false;
   mostraModale: boolean = false;
   isSubmitting: boolean = false;
-  modificaCompletata: boolean = false;
-  mostraErroreFile: boolean = false;
+
+  // --- VARIABILI PER IL TOAST GLOBALE ---
+  mostraAlert: boolean = false;
+  alertType: 'success' | 'error' = 'success';
+  alertMessage: string = '';
 
   constructor(private cdr: ChangeDetectorRef) {}
 
@@ -37,8 +40,21 @@ export class RequestDetailComponent implements OnInit {
       .catch((err) => console.error('Errore fetch dettagli:', err));
   }
 
-  // --- DOWNLOAD AND FILE VISUALIZZATION ---
+  // --- FUNZIONE PER GESTIRE IL TOAST ---
+  mostraFeedback(tipo: 'success' | 'error', messaggio: string) {
+    this.alertType = tipo;
+    this.alertMessage = messaggio;
+    this.mostraAlert = true;
+    setTimeout(() => {
+      this.chiudiFeedback();
+    }, 4000);
+  }
 
+  chiudiFeedback() {
+    this.mostraAlert = false;
+  }
+
+  // --- DOWNLOAD AND FILE VISUALIZZATION ---
   getNomeDocumento(): string {
     if (!this.dettagli || !this.dettagli.documents) return 'Nessun file caricato';
     const doc = this.dettagli.documents.find((d: any) => d.document_type === 'LEARNING_AGREEMENT');
@@ -60,32 +76,27 @@ export class RequestDetailComponent implements OnInit {
           if (response.ok) {
             window.open(url, '_blank');
           } else {
-            this.mostraErroreFile = true;
-            this.mostraModale = true;
+            // SOSTITUITO MODALE DI ERRORE CON TOAST
+            this.mostraFeedback('error', 'Il file non è disponibile o è stato rimosso dal server.');
             this.cdr.detectChanges();
           }
         })
         .catch((error) => {
-          this.mostraErroreFile = true;
-          this.mostraModale = true;
+          this.mostraFeedback('error', 'Impossibile connettersi al server dei file.');
           this.cdr.detectChanges();
         });
     } else {
-      this.mostraErroreFile = true;
-      this.mostraModale = true;
+      this.mostraFeedback('error', 'Nessun percorso file associato a questo documento.');
     }
   }
 
   // --- EDIT MODE LOGIC ---
-
   attivaModifica() {
-    // Create a deep copy of the data so we can revert if cancelled
     this.dettagliBackup = JSON.parse(JSON.stringify(this.dettagli));
     this.isEditing = true;
   }
 
   annullaModifica() {
-    // Restore the original data from backup
     this.dettagli = JSON.parse(JSON.stringify(this.dettagliBackup));
     this.isEditing = false;
   }
@@ -99,10 +110,9 @@ export class RequestDetailComponent implements OnInit {
   }
 
   confermaSalvataggio() {
-    if (this.isSubmitting) return; // Prevent double clicks
+    if (this.isSubmitting) return;
     this.isSubmitting = true;
 
-    // Exam Mapping
     const payload = {
       institution_id: this.dettagli.institution_id,
       lecturer_id: this.dettagli.lecturer_id,
@@ -128,25 +138,20 @@ export class RequestDetailComponent implements OnInit {
         return res.json();
       })
       .then((data) => {
-        this.modificaCompletata = true;
+        // SOSTITUITO IL MODALE DI SUCCESSO BLU CON IL TOAST E CHIUSURA AUTOMATICA
+        this.mostraModale = false;
+        this.isEditing = false;
+        this.mostraFeedback('success', 'Modifiche alla bozza salvate con successo!');
+        this.caricaDettagli();
       })
       .catch((err) => {
-        alert(err.message);
         this.mostraModale = false;
+        this.mostraFeedback('error', err.message || 'Errore di connessione.');
       })
       .finally(() => {
         this.isSubmitting = false;
         this.cdr.detectChanges();
       });
-  }
-
-  chiudiSuccesso() {
-    this.mostraModale = false;
-    this.modificaCompletata = false;
-    this.isEditing = false;
-
-    this.dettagli = null;
-    this.caricaDettagli();
   }
 
   // --- UTILS ---
@@ -163,6 +168,7 @@ export class RequestDetailComponent implements OnInit {
         return periodo;
     }
   }
+
   formattaStato(status: string): string {
     if (!status) return '';
     return status.replace(/_/g, ' ');

@@ -224,3 +224,12 @@
     </div>
   </div>
 }
+
+<!-- ALERT POPUP DI SISTEMA (Sostituisce alert() nativo) -->
+@if (mostraAlert) {
+  <div class="custom-alert" [ngClass]="alertType === 'success' ? 'alert-success' : 'alert-error'">
+    <div class="alert-icon">{{ alertType === 'success' ? '✅' : '❌' }}</div>
+    <div class="alert-message">{{ alertMessage }}</div>
+    <button class="close-alert" (click)="chiudiFeedback()">✖</button>
+  </div>
+}

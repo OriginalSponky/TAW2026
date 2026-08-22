@@ -50,15 +50,29 @@
             </div>
 
             <div class="actions">
-              <!-- Status Buttons Logic -->
-              @if (richiesta.status === 'CREATED' || richiesta.status === 'AWAITING_FOR_APPROVAL') {
-                <button class="btn-outline btn-danger" (click)="eliminaRichiesta(richiesta.id)">Elimina</button>
-                <button class="btn-outline" (click)="apriDettaglio(richiesta.id)">Vedi Dettagli</button>
-              } @else if (richiesta.status === 'MOBILITY_IN_PROGRESS') {
-                <button class="btn-outline" (click)="togglePannello(richiesta.id)">Proponi Modifica (L.A.)</button>
-                <button class="btn-outline" (click)="apriDettaglio(richiesta.id)">Vedi Dettagli</button>
+              <!-- SE NON SIAMO IN FASE DI CONFERMA PER QUESTA CARD -->
+              @if (confermaEliminazioneId !== richiesta.id) {
+                <!-- Status Buttons Logic -->
+                @if (richiesta.status === 'CREATED' || richiesta.status === 'AWAITING_FOR_APPROVAL') {
+                  <button class="btn-outline btn-danger" (click)="chiediConfermaEliminazione(richiesta.id)">Elimina</button>
+                  <button class="btn-outline" (click)="apriDettaglio(richiesta.id)">Vedi Dettagli</button>
+                } @else if (richiesta.status === 'MOBILITY_IN_PROGRESS') {
+                  <button class="btn-outline" (click)="togglePannello(richiesta.id)">Proponi Modifica (L.A.)</button>
+                  <button class="btn-outline" (click)="apriDettaglio(richiesta.id)">Vedi Dettagli</button>
+                } @else {
+                  <button class="btn-outline" (click)="apriDettaglio(richiesta.id)">Vedi Dettagli</button>
+                }
               } @else {
-                <button class="btn-outline" (click)="apriDettaglio(richiesta.id)">Vedi Dettagli</button>
+                <!-- SE SIAMO IN FASE DI CONFERMA INLINE -->
+                <div class="inline-delete-confirmation">
+                  <span style="font-size: 13px; color: var(--danger); font-weight: 500; margin-right: 12px;">Sei sicuro?</span>
+                  <button class="btn-outline" style="padding: 6px 12px; font-size: 13px; margin-right: 8px;" (click)="annullaEliminazione()" [disabled]="isDeleting">
+                    Annulla
+                  </button>
+                  <button class="btn-outline btn-danger" style="padding: 6px 12px; font-size: 13px; background-color: var(--danger); color: white;" (click)="confermaEliminazioneDefinitiva(richiesta.id)" [disabled]="isDeleting">
+                    {{ isDeleting ? 'Eliminazione...' : 'Conferma' }}
+                  </button>
+                </div>
               }
             </div>
           </div>
@@ -90,5 +104,14 @@
       [requestId]="richiestaSelezionata"
       (onBack)="chiudiDettaglio()">
     </app-request-detail>
+  }
+
+  <!-- ALERT POPUP DI SISTEMA (TOAST) -->
+  @if (mostraAlert) {
+    <div class="custom-alert" [ngClass]="alertType === 'success' ? 'alert-success' : 'alert-error'">
+      <div class="alert-icon">{{ alertType === 'success' ? '✅' : '❌' }}</div>
+      <div class="alert-message">{{ alertMessage }}</div>
+      <button class="close-alert" (click)="chiudiFeedback()">✖</button>
+    </div>
   }
 </main>

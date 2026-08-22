@@ -151,3 +151,66 @@ input[type="file"]::file-selector-button:hover {
 /* Badge accessori generici per file (PENDING/REJECTED) */
 .badge-warning { background-color: var(--warning-light); color: var(--warning); border: 1px solid #fde68a; }
 .badge-danger { background-color: var(--danger-light); color: var(--danger); border: 1px solid #fecaca; }
+
+/* ALERT POPUP DI SISTEMA (TOAST GLOBALE)*/
+.custom-alert {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  animation: slideInToast 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 320px;
+  border-left: 6px solid;
+}
+
+/* Variante Successo */
+.alert-success {
+  border-left-color: #22c55e;
+}
+
+/* Variante Errore */
+.alert-error {
+  border-left-color: #ef4444;
+}
+
+.alert-icon {
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alert-message {
+  flex-grow: 1;
+  color: #1f2937;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.close-alert {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.close-alert:hover {
+  color: #4b5563;
+}
+
+@keyframes slideInToast {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}

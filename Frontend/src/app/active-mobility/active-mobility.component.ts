@@ -25,7 +25,6 @@ export class ActiveMobilityComponent implements OnInit {
   mostraModale: boolean = false;
   modalConfig: any = { icon: '', title: '', text: '', action: '', btnClass: '', btnText: '' };
 
-  // NUOVA GESTIONE POPUP DI SUCCESSO/ERRORE INTERNO
   mostraAlert: boolean = false;
   alertType: 'success' | 'error' = 'success';
   alertMessage: string = '';
@@ -48,7 +47,6 @@ export class ActiveMobilityComponent implements OnInit {
     return this.richiestaAttiva.documents.some((doc: any) => doc.status === 'REJECTED');
   }
 
-  // NUOVA PROPRIETÀ: Controlla se lo studente ha già mandato un LA che sta aspettando il prof
   get hasPendingModifications(): boolean {
     if (!this.richiestaAttiva || !this.richiestaAttiva.documents) return false;
     return this.richiestaAttiva.documents.some(
@@ -89,10 +87,68 @@ export class ActiveMobilityComponent implements OnInit {
     this.activeView = vista;
   }
 
+  // LOGICA AGGIORNATA PER L'APERTURA DEI PANNELLI
   togglePanel(panel: string) {
     this.activePanel = this.activePanel === panel ? null : panel;
-    if (panel === 'la' && this.nuoviEsamiLA.length === 0) this.aggiungiEsameLA();
-    if (panel === 'tor' && this.esamiToR.length === 0) this.aggiungiEsameToR();
+
+    // Se lo studente vuole proporre una NUOVA modifica (L.A.), partiamo dagli esami UFFICIALI (is_proposed_change = false/0)
+    if (panel === 'la') {
+      if (this.richiestaAttiva && this.richiestaAttiva.exams) {
+        const esamiUfficiali = this.richiestaAttiva.exams.filter((e: any) => !e.is_proposed_change);
+        this.popolaArrayEsami(esamiUfficiali, this.nuoviEsamiLA);
+      }
+      if (this.nuoviEsamiLA.length === 0) this.aggiungiEsameLA();
+    }
+
+    // Se lo studente vuole chiudere l'Erasmus (ToR), partiamo dagli esami UFFICIALI
+    if (panel === 'tor') {
+      if (this.richiestaAttiva && this.richiestaAttiva.exams) {
+        const esamiUfficiali = this.richiestaAttiva.exams.filter((e: any) => !e.is_proposed_change);
+        this.popolaArrayEsami(esamiUfficiali, this.esamiToR);
+      }
+      if (this.esamiToR.length === 0) this.aggiungiEsameToR();
+    }
+  }
+
+  // LOGICA AGGIORNATA PER LA CORREZIONE DI UN RIFIUTO
+  apriCorrezione() {
+    this.cambiaVista('activeMobility');
+    this.activePanel = 'correction';
+
+    if (this.richiestaAttiva && this.richiestaAttiva.exams) {
+      // Quando correggiamo un rifiuto, cerchiamo di mostrare la PROPOSTA rifiutata (is_proposed_change = true/1)
+      const esamiProposti = this.richiestaAttiva.exams.filter((e: any) => !!e.is_proposed_change);
+
+      // Se il backend li ha già cancellati (come da tua logica di "pulizia" su rifiuto),
+      // ricarichiamo gli esami ufficiali originali come base per la nuova proposta.
+      if (esamiProposti.length > 0) {
+        this.popolaArrayEsami(esamiProposti, this.nuoviEsamiLA);
+      } else {
+        const esamiUfficiali = this.richiestaAttiva.exams.filter((e: any) => !e.is_proposed_change);
+        this.popolaArrayEsami(esamiUfficiali, this.nuoviEsamiLA);
+      }
+    }
+
+    if (this.nuoviEsamiLA.length === 0) {
+      this.aggiungiEsameLA();
+    }
+  }
+
+  // UTILITY PER POPOLARE GLI ARRAY (Mantiene il codice pulito)
+  popolaArrayEsami(sorgente: any[], destinazione: any[]) {
+    // Svuota l'array di destinazione prima di riempirlo
+    destinazione.splice(0, destinazione.length);
+    const mappatura = sorgente.map((e: any) => ({
+      foreignCode: e.foreign_course_code,
+      foreignName: e.foreign_course_name,
+      foreignCredits: e.foreign_course_credits,
+      localCode: e.unive_course_code,
+      localName: e.unive_course_title,
+      localCredits: e.unive_course_credits,
+      score: e.score_obtained || '', // Aggiunto per il ToR
+      date: e.exam_date ? e.exam_date.substring(0, 10) : '', // Aggiunto per il ToR
+    }));
+    destinazione.push(...mappatura);
   }
 
   aggiungiEsameLA() {
@@ -122,23 +178,6 @@ export class ActiveMobilityComponent implements OnInit {
   }
   rimuoviEsameToR(indice: number) {
     this.esamiToR.splice(indice, 1);
-  }
-
-  apriCorrezione() {
-    this.cambiaVista('activeMobility');
-    this.activePanel = 'correction';
-    if (this.richiestaAttiva.exams && this.richiestaAttiva.exams.length > 0) {
-      this.nuoviEsamiLA = this.richiestaAttiva.exams.map((e: any) => ({
-        foreignCode: e.foreign_course_code,
-        foreignName: e.foreign_course_name,
-        foreignCredits: e.foreign_course_credits,
-        localCode: e.unive_course_code,
-        localName: e.unive_course_title,
-        localCredits: e.unive_course_credits,
-      }));
-    } else {
-      this.aggiungiEsameLA();
-    }
   }
 
   apriModaleConferma(azione: string) {
@@ -207,7 +246,6 @@ export class ActiveMobilityComponent implements OnInit {
     this.mostraModale = false;
   }
 
-  // NUOVA FUNZIONE PER I FEEDBACK INTERNI
   mostraFeedback(tipo: 'success' | 'error', messaggio: string) {
     this.alertType = tipo;
     this.alertMessage = messaggio;
@@ -246,9 +284,12 @@ export class ActiveMobilityComponent implements OnInit {
       fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/cancel`, {
         method: 'PUT',
       });
+
     } else if (this.modalConfig.action === 'submit_la') {
+      const payloadEsami = this.nuoviEsamiLA.map((e) => ({ ...e, is_proposed_change: true }));
+
       const formData = new FormData();
-      formData.append('exams', JSON.stringify(this.nuoviEsamiLA));
+      formData.append('exams', JSON.stringify(payloadEsami));
       formData.append('reason', this.motivoVariazioneLA);
       if (this.fileLA) formData.append('learning_agreement_file', this.fileLA);
       fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/modify-la`, {
@@ -264,8 +305,11 @@ export class ActiveMobilityComponent implements OnInit {
         body: formData,
       });
     } else if (this.modalConfig.action === 'resubmit_modification') {
+      // Anche qui diciamo al server che questi esami sono le nuove proposte
+      const payloadEsami = this.nuoviEsamiLA.map((e) => ({ ...e, is_proposed_change: true }));
+
       const formData = new FormData();
-      formData.append('exams', JSON.stringify(this.nuoviEsamiLA));
+      formData.append('exams', JSON.stringify(payloadEsami));
       if (this.fileLA) formData.append('learning_agreement_file', this.fileLA);
       fetchPromise = fetch(
         `http://localhost:3000/api/applications/${appId}/resubmit-modification`,
@@ -283,12 +327,12 @@ export class ActiveMobilityComponent implements OnInit {
       .then(() => {
         this.activePanel = null;
         this.mostraModale = false;
-        // SOSTITUITO ALERT CON MODALE INTERNO
         this.mostraFeedback('success', 'Operazione registrata con successo!');
         this.caricaDatiReali(appId);
       })
       .catch((err) => {
         this.mostraModale = false;
+        // Se c'è un errore, lo mostriamo col toast e sblocchiamo il pulsante!
         this.mostraFeedback('error', err.message);
       })
       .finally(() => {

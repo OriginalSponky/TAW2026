@@ -20,6 +20,17 @@ export class MyRequestsComponent implements OnInit {
   richieste: any[] = [];
   richiestaSelezionata: number | null = null;
   menuAperto: boolean = false;
+
+  // --- VARIABILI PER IL TOAST GLOBALE ---
+  mostraAlert: boolean = false;
+  alertType: 'success' | 'error' = 'success';
+  alertMessage: string = '';
+
+  // --- NUOVA LOGICA ELIMINAZIONE INLINE ---
+  // Invece di un modale, memorizziamo l'ID della richiesta che stiamo per confermare
+  confermaEliminazioneId: number | null = null;
+  isDeleting: boolean = false;
+
   constructor(private cdr: ChangeDetectorRef) {}
 
   get iniziali(): string {
@@ -42,6 +53,20 @@ export class MyRequestsComponent implements OnInit {
       .catch((err) => console.error('❌ Errore di lettura:', err));
   }
 
+  // --- FUNZIONE PER GESTIRE IL TOAST ---
+  mostraFeedback(tipo: 'success' | 'error', messaggio: string) {
+    this.alertType = tipo;
+    this.alertMessage = messaggio;
+    this.mostraAlert = true;
+    setTimeout(() => {
+      this.chiudiFeedback();
+    }, 4000);
+  }
+
+  chiudiFeedback() {
+    this.mostraAlert = false;
+  }
+
   tornaIndietro(event: Event) {
     event.preventDefault();
     this.onBack.emit();
@@ -59,13 +84,6 @@ export class MyRequestsComponent implements OnInit {
       this.pannelloAttivo = id;
     }
   }
-
-  inviaModifica() {
-    alert('Modifica inviata con successo! Il docente referente la valuterà a breve.');
-    this.pannelloAttivo = null;
-  }
-
-  // --- Translation Functions ---
 
   formattaPeriodo(periodo: string): string {
     if (periodo === 'FIRST_SEMESTER') return 'First Semester';
@@ -119,38 +137,60 @@ export class MyRequestsComponent implements OnInit {
         return 'Stato Sconosciuto';
     }
   }
+
   apriDettaglio(id: number) {
     this.richiestaSelezionata = id;
   }
-
   chiudiDettaglio() {
     this.richiestaSelezionata = null;
   }
-
   toggleMenu(event: Event) {
     event.stopPropagation();
     this.menuAperto = !this.menuAperto;
   }
-
   effettuaLogout(event: Event) {
     event.preventDefault();
     this.onLogout.emit();
   }
-
   modificaRichiesta(id: number) {
     this.onEditRequest.emit(id);
   }
 
-  eliminaRichiesta(id: number) {
-    if (confirm('Sei sicuro di voler eliminare questa richiesta? Questa azione è irreversibile.')) {
-      fetch(`http://localhost:3000/api/applications/${id}`, { method: 'DELETE' })
-        .then(() => {
-          this.richieste = this.richieste.filter((r) => r.id !== id);
-          this.cdr.detectChanges(); // Wake up Angular
-        })
-        .catch((err) => alert("Errore durante l'eliminazione."));
-    }
+  // --- LOGICA ELIMINAZIONE INLINE ---
+  chiediConfermaEliminazione(id: number) {
+    this.confermaEliminazioneId = id;
+  }
+
+  annullaEliminazione() {
+    // Chiudiamo la zona di conferma
+    this.confermaEliminazioneId = null;
+  }
+
+  confermaEliminazioneDefinitiva(id: number) {
+    if (this.isDeleting) return;
+    this.isDeleting = true;
+
+    fetch(`http://localhost:3000/api/applications/${id}`, { method: 'DELETE' })
+      .then((res) => {
+        if (!res.ok) throw new Error("Errore durante l'eliminazione");
+        return res.json();
+      })
+      .then(() => {
+        this.richieste = this.richieste.filter((r) => r.id !== id);
+        this.mostraFeedback('success', 'Richiesta eliminata correttamente.');
+        this.confermaEliminazioneId = null;
+        this.cdr.detectChanges();
+      })
+      .catch((err) => {
+        this.mostraFeedback('error', "Errore durante l'eliminazione della richiesta.");
+        this.confermaEliminazioneId = null;
+      })
+      .finally(() => {
+        this.isDeleting = false;
+      });
+  }
+  inviaModifica() {
+    this.mostraFeedback('success', 'Richiesta di modifica inoltrata correttamente.');
+    this.pannelloAttivo = null;
   }
 }
-
-
