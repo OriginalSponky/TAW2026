@@ -110,31 +110,62 @@ CREATE TABLE Documents (
 
 
 -- ---------------------------------------------------------
--- INSERIMENTO DATI DI ESEMPIO (SEEDING)
+-- INSERIMENTO DATI DI ESEMPIO (SEEDING) - VERSIONE COMPLETA
 -- ---------------------------------------------------------
 
--- 1. Popoliamo gli Utenti (1 Studente, 1 Professore, 1 Staff)
+-- 1. Popoliamo gli Utenti
 INSERT INTO Users (role, first_name, last_name, matriculation_number, email, password_hash) VALUES
                                                                                                 ('STUDENT', 'Student', 'Test', '000067', '000067@stud.unive.it', 'student_test'),
                                                                                                 ('LECTURER', 'Lecturer', 'Test', NULL, 'lecturer.test@unive.it', 'lecturer_test'),
                                                                                                 ('STAFF', 'Overseas', 'Office', NULL, 'overseaout@unive.it', 'staff_test');
 
--- 2. Popoliamo le Istituzioni Estere (Atenei Partner)
+-- 2. Popoliamo le Istituzioni Estere
 INSERT INTO Institutions (name, country, city, website_url) VALUES
                                                                 ('Universidad de Barcelona', 'Spagna', 'Barcellona', 'https://www.ub.edu'),
                                                                 ('Technical University of Munich', 'Germania', 'Monaco', 'https://www.tum.de');
 
--- 3. Creiamo una Domanda di Mobilità (Filippo va a Barcellona nel Primo Semestre)
--- L'ID dello studente è 1, Istituzione 1, Professore 2
-INSERT INTO Applications (student_id, institution_id, lecturer_id, academic_year, mobility_period, status, is_la_approved) VALUES
-    (1, 1, 2, '2025/2026', 'FIRST_SEMESTER', 'MOBILITY_IN_PROGRESS', TRUE);
+-- 3. Creiamo le 7 Domande di Mobilità (1 per ogni stato possibile)
+INSERT INTO Applications (id, student_id, institution_id, lecturer_id, academic_year, mobility_period, status, is_la_approved) VALUES
+                                                                                                                                   (1, 1, 1, 2, '2025/2026', 'FIRST_SEMESTER', 'MOBILITY_IN_PROGRESS', TRUE),
+                                                                                                                                   (2, 1, 2, 2, '2026/2027', 'SECOND_SEMESTER', 'CREATED', FALSE),
+                                                                                                                                   (3, 1, 1, 2, '2026/2027', 'FULL_YEAR', 'AWAITING_FOR_APPROVAL', FALSE),
+                                                                                                                                   (4, 1, 2, 2, '2025/2026', 'FIRST_SEMESTER', 'PRE_DEPARTURE_COMPLETED', TRUE),
+                                                                                                                                   (5, 1, 1, 2, '2025/2026', 'SECOND_SEMESTER', 'WAITING_FOR_EXAM_SCORE_APPROVAL', TRUE),
+                                                                                                                                   (6, 1, 2, 2, '2024/2025', 'FULL_YEAR', 'CLOSED', TRUE),
+                                                                                                                                   (7, 1, 1, 2, '2025/2026', 'SECOND_SEMESTER', 'CANCELED', FALSE);
 
--- 4. Creiamo la Mappatura degli Esami (Learning Agreement)
--- Inseriamo esami pertinenti al tuo percorso di studi
+-- 4. Creiamo la Mappatura degli Esami per ogni richiesta
 INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits, score_obtained, is_approved_by_lecturer) VALUES
-                                                                                                                                                                                                                      (1, 'UB-INF101', 'Desarrollo Web Avanzado', 6.0, 'CM0123', 'Tecnologie e Applicazioni Web', 6, '28', TRUE),
-                                                                                                                                                                                                                      (1, 'UB-INF102', 'Introducción a la Programación', 6.0, 'CM0456', 'Introduzione alla Programmazione', 6, NULL, FALSE),(1, 'UB-DSG200', 'Diseño de Interfaz de Usuario', 6.0, 'CM0789', 'UX Design', 6, '30', TRUE);
+-- App 1 (MOBILITY_IN_PROGRESS)
+(1, 'UB-INF101', 'Desarrollo Web Avanzado', 6.0, 'CM0123', 'Tecnologie e Applicazioni Web', 6, '28', TRUE),
+(1, 'UB-INF102', 'Introducción a la Programación', 6.0, 'CM0456', 'Introduzione alla Programmazione', 6, NULL, FALSE),
+(1, 'UB-DSG200', 'Diseño de Interfaz de Usuario', 6.0, 'CM0789', 'UX Design', 6, '30', TRUE),
+-- App 2 (CREATED)
+(2, 'TUM-CS101', 'Algorithms and Data Structures', 8.0, 'CM0111', 'Algoritmi e Strutture Dati', 6, NULL, FALSE),
+-- App 3 (AWAITING_FOR_APPROVAL)
+(3, 'UB-MAT101', 'Álgebra Lineal', 6.0, 'CM0222', 'Algebra Lineare', 6, NULL, FALSE),
+-- App 4 (PRE_DEPARTURE_COMPLETED)
+(4, 'TUM-CS201', 'Operating Systems', 6.0, 'CM0333', 'Sistemi Operativi', 6, NULL, TRUE),
+-- App 5 (WAITING_FOR_EXAM_SCORE_APPROVAL)
+(5, 'UB-INF301', 'Inteligencia Artificial', 6.0, 'CM0444', 'Intelligenza Artificiale', 6, '29', TRUE),
+-- App 6 (CLOSED)
+(6, 'TUM-CS301', 'Computer Networks', 6.0, 'CM0555', 'Reti di Calcolatori', 6, '27', TRUE),
+(6, 'TUM-CS302', 'Database Systems', 6.0, 'CM0666', 'Basi di Dati', 6, '30', TRUE),
+-- App 7 (CANCELED)
+(7, 'UB-INF401', 'Seguridad Informática', 6.0, 'CM0777', 'Sicurezza Informatica', 6, NULL, FALSE);
 
--- 5. Inseriamo un Documento caricato dallo studente
+-- 5. Inseriamo i Documenti
 INSERT INTO Documents (application_id, document_type, file_name, file_path, status) VALUES
-    (1, 'LEARNING_AGREEMENT', 'LA_Bianchi_Filippo_Signed.pdf', '/uploads/docs/1/LA_Bianchi_Filippo_Signed.pdf', 'APPROVED');
+-- App 1: Documento che genererà errore (il file non esiste fisicamente)
+(1, 'LEARNING_AGREEMENT', 'LA_Bianchi_Filippo_Signed.pdf', '/uploads/docs/1/LA_Bianchi_Filippo_Signed.pdf', 'APPROVED'),
+-- App 3: Documento caricato ma in attesa di approvazione (genererà errore se cliccato per test)
+(3, 'LEARNING_AGREEMENT', 'LA_Test_Awaiting.pdf', '/uploads/docs/3/test.pdf', 'PENDING'),
+-- App 4: Learning Agreement Approvato
+(4, 'LEARNING_AGREEMENT', 'LA_Test_PreDep.pdf', '/uploads/docs/4/test.pdf', 'APPROVED'),
+-- App 5: LA Approvato + Transcript of Records caricato
+(5, 'LEARNING_AGREEMENT', 'LA_Test_Waiting.pdf', '/uploads/docs/5/test_la.pdf', 'APPROVED'),
+(5, 'TRANSCRIPT_OF_RECORDS', 'ToR_Test_Waiting.pdf', '/uploads/docs/5/test_tor.pdf', 'PENDING'),
+-- App 6: Entrambi i documenti approvati
+(6, 'LEARNING_AGREEMENT', 'LA_Test_Closed.pdf', '/uploads/docs/6/test_la.pdf', 'APPROVED'),
+(6, 'TRANSCRIPT_OF_RECORDS', 'ToR_Test_Closed.pdf', '/uploads/docs/6/test_tor.pdf', 'APPROVED');
+-- Le App 2 (CREATED) e 7 (CANCELED) non hanno nessun documento inserito.

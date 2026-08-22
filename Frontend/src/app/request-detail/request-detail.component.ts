@@ -37,7 +37,7 @@ export class RequestDetailComponent implements OnInit {
       .catch((err) => console.error('Errore fetch dettagli:', err));
   }
 
-  // --- LOGICA DOWNLOAD E VISUALIZZAZIONE FILE ---
+  // --- DOWNLOAD AND FILE VISUALIZZATION ---
 
   getNomeDocumento(): string {
     if (!this.dettagli || !this.dettagli.documents) return 'Nessun file caricato';
@@ -52,7 +52,23 @@ export class RequestDetailComponent implements OnInit {
 
     if (doc && doc.file_path) {
       const url = 'http://localhost:3000' + doc.file_path;
-      window.open(url, '_blank');
+
+      fetch(url, { method: 'HEAD' })
+        .then(response => {
+          if (response.ok) {
+            window.open(url, '_blank');
+          } else {
+            this.mostraErroreFile = true;
+            this.mostraModale = true;
+            this.cdr.detectChanges();
+          }
+        })
+        .catch(error => {
+          this.mostraErroreFile = true;
+          this.mostraModale = true;
+          this.cdr.detectChanges();
+        });
+
     } else {
       this.mostraErroreFile = true;
       this.mostraModale = true;
