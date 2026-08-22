@@ -373,6 +373,159 @@ app.put('/api/applications/:id', upload.single('learning_agreement_file'), async
     }
 });
 
+// ROUTES FOR MOBILITY
+
+// Start Mobility or Update Dates
+app.put('/api/applications/:id/dates', async (req, res) => {
+    const { arrival_date, departure_date, start_mobility } = req.body;
+    try {
+        if (start_mobility) {
+            await dbPool.query(
+                `UPDATE Applications SET actual_arrival_date = ?, actual_departure_date = ?, status = 'MOBILITY_IN_PROGRESS' WHERE id = ?`,
+                [arrival_date, departure_date, req.params.id]
+            );
+        } else {
+            await dbPool.query(
+                `UPDATE Applications SET actual_arrival_date = ?, actual_departure_date = ? WHERE id = ?`,
+                [arrival_date, departure_date, req.params.id]
+            );
+        }
+        res.json({ message: 'Date aggiornate con successo' });
+    } catch (error) {
+        res.status(500).send("Errore durante l'aggiornamento delle date");
+    }
+});
+
+// Official Renunciation
+app.put('/api/applications/:id/cancel', async (req, res) => {
+    try {
+        await dbPool.query(`UPDATE Applications SET status = 'CANCELED' WHERE id = ?`, [req.params.id]);
+        res.json({ message: 'Mobilità annullata' });
+    } catch (error) {
+        res.status(500).send("Errore durante l'annullamento");
+    }
+});
+
+// Learning Agreement Modification
+app.put('/api/applications/:id/modify-la', upload.single('learning_agreement_file'), async (req, res) => {
+    const appId = req.params.id;
+    const { exams, reason } = req.body;
+    const file = req.file;
+    let parsedExams = [];
+    try { parsedExams = JSON.parse(exams); } catch (e) { }
+
+    const connection = await dbPool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        await connection.query(`UPDATE Applications SET status = 'AWAITING_FOR_APPROVAL' WHERE id = ?`, [appId]);
+        await connection.query(`DELETE FROM ExamsMapping WHERE application_id = ?`, [appId]);
+
+        for (const exam of parsedExams) {
+            await connection.query(
+                `INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [appId, exam.foreignCode, exam.foreignName, exam.foreignCredits, exam.localCode, exam.localName, exam.localCredits]
+            );
+        }
+
+        if (file) {
+            await connection.query(
+                `INSERT INTO Documents (application_id, document_type, file_name, file_path, status, modification_description) 
+                 VALUES (?, 'LEARNING_AGREEMENT', ?, ?, 'PENDING', ?)`,
+                [appId, file.originalname, '/uploads/' + file.filename, reason]
+            );
+        }
+
+        await connection.commit();
+        res.json({ message: "Proposta inviata con successo" });
+    } catch (error) {
+        await connection.rollback();
+        res.status(500).send("Errore server");
+    } finally { connection.release(); }
+});
+
+// Erasmus Closure (Upload Transcript of Recors and Grades)
+app.post('/api/applications/:id/tor', upload.single('tor_file'), async (req, res) => {
+    const appId = req.params.id;
+    const { exams } = req.body;
+    const file = req.file;
+    let parsedExams = [];
+    try { parsedExams = JSON.parse(exams); } catch (e) { }
+
+    const connection = await dbPool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        await connection.query(`UPDATE Applications SET status = 'WAITING_FOR_EXAM_SCORE_APPROVAL' WHERE id = ?`, [appId]);
+        await connection.query(`DELETE FROM ExamsMapping WHERE application_id = ?`, [appId]);
+
+        for (const exam of parsedExams) {
+            await connection.query(
+                `INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits, score_obtained, exam_date) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [appId, exam.foreignCode, exam.foreignName, exam.foreignCredits, exam.localCode, exam.localName, exam.localCredits, exam.score, exam.date]
+            );
+        }
+
+        if (file) {
+            await connection.query(
+                `INSERT INTO Documents (application_id, document_type, file_name, file_path, status) 
+                 VALUES (?, 'TRANSCRIPT_OF_RECORDS', ?, ?, 'PENDING')`,
+                [appId, file.originalname, '/uploads/' + file.filename]
+            );
+        }
+
+        await connection.commit();
+        res.json({ message: "Voti inviati" });
+    } catch (error) {
+        await connection.rollback();
+        res.status(500).send("Errore server");
+    } finally { connection.release(); }
+});
+
+// Re-Send Modification (REJECTED -> AWAITING_MODIFICATION_APPROVAL)
+app.put('/api/applications/:id/resubmit-modification', upload.single('learning_agreement_file'), async (req, res) => {
+    const appId = req.params.id;
+    const { exams } = req.body;
+    const file = req.file;
+    let parsedExams = [];
+    try { parsedExams = JSON.parse(exams); } catch (e) { }
+
+    const connection = await dbPool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        await connection.query(
+            `UPDATE Applications SET status = 'AWAITING_MODIFICATION_APPROVAL', la_rejection_reason = NULL WHERE id = ?`,
+            [appId]
+        );
+
+        await connection.query(`DELETE FROM ExamsMapping WHERE application_id = ?`, [appId]);
+        for (const exam of parsedExams) {
+            await connection.query(
+                `INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits, score_obtained, exam_date) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [appId, exam.foreignCode, exam.foreignName, exam.foreignCredits, exam.localCode, exam.localName, exam.localCredits, exam.score, exam.date]
+            );
+        }
+
+        if (file) {
+            await connection.query(
+                `INSERT INTO Documents (application_id, document_type, file_name, file_path, status) 
+                 VALUES (?, 'LEARNING_AGREEMENT', ?, ?, 'PENDING')`,
+                [appId, file.originalname, '/uploads/' + file.filename]
+            );
+        }
+
+        await connection.commit();
+        res.json({ message: "Nuova revisione inviata con successo!" });
+    } catch (error) {
+        await connection.rollback();
+        res.status(500).send("Errore server durante il reinvio");
+    } finally { connection.release(); }
+});
+
 app.listen(3000, () => {
     console.log('Backend in ascolto sulla porta 3000');
 });

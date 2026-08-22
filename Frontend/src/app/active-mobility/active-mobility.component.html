@@ -17,149 +17,261 @@
     <p class="page-subtitle">Gestisci la tua mobilità e verifica lo stato delle tue proposte.</p>
   </div>
 
-  <!-- MENU NAVIGAZIONE A BOTTONI -->
-  <div class="boxes-container">
-    <div class="home-box" [class.box-active]="activeView === 'activeMobility'" (click)="cambiaVista('activeMobility')">
-      <div class="box-icon">🌍</div>
-      <h2>Gestione Mobilità</h2>
-      <p>Inserisci date, proponi modifiche al Learning Agreement o carica il Transcript finale.</p>
-    </div>
-    <div class="home-box" [class.box-active]="activeView === 'modifications'" (click)="cambiaVista('modifications')">
-      <div class="box-icon">📋</div>
-      <h2>Stato Modifiche</h2>
-      <p>Controlla se il docente ha accettato o rifiutato le tue variazioni e i tuoi voti.</p>
-      <div class="badge-count">1 Notifica</div>
-    </div>
-  </div>
-
-  <!-- VISTA 1: GESTIONE MOBILITÀ ATTIVA -->
-  @if (activeView === 'activeMobility') {
-    <div class="card" [ngClass]="{'card-predeparture': richiestaAttiva.status === 'PRE_DEPARTURE_COMPLETED', 'card-inprogress': richiestaAttiva.status === 'MOBILITY_IN_PROGRESS'}">
-      <div class="card-header-flex">
-        <div>
-          <h2>{{ richiestaAttiva.institution_name }} ({{ richiestaAttiva.country }})</h2>
-          <p class="desc">A.A. {{ richiestaAttiva.academic_year }} - {{ richiestaAttiva.mobility_period }}</p>
-        </div>
-        <div class="status-badge"
-             [ngClass]="{'badge-warning': richiestaAttiva.status === 'PRE_DEPARTURE_COMPLETED', 'badge-info': richiestaAttiva.status === 'MOBILITY_IN_PROGRESS'}">
-          {{ richiestaAttiva.status | titlecase }}
-        </div>
+  @if (richiestaAttiva) {
+    <!-- MENU NAVIGAZIONE A BOTTONI -->
+    <div class="boxes-container">
+      <div class="home-box" [class.box-active]="activeView === 'activeMobility'" (click)="cambiaVista('activeMobility')">
+        <div class="box-icon">🌍</div>
+        <h2>Gestione Mobilità</h2>
+        <p>Inserisci date, proponi modifiche al Learning Agreement o carica il Transcript finale.</p>
       </div>
+      <div class="home-box" [class.box-active]="activeView === 'modifications'" (click)="cambiaVista('modifications')">
+        <div class="box-icon">📋</div>
+        <h2>Stato Modifiche</h2>
+        <p>Controlla se il docente ha accettato o rifiutato le tue variazioni e i tuoi voti.</p>
+        @if (hasNotifiche) {
+          <div class="badge-count">1 Notifica</div>
+        }
+      </div>
+    </div>
 
-      <!-- FASE 1: PRE-PARTENZA (INSERIMENTO DATE) -->
-      @if (richiestaAttiva.status === 'PRE_DEPARTURE_COMPLETED') {
-        <div class="highlight-box">
-          <h3 style="color: var(--warning); margin-bottom: 12px;">L'Ufficio ha approvato la partenza!</h3>
-          <p style="font-size: 14px; margin-bottom: 16px;">Per avviare ufficialmente la tua mobilità, inserisci le date effettive del soggiorno e conferma.</p>
-
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Data di Arrivo:</label>
-              <input type="date" [(ngModel)]="richiestaAttiva.arrival_date">
-            </div>
-            <div class="form-group">
-              <label>Data di Partenza:</label>
-              <input type="date" [(ngModel)]="richiestaAttiva.departure_date">
-            </div>
+    <!-- VISTA 1: GESTIONE MOBILITÀ ATTIVA -->
+    @if (activeView === 'activeMobility') {
+      <div class="card">
+        <div class="card-header-flex">
+          <div>
+            <h2>{{ richiestaAttiva.institution_name }} @if (richiestaAttiva.country) { ({{ richiestaAttiva.country }}) }</h2>
+            <p class="desc">A.A. {{ richiestaAttiva.academic_year }} - {{ richiestaAttiva.mobility_period }}</p>
           </div>
-
-          <div class="actions right">
-            <button class="btn-danger-outline" (click)="apriModaleConferma('reject_mobility')">❌ Rinuncia</button>
-            <button class="btn-primary" (click)="apriModaleConferma('start_mobility')">✅ Avvia Erasmus</button>
+          <!-- Badge dinamico con i colori standard del progetto -->
+          <div class="status-badge" [ngClass]="{
+              'status-created': richiestaAttiva.status === 'CREATED',
+              'status-awaiting-la': richiestaAttiva.status === 'AWAITING_FOR_APPROVAL' || richiestaAttiva.status === 'AWAITING_MODIFICATION_APPROVAL',
+              'status-pre-departure': richiestaAttiva.status === 'PRE_DEPARTURE_COMPLETED',
+              'status-in-progress': richiestaAttiva.status === 'MOBILITY_IN_PROGRESS',
+              'status-waiting-score': richiestaAttiva.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+              'status-closed': richiestaAttiva.status === 'CLOSED',
+              'status-canceled': richiestaAttiva.status === 'CANCELED'
+            }">
+            {{ formattaStato(richiestaAttiva.status) }}
           </div>
         </div>
-      }
 
-      <!-- FASE 2: MOBILITÀ IN CORSO -->
-      @if (richiestaAttiva.status === 'MOBILITY_IN_PROGRESS') {
-        <div class="actions" style="border-top: 1px solid var(--border); padding-top: 24px;">
-          <p style="width: 100%; font-size: 15px; color: var(--primary); font-weight: 600; margin-bottom: 12px; margin-top: 0;">
-            Erasmus Attivo! Cosa devi gestire?
-          </p>
-          <button class="btn-outline" [class.btn-active]="activePanel === 'dates'" (click)="togglePanel('dates')">📅 Modifica Date</button>
-          <button class="btn-outline" [class.btn-active]="activePanel === 'la'" (click)="togglePanel('la')">📝 Proponi Modifica L.A.</button>
-          <button class="btn-success" [class.btn-active]="activePanel === 'tor'" (click)="togglePanel('tor')">🎓 Chiudi Erasmus (Carica ToR)</button>
-        </div>
+        <!-- FASE 1: PRE-PARTENZA (INSERIMENTO DATE) -->
+        @if (richiestaAttiva.status === 'PRE_DEPARTURE_COMPLETED') {
+          <div class="highlight-box">
+            <h3 style="color: var(--warning); margin-bottom: 12px;">L'Ufficio ha approvato la partenza!</h3>
+            <p style="font-size: 14px; margin-bottom: 16px;">Per avviare ufficialmente la tua mobilità, inserisci le date effettive del soggiorno e conferma.</p>
 
-        <!-- PANNELLO MODIFICA L.A. -->
-        @if (activePanel === 'la') {
-          <div class="collapsible-panel">
-            <div class="form-group full-width" style="margin-bottom: 24px;">
-              <label>Motivo della variazione (Obbligatorio per il docente):</label>
-              <textarea rows="3" [(ngModel)]="motivoVariazioneLA" placeholder="Es. Il corso X si sovrappone al corso Y..."></textarea>
-            </div>
-
-            <!-- LOOP DINAMICO ESAMI -->
-            @for (esame of nuoviEsamiLA; track $index) {
-              <div class="exam-row">
-                <button class="remove-btn" (click)="rimuoviEsameLA($index)">✖ Rimuovi</button>
-                <h4 style="color: var(--primary); margin-top: 0;">Nuova Mappatura #{{ $index + 1 }}</h4>
-
-                <label class="section-label">✈️ Corso Estero</label>
-                <div class="exam-details-grid">
-                  <div class="form-group"><label>Codice</label><input type="text" [(ngModel)]="esame.foreignCode"></div>
-                  <div class="form-group" style="grid-column: span 2;"><label>Nome</label><input type="text" [(ngModel)]="esame.foreignName"></div>
-                  <div class="form-group"><label>CFU</label><input type="number" [(ngModel)]="esame.foreignCredits"></div>
-                </div>
-
-                <label class="section-label" style="margin-top: 16px;">🏛️ Equivalente Ca' Foscari</label>
-                <div class="exam-details-grid">
-                  <div class="form-group"><label>Codice</label><input type="text" [(ngModel)]="esame.localCode"></div>
-                  <div class="form-group" style="grid-column: span 2;"><label>Nome</label><input type="text" [(ngModel)]="esame.localName"></div>
-                  <div class="form-group"><label>CFU</label><input type="number" [(ngModel)]="esame.localCredits"></div>
-                </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Data di Arrivo:</label>
+                <input type="date" [(ngModel)]="richiestaAttiva.arrival_date">
               </div>
-            }
-
-            <button class="btn-outline" style="margin-bottom: 24px;" (click)="aggiungiEsameLA()">+ Aggiungi Insegnamento</button>
-
-            <div class="form-group full-width">
-              <label>Carica il nuovo L.A. firmato (PDF):</label>
-              <input type="file" accept=".pdf">
+              <div class="form-group">
+                <label>Data di Partenza:</label>
+                <input type="date" [(ngModel)]="richiestaAttiva.departure_date">
+              </div>
             </div>
+
             <div class="actions right">
-              <button class="btn-outline" (click)="togglePanel('la')">Annulla</button>
-              <button class="btn-primary" (click)="apriModaleConferma('submit_la')">Invia Proposta</button>
+              <button class="btn-danger-outline" (click)="apriModaleConferma('reject_mobility')">❌ Rinuncia</button>
+              <button class="btn-primary" (click)="apriModaleConferma('start_mobility')">✅ Avvia Erasmus</button>
             </div>
           </div>
         }
 
-        <!-- PANNELLO TRANSCRIPT (TOR) -->
-        @if (activePanel === 'tor') {
-          <div class="collapsible-panel" style="border: 2px solid var(--success);">
-            <h3 style="color: var(--success); margin-top: 0;">Caricamento Voti Finali</h3>
-            <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">Inserisci i voti esatti riportati nel documento ufficiale della tua università ospitante.</p>
-            <div class="form-group full-width">
-              <label>Carica il Transcript of Records originale (PDF):</label>
-              <input type="file" accept=".pdf">
-            </div>
-            <div class="actions right">
-              <button class="btn-outline" (click)="togglePanel('tor')">Annulla</button>
-              <button class="btn-success" (click)="apriModaleConferma('submit_tor')">Invia Voti Ufficiali</button>
-            </div>
+        <!-- FASE 2: MOBILITÀ IN CORSO -->
+        @if (richiestaAttiva.status === 'MOBILITY_IN_PROGRESS') {
+          <div class="actions" style="border-top: 1px solid var(--border); padding-top: 24px;">
+            <p style="width: 100%; font-size: 15px; color: var(--primary); font-weight: 600; margin-bottom: 12px; margin-top: 0;">
+              Erasmus Attivo! Cosa devi gestire?
+            </p>
+            <button class="btn-outline" [class.btn-active]="activePanel === 'dates'" (click)="togglePanel('dates')">📅 Modifica Date</button>
+            <button class="btn-outline" [class.btn-active]="activePanel === 'la'" (click)="togglePanel('la')">📝 Proponi Modifica L.A.</button>
+            <button class="btn-success" [class.btn-active]="activePanel === 'tor'" (click)="togglePanel('tor')">🎓 Chiudi Erasmus (Carica ToR)</button>
           </div>
-        }
-      }
-    </div>
-  }
 
-  <!-- VISTA 2: STATO MODIFICHE E FEEDBACK -->
-  @if (activeView === 'modifications') {
-    <div class="card card-rejected">
-      <div class="card-header-flex">
-        <div>
-          <h2>Invio Transcript of Records</h2>
-          <p class="desc">Inviata il: 25/01/2026</p>
+          <!-- PANNELLO MODIFICA L.A. -->
+          @if (activePanel === 'la') {
+            <div class="collapsible-panel">
+              <div class="form-group full-width" style="margin-bottom: 24px;">
+                <label>Motivo della variazione (Obbligatorio per il docente):</label>
+                <textarea rows="3" [(ngModel)]="motivoVariazioneLA" placeholder="Es. Il corso X si sovrappone al corso Y..."></textarea>
+              </div>
+
+              <!-- LOOP DINAMICO ESAMI -->
+              @for (esame of nuoviEsamiLA; track $index) {
+                <div class="exam-row">
+                  <button class="remove-btn" (click)="rimuoviEsameLA($index)">✖ Rimuovi</button>
+                  <h4 style="color: var(--primary); margin-top: 0;">Nuova Mappatura #{{ $index + 1 }}</h4>
+
+                  <label class="section-label">✈️ Corso Estero</label>
+                  <div class="exam-details-grid">
+                    <div class="form-group"><label>Codice</label><input type="text" [(ngModel)]="esame.foreignCode"></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>Nome</label><input type="text" [(ngModel)]="esame.foreignName"></div>
+                    <div class="form-group"><label>CFU</label><input type="number" [(ngModel)]="esame.foreignCredits"></div>
+                  </div>
+
+                  <label class="section-label" style="margin-top: 16px;">🏛️ Equivalente Ca' Foscari</label>
+                  <div class="exam-details-grid">
+                    <div class="form-group"><label>Codice</label><input type="text" [(ngModel)]="esame.localCode"></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>Nome</label><input type="text" [(ngModel)]="esame.localName"></div>
+                    <div class="form-group"><label>CFU</label><input type="number" [(ngModel)]="esame.localCredits"></div>
+                  </div>
+                </div>
+              }
+
+              <button class="btn-outline" style="margin-bottom: 24px;" (click)="aggiungiEsameLA()">+ Aggiungi Insegnamento</button>
+
+              <div class="form-group full-width">
+                <label>Carica il nuovo L.A. firmato (PDF):</label>
+                <input type="file" accept=".pdf" (change)="onFileLASelected($event)">
+              </div>
+              <div class="actions right">
+                <button class="btn-outline" (click)="togglePanel('la')">Annulla</button>
+                <button class="btn-primary" (click)="apriModaleConferma('submit_la')">Invia Proposta</button>
+              </div>
+            </div>
+          }
+
+          <!-- PANNELLO TRANSCRIPT (TOR) -->
+          @if (activePanel === 'tor') {
+            <div class="collapsible-panel" style="border: 2px solid var(--success);">
+              <h3 style="color: var(--success); margin-top: 0;">Caricamento Voti Finali</h3>
+              <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">Inserisci i voti esatti riportati nel documento ufficiale della tua università ospitante.</p>
+
+              <!-- LOOP DINAMICO ESAMI ToR -->
+              @for (esame of esamiToR; track $index) {
+                <div class="exam-row" style="border-color: var(--success);">
+                  <button class="remove-btn" (click)="rimuoviEsameToR($index)">✖ Rimuovi</button>
+                  <h4 style="color: var(--success); margin-top: 0;">Esame Sostenuto #{{ $index + 1 }}</h4>
+
+                  <label class="section-label">✈️ Corso Estero</label>
+                  <div class="exam-details-grid">
+                    <div class="form-group"><label>Codice</label><input type="text" [(ngModel)]="esame.foreignCode"></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>Nome</label><input type="text" [(ngModel)]="esame.foreignName"></div>
+                    <div class="form-group"><label>CFU</label><input type="number" [(ngModel)]="esame.foreignCredits"></div>
+                  </div>
+
+                  <label class="section-label" style="margin-top: 16px;">🏛️ Equivalente Ca' Foscari</label>
+                  <div class="exam-details-grid">
+                    <div class="form-group"><label>Codice</label><input type="text" [(ngModel)]="esame.localCode"></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>Nome</label><input type="text" [(ngModel)]="esame.localName"></div>
+                    <div class="form-group"><label>CFU</label><input type="number" [(ngModel)]="esame.localCredits"></div>
+                  </div>
+
+                  <div class="form-grid" style="margin-top: 16px; border-top: 1px dashed var(--border); padding-top: 16px;">
+                    <div class="form-group"><label>Voto Ottenuto (Score):</label>
+                      <input type="text" [(ngModel)]="esame.score" placeholder="Es. 30, A, B+...">
+                    </div>
+                    <div class="form-group"><label>Data Esame (Date taken):</label>
+                      <input type="date" [(ngModel)]="esame.date">
+                    </div>
+                  </div>
+                </div>
+              }
+
+              <button class="btn-outline" style="margin-bottom: 24px; color: var(--success); border-color: var(--success);" (click)="aggiungiEsameToR()">+ Aggiungi Esame Sostenuto</button>
+
+              <div class="form-group full-width">
+                <label>Carica il Transcript of Records originale (PDF):</label>
+                <input type="file" accept=".pdf" (change)="onFileToRSelected($event)">
+              </div>
+              <div class="actions right">
+                <button class="btn-outline" (click)="togglePanel('tor')">Annulla</button>
+                <button class="btn-success" (click)="apriModaleConferma('submit_tor')">Invia Voti Ufficiali</button>
+              </div>
+            </div>
+          }
+
+          @if (activePanel === 'correction') {
+            <!-- PRACTICE REJECTED MODIFICATION PANEL -->
+            <div class="collapsible-panel" style="border: 2px solid var(--danger);">
+              <h3 style="color: var(--danger); margin-top: 0;">Correggi i Dati Rifiutati</h3>
+              <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">Modifica gli esami o i dati richiesti e carica il nuovo documento corretto.</p>
+
+              @for (esame of nuoviEsamiLA; track $index) {
+                <div class="exam-row" style="border-color: var(--danger-light);">
+                  <button class="remove-btn" (click)="rimuoviEsameLA($index)">✖ Rimuovi</button>
+                  <h4 style="color: var(--danger); margin-top: 0;">Esame #{{ $index + 1 }}</h4>
+
+                  <label class="section-label">✈️ Corso Estero</label>
+                  <div class="exam-details-grid">
+                    <div class="form-group"><label>Codice</label><input type="text" [(ngModel)]="esame.foreignCode"></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>Nome</label><input type="text" [(ngModel)]="esame.foreignName"></div>
+                    <div class="form-group"><label>CFU</label><input type="number" [(ngModel)]="esame.foreignCredits"></div>
+                  </div>
+
+                  <label class="section-label" style="margin-top: 16px;">🏛️ Equivalente Ca' Foscari</label>
+                  <div class="exam-details-grid">
+                    <div class="form-group"><label>Codice</label><input type="text" [(ngModel)]="esame.localCode"></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>Nome</label><input type="text" [(ngModel)]="esame.localName"></div>
+                    <div class="form-group"><label>CFU</label><input type="number" [(ngModel)]="esame.localCredits"></div>
+                  </div>
+                </div>
+              }
+
+              <button class="btn-outline" style="margin-bottom: 24px;" (click)="aggiungiEsameLA()">+ Aggiungi Insegnamento</button>
+
+              <div class="form-group full-width">
+                <label>Carica il Documento Corretto (PDF):</label>
+                <input type="file" accept=".pdf" (change)="onFileLASelected($event)">
+              </div>
+              <div class="actions right">
+                <button class="btn-outline" (click)="togglePanel('correction')">Annulla</button>
+                <button class="btn-primary" (click)="apriModaleConferma('resubmit_modification')">Invia Nuova Revisione</button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    }
+
+    <!-- VISTA 2: STATO MODIFICHE E FEEDBACK -->
+    @if (activeView === 'modifications') {
+      @if (richiestaAttiva.la_rejection_reason) {
+        <!-- REJECTED -->
+        <div class="card card-rejected">
+          <div class="card-header-flex">
+            <div>
+              <h2>Revisione Pratica Necessaria</h2>
+              <p class="desc">La tua precedente proposta non è stata accettata.</p>
+            </div>
+            <div class="status-badge badge-danger">RIFIUTATA</div>
+          </div>
+          <div class="reason-box">
+            <strong style="color: var(--danger);">Motivazione del Rifiuto (Docente Referente/Ufficio):</strong><br>
+            "{{ richiestaAttiva.la_rejection_reason }}"
+          </div>
+          <div class="actions">
+            <button class="btn-outline" style="color: var(--primary); border-color: var(--primary);" (click)="apriCorrezione()">Vai alla Mobilità per Correggere</button>
+          </div>
         </div>
-        <div class="status-badge badge-danger">Rifiutata</div>
-      </div>
-      <div class="reason-box">
-        <strong>Motivazione del Rifiuto (Docente Referente):</strong><br>
-        "Hai inserito la data di sostenimento dell'esame errata rispetto a quanto riportato nel PDF del Transcript ufficiale. Ti prego di correggere la data e reinviare."
-      </div>
-      <div class="actions">
-        <button class="btn-outline" (click)="cambiaVista('activeMobility')">Vai alla Mobilità per Correggere</button>
-      </div>
+      }
+      @else if (richiestaAttiva.status === 'AWAITING_MODIFICATION_APPROVAL' || richiestaAttiva.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL') {
+        <!-- WAITING -->
+        <div class="card">
+          <div class="card-header-flex">
+            <div>
+              <h2>Pratica in Valutazione</h2>
+              <p class="desc">I tuoi documenti sono stati inviati all'ufficio competente.</p>
+            </div>
+            <div class="status-badge badge-warning">IN ATTESA</div>
+          </div>
+          <p style="font-size: 14px; color: var(--text-main);">Il sistema ha registrato le tue modifiche. Riceverai una notifica non appena il docente prenderà una decisione in merito.</p>
+        </div>
+      }
+      @else {
+        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+          <p>Nessuna notifica o modifica in sospeso al momento.</p>
+        </div>
+      }
+    }
+
+  } @else {
+    <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+      <p style="font-size: 18px; font-weight: 600;">⏳ Caricamento dati della mobilità in corso...</p>
     </div>
   }
 </main>

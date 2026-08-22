@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./active-mobility.component.css'],
 })
 export class ActiveMobilityComponent implements OnInit {
-  // --- HEADER & UTENTE ---
+  // --- HEADER & USER ---
   @Input() utente: any;
   @Input() pratica: any;
   @Output() onBack = new EventEmitter<void>();
@@ -35,16 +35,23 @@ export class ActiveMobilityComponent implements OnInit {
   activeView: 'activeMobility' | 'modifications' = 'activeMobility';
   activePanel: string | null = null;
 
-  richiestaAttiva = {
-    id: 1,
-    institution_name: 'Universidad de Barcelona',
-    country: 'Spagna',
-    academic_year: '2025/2026',
-    mobility_period: 'FIRST_SEMESTER',
-    status: 'PRE_DEPARTURE_COMPLETED', // Cambia questo in 'MOBILITY_IN_PROGRESS' per testare l'altra fase
-    arrival_date: '',
-    departure_date: '',
-  };
+  richiestaAttiva: any = null;
+
+  // --- CONTROLLO DINAMICO NOTIFICHE ---
+  get hasNotifiche(): boolean {
+    if (!this.richiestaAttiva) return false;
+    return (
+      !!this.richiestaAttiva.la_rejection_reason ||
+      this.richiestaAttiva.status === 'AWAITING_MODIFICATION_APPROVAL' ||
+      this.richiestaAttiva.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' ||
+      this.richiestaAttiva.status === 'AWAITING_FOR_APPROVAL'
+    );
+  }
+
+  formattaStato(status: string): string {
+    if (!status) return '';
+    return status.replace(/_/g, ' ');
+  }
 
   nuoviEsamiLA: any[] = [];
   esamiToR: any[] = [];
@@ -56,12 +63,29 @@ export class ActiveMobilityComponent implements OnInit {
   motivoVariazioneLA: string = '';
   isSubmitting: boolean = false;
 
+  // --- File Variables ---
+  fileLA: File | null = null;
+  fileToR: File | null = null;
+
   constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
-    if (this.pratica) {
-      this.richiestaAttiva = this.pratica;
+    if (this.pratica && this.pratica.id) {
+      this.caricaDatiReali(this.pratica.id);
     }
+  }
+
+  caricaDatiReali(appId: number) {
+    fetch(`http://localhost:3000/api/applications/${appId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Errore di rete');
+        return res.json();
+      })
+      .then((data) => {
+        this.richiestaAttiva = data;
+        this.cdr.detectChanges();
+      })
+      .catch((err) => console.error('Errore fetch database:', err));
   }
 
   cambiaVista(vista: 'activeMobility' | 'modifications') {
@@ -75,7 +99,7 @@ export class ActiveMobilityComponent implements OnInit {
     if (panel === 'tor' && this.esamiToR.length === 0) this.aggiungiEsameToR();
   }
 
-  // --- LOGICA RIGHE DINAMICHE ESAMI ---
+  // --- DYNAMIC EXAM LINES ---
 
   aggiungiEsameLA() {
     this.nuoviEsamiLA.push({
@@ -109,7 +133,7 @@ export class ActiveMobilityComponent implements OnInit {
     this.esamiToR.splice(indice, 1);
   }
 
-  // --- GESTIONE MODALI UNIVERSALE ---
+  // --- MODALS ---
 
   apriModaleConferma(azione: string) {
     this.modalConfig.action = azione;
@@ -160,6 +184,16 @@ export class ActiveMobilityComponent implements OnInit {
           btnText: 'Conferma e Invia',
         };
         break;
+      case 'resubmit_modification':
+        this.modalConfig = {
+          action: azione,
+          icon: '🔄',
+          title: 'Invia Nuova Revisione',
+          text: "I dati corretti verranno inviati all'ufficio per una nuova approvazione.",
+          btnClass: 'btn-primary',
+          btnText: 'Invia Revisione',
+        };
+        break;
     }
 
     this.mostraModale = true;
@@ -169,28 +203,128 @@ export class ActiveMobilityComponent implements OnInit {
     this.mostraModale = false;
   }
 
+  // CORRECTIONS
+  apriCorrezione() {
+    this.cambiaVista('activeMobility');
+    this.activePanel = 'correction';
+
+    if (this.richiestaAttiva.exams) {
+      this.nuoviEsamiLA = this.richiestaAttiva.exams.map((e: any) => ({
+        foreignCode: e.foreign_course_code,
+        foreignName: e.foreign_course_name,
+        foreignCredits: e.foreign_course_credits,
+        localCode: e.unive_course_code,
+        localName: e.unive_course_title,
+        localCredits: e.unive_course_credits,
+      }));
+    } else {
+      this.aggiungiEsameLA();
+    }
+  }
+
+  // DATABASE CALLS FOR ACTIONS
   eseguiAzione() {
     if (this.isSubmitting) return;
     this.isSubmitting = true;
 
-    // Qui in futuro metterai le fetch(PUT/POST) per aggiornare il DB
-    setTimeout(() => {
-      if (this.modalConfig.action === 'start_mobility') {
-        this.richiestaAttiva.status = 'MOBILITY_IN_PROGRESS';
-      } else if (this.modalConfig.action === 'reject_mobility') {
-        this.richiestaAttiva.status = 'CANCELED';
-      }
+    const appId = this.richiestaAttiva.id;
+    let fetchPromise: Promise<any>;
 
-      this.activePanel = null;
-      this.mostraModale = false;
-      this.isSubmitting = false;
-      this.cdr.detectChanges();
+    // START OR UPDATE DATES
+    if (
+      this.modalConfig.action === 'start_mobility' ||
+      this.modalConfig.action === 'update_dates'
+    ) {
+      const isStart = this.modalConfig.action === 'start_mobility';
+      fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/dates`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          arrival_date: this.richiestaAttiva.arrival_date,
+          departure_date: this.richiestaAttiva.departure_date,
+          start_mobility: isStart,
+        }),
+      });
+    }
+    // RENUNCIATION
+    else if (this.modalConfig.action === 'reject_mobility') {
+      fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/cancel`, {
+        method: 'PUT',
+      });
+    }
+    // LEARNING AGREEMENT MODIFICATION
+    else if (this.modalConfig.action === 'submit_la') {
+      const formData = new FormData();
+      formData.append('exams', JSON.stringify(this.nuoviEsamiLA));
+      formData.append('reason', this.motivoVariazioneLA);
+      if (this.fileLA) formData.append('learning_agreement_file', this.fileLA);
 
-      alert('Operazione completata con successo!');
-    }, 800);
+      fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/modify-la`, {
+        method: 'PUT',
+        body: formData,
+      });
+    }
+    // GRADES UPDATE (ToR)
+    else if (this.modalConfig.action === 'submit_tor') {
+      const formData = new FormData();
+      formData.append('exams', JSON.stringify(this.esamiToR));
+      if (this.fileToR) formData.append('tor_file', this.fileToR);
+
+      fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/tor`, {
+        method: 'POST',
+        body: formData,
+      });
+    }
+    // RE-SEND
+    else if (this.modalConfig.action === 'resubmit_modification') {
+      const formData = new FormData();
+      formData.append('exams', JSON.stringify(this.nuoviEsamiLA));
+      if (this.fileLA) formData.append('learning_agreement_file', this.fileLA);
+
+      fetchPromise = fetch(
+        `http://localhost:3000/api/applications/${appId}/resubmit-modification`,
+        {
+          method: 'PUT',
+          body: formData,
+        },
+      );
+    } else {
+      return;
+    }
+
+    // Response Managment
+    fetchPromise
+      .then((res) => {
+        if (!res.ok) throw new Error("Errore durante l'operazione server");
+        return res.json();
+      })
+      .then(() => {
+        this.activePanel = null;
+        this.mostraModale = false;
+        alert('✅ Operazione registrata con successo nel database!');
+
+        this.caricaDatiReali(appId);
+      })
+      .catch((err) => {
+        alert(err.message);
+        this.mostraModale = false;
+      })
+      .finally(() => {
+        this.isSubmitting = false;
+      });
   }
+
   tornaIndietro(event: Event) {
     event.preventDefault();
     this.onBack.emit();
+  }
+
+  // FILE MANAGMENT
+  onFileLASelected(event: any) {
+    if (event.target.files.length > 0) this.fileLA = event.target.files[0];
+  }
+
+  onFileToRSelected(event: any) {
+    if (event.target.files.length > 0) this.fileToR = event.target.files[0];
   }
 }

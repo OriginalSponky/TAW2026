@@ -21,7 +21,6 @@ CREATE TABLE Institutions (
 
 CREATE TABLE Applications (
                               id INT AUTO_INCREMENT PRIMARY KEY,
-
                               student_id INT NOT NULL,
                               institution_id INT NOT NULL,
                               lecturer_id INT NOT NULL,
@@ -36,14 +35,15 @@ CREATE TABLE Applications (
 
     -- STATO DELLA RICHIESTA
                               status ENUM(
-        'CREATED',
-        'AWAITING_FOR_APPROVAL',
-        'PRE_DEPARTURE_COMPLETED',
-        'MOBILITY_IN_PROGRESS',
-        'WAITING_FOR_EXAM_SCORE_APPROVAL',
-        'CLOSED',
-        'CANCELED'
-    ) DEFAULT 'CREATED',
+                                  'CREATED',
+                                  'AWAITING_FOR_APPROVAL',
+                                  'PRE_DEPARTURE_COMPLETED',
+                                  'MOBILITY_IN_PROGRESS',
+                                  'AWAITING_MODIFICATION_APPROVAL',
+                                  'WAITING_FOR_EXAM_SCORE_APPROVAL',
+                                  'CLOSED',
+                                  'CANCELED'
+                                  ) DEFAULT 'CREATED',
 
     -- APPROVAZIONI DEL LEARNING AGREEMENT E DEI VOTI
                               is_la_approved BOOLEAN DEFAULT FALSE,
@@ -62,7 +62,6 @@ CREATE TABLE Applications (
 
 CREATE TABLE ExamsMapping (
                               id INT AUTO_INCREMENT PRIMARY KEY,
-
                               application_id INT NOT NULL,
 
     -- DATI DEL CORSO ESTERO
@@ -77,6 +76,7 @@ CREATE TABLE ExamsMapping (
 
                               score_obtained VARCHAR(10) NULL,
                               exam_date DATE NULL,
+                              is_proposed_change BOOLEAN DEFAULT FALSE,
 
     -- APPROVAZIONE DEL SINGOLO ESAME
                               is_approved_by_lecturer BOOLEAN DEFAULT FALSE,
@@ -86,7 +86,6 @@ CREATE TABLE ExamsMapping (
 
 CREATE TABLE Documents (
                            id INT AUTO_INCREMENT PRIMARY KEY,
-
                            application_id INT NOT NULL,
 
     -- Tipo di documento
@@ -95,14 +94,12 @@ CREATE TABLE Documents (
     -- Dati del file fisico salvato sul server
                            file_name VARCHAR(255) NOT NULL,
                            file_path VARCHAR(255) NOT NULL,
-
                            modification_description TEXT NULL,
 
     -- Tracciamento per ogni singola versione del documento
                            status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
                            decision_date DATE NULL,
                            rejection_reason TEXT NULL,
-
                            upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
                            FOREIGN KEY (application_id) REFERENCES Applications(id) ON DELETE CASCADE
@@ -124,15 +121,16 @@ INSERT INTO Institutions (name, country, city, website_url) VALUES
                                                                 ('Universidad de Barcelona', 'Spagna', 'Barcellona', 'https://www.ub.edu'),
                                                                 ('Technical University of Munich', 'Germania', 'Monaco', 'https://www.tum.de');
 
--- 3. Creiamo le 7 Domande di Mobilità (1 per ogni stato possibile)
-INSERT INTO Applications (id, student_id, institution_id, lecturer_id, academic_year, mobility_period, status, is_la_approved) VALUES
-                                                                                                                                   (1, 1, 1, 2, '2025/2026', 'FIRST_SEMESTER', 'MOBILITY_IN_PROGRESS', TRUE),
-                                                                                                                                   (2, 1, 2, 2, '2026/2027', 'SECOND_SEMESTER', 'CREATED', FALSE),
-                                                                                                                                   (3, 1, 1, 2, '2026/2027', 'FULL_YEAR', 'AWAITING_FOR_APPROVAL', FALSE),
-                                                                                                                                   (4, 1, 2, 2, '2025/2026', 'FIRST_SEMESTER', 'PRE_DEPARTURE_COMPLETED', TRUE),
-                                                                                                                                   (5, 1, 1, 2, '2025/2026', 'SECOND_SEMESTER', 'WAITING_FOR_EXAM_SCORE_APPROVAL', TRUE),
-                                                                                                                                   (6, 1, 2, 2, '2024/2025', 'FULL_YEAR', 'CLOSED', TRUE),
-                                                                                                                                   (7, 1, 1, 2, '2025/2026', 'SECOND_SEMESTER', 'CANCELED', FALSE);
+-- 3. Creiamo le 8 Domande di Mobilità (Aggiunta la colonna la_rejection_reason e la pratica 8 per testare il rifiuto)
+INSERT INTO Applications (id, student_id, institution_id, lecturer_id, academic_year, mobility_period, status, is_la_approved, la_rejection_reason) VALUES
+                                                                                                                                                        (1, 1, 1, 2, '2025/2026', 'FIRST_SEMESTER', 'MOBILITY_IN_PROGRESS', TRUE, NULL),
+                                                                                                                                                        (2, 1, 2, 2, '2026/2027', 'SECOND_SEMESTER', 'CREATED', FALSE, NULL),
+                                                                                                                                                        (3, 1, 1, 2, '2026/2027', 'FULL_YEAR', 'AWAITING_FOR_APPROVAL', FALSE, NULL),
+                                                                                                                                                        (4, 1, 2, 2, '2025/2026', 'FIRST_SEMESTER', 'PRE_DEPARTURE_COMPLETED', TRUE, NULL),
+                                                                                                                                                        (5, 1, 1, 2, '2025/2026', 'SECOND_SEMESTER', 'WAITING_FOR_EXAM_SCORE_APPROVAL', TRUE, NULL),
+                                                                                                                                                        (6, 1, 2, 2, '2024/2025', 'FULL_YEAR', 'CLOSED', TRUE, NULL),
+                                                                                                                                                        (7, 1, 1, 2, '2025/2026', 'SECOND_SEMESTER', 'CANCELED', FALSE, NULL),
+                                                                                                                                                        (8, 1, 1, 2, '2025/2026', 'SECOND_SEMESTER', 'MOBILITY_IN_PROGRESS', FALSE, 'Attenzione: Il corso UB-ART202 (Historia del Arte) non è in linea con il tuo piano di studi di Informatica. Ti prego di sostituirlo con un corso pertinente (es. UX Design o Database) e reinviare la proposta.');
 
 -- 4. Creiamo la Mappatura degli Esami per ogni richiesta
 INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits, score_obtained, is_approved_by_lecturer) VALUES
@@ -152,13 +150,16 @@ INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_na
 (6, 'TUM-CS301', 'Computer Networks', 6.0, 'CM0555', 'Reti di Calcolatori', 6, '27', TRUE),
 (6, 'TUM-CS302', 'Database Systems', 6.0, 'CM0666', 'Basi di Dati', 6, '30', TRUE),
 -- App 7 (CANCELED)
-(7, 'UB-INF401', 'Seguridad Informática', 6.0, 'CM0777', 'Sicurezza Informatica', 6, NULL, FALSE);
+(7, 'UB-INF401', 'Seguridad Informática', 6.0, 'CM0777', 'Sicurezza Informatica', 6, NULL, FALSE),
+-- App 8 (PRATICA RIFIUTATA DA TESTARE)
+(8, 'UB-INF101', 'Desarrollo Web Avanzado', 6.0, 'CM0123', 'Tecnologie e Applicazioni Web', 6, NULL, FALSE),
+(8, 'UB-ART202', 'Historia del Arte Contemporáneo', 6.0, 'CM0999', 'Esame a Scelta Libera', 6, NULL, FALSE);
 
 -- 5. Inseriamo i Documenti
 INSERT INTO Documents (application_id, document_type, file_name, file_path, status) VALUES
 -- App 1: Documento che genererà errore (il file non esiste fisicamente)
 (1, 'LEARNING_AGREEMENT', 'LA_Bianchi_Filippo_Signed.pdf', '/uploads/docs/1/LA_Bianchi_Filippo_Signed.pdf', 'APPROVED'),
--- App 3: Documento caricato ma in attesa di approvazione (genererà errore se cliccato per test)
+-- App 3: Documento caricato ma in attesa di approvazione
 (3, 'LEARNING_AGREEMENT', 'LA_Test_Awaiting.pdf', '/uploads/docs/3/test.pdf', 'PENDING'),
 -- App 4: Learning Agreement Approvato
 (4, 'LEARNING_AGREEMENT', 'LA_Test_PreDep.pdf', '/uploads/docs/4/test.pdf', 'APPROVED'),
@@ -167,5 +168,6 @@ INSERT INTO Documents (application_id, document_type, file_name, file_path, stat
 (5, 'TRANSCRIPT_OF_RECORDS', 'ToR_Test_Waiting.pdf', '/uploads/docs/5/test_tor.pdf', 'PENDING'),
 -- App 6: Entrambi i documenti approvati
 (6, 'LEARNING_AGREEMENT', 'LA_Test_Closed.pdf', '/uploads/docs/6/test_la.pdf', 'APPROVED'),
-(6, 'TRANSCRIPT_OF_RECORDS', 'ToR_Test_Closed.pdf', '/uploads/docs/6/test_tor.pdf', 'APPROVED');
--- Le App 2 (CREATED) e 7 (CANCELED) non hanno nessun documento inserito.
+(6, 'TRANSCRIPT_OF_RECORDS', 'ToR_Test_Closed.pdf', '/uploads/docs/6/test_tor.pdf', 'APPROVED'),
+-- App 8: Documento rifiutato
+(8, 'LEARNING_AGREEMENT', 'LA_Test_Errato.pdf', '/uploads/docs/8/LA_Test_Errato.pdf', 'REJECTED');

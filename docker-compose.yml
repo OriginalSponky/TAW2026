@@ -25,7 +25,7 @@ services:
     volumes:
       - ./backend/uploads:/usr/src/app/uploads
     environment:
-      - DB_HOST=db
+      - DB_HOST=dbTAW
     depends_on:
       - db
 
