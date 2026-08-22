@@ -374,24 +374,48 @@ app.put('/api/applications/:id', upload.single('learning_agreement_file'), async
 
 // ROUTES FOR MOBILITY
 
-// Start Mobility or Update Dates
+//Avvia Mobilità o Aggiorna Date in Corsa
 app.put('/api/applications/:id/dates', async (req, res) => {
+    const appId = req.params.id;
+    // Queste sono le variabili che ci manda Angular
     const { arrival_date, departure_date, start_mobility } = req.body;
+
+    // Richiediamo una connessione dal pool per eseguire la transazione
+    const connection = await dbPool.getConnection();
+
     try {
+        await connection.beginTransaction();
+
+        const dbArrival = (arrival_date && arrival_date.trim() !== '') ? arrival_date : null;
+        const dbDeparture = (departure_date && departure_date.trim() !== '') ? departure_date : null;
+
+        // Se start_mobility è VERO (L'utente ha cliccato "Avvia Erasmus" nella fase di pre-partenza)
         if (start_mobility) {
-            await dbPool.query(
-                `UPDATE Applications SET actual_arrival_date = ?, actual_departure_date = ?, status = 'MOBILITY_IN_PROGRESS' WHERE id = ?`,
-                [arrival_date, departure_date, req.params.id]
-            );
-        } else {
-            await dbPool.query(
-                `UPDATE Applications SET actual_arrival_date = ?, actual_departure_date = ? WHERE id = ?`,
-                [arrival_date, departure_date, req.params.id]
+            await connection.query(
+                // USIAMO I NOMI CORRETTI DEL DATABASE: actual_arrival_date e actual_departure_date
+                `UPDATE Applications
+                 SET actual_arrival_date = ?, actual_departure_date = ?, status = 'MOBILITY_IN_PROGRESS'
+                 WHERE id = ?`,
+                [dbArrival, dbDeparture, appId]
             );
         }
-        res.json({ message: 'Date aggiornate con successo' });
+        else {
+            await connection.query(
+                `UPDATE Applications
+                 SET actual_arrival_date = ?, actual_departure_date = ?
+                 WHERE id = ?`,
+                [dbArrival, dbDeparture, appId]
+            );
+        }
+
+        await connection.commit();
+        res.json({ message: "Date salvate con successo nel database!" });
     } catch (error) {
-        res.status(500).send("Errore durante l'aggiornamento delle date");
+        await connection.rollback();
+        console.error("🔴 ERRORE CRITICO AGGIORNAMENTO DATE:", error);
+        res.status(500).send("Errore del server durante il salvataggio delle date: " + error.message);
+    } finally {
+        connection.release();
     }
 });
 

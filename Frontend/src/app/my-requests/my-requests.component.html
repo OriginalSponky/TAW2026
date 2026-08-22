@@ -34,7 +34,15 @@
 
       <!-- Applications Cycling -->
       @for (richiesta of richieste; track richiesta.id) {
-        <div class="request-card">
+        <div class="request-card" [ngClass]="{
+            'border-created': richiesta.status === 'CREATED',
+            'border-awaiting': richiesta.status === 'AWAITING_FOR_APPROVAL' || richiesta.status === 'AWAITING_MODIFICATION_APPROVAL',
+            'border-pre-departure': richiesta.status === 'PRE_DEPARTURE_COMPLETED',
+            'border-in-progress': richiesta.status === 'MOBILITY_IN_PROGRESS',
+            'border-waiting-score': richiesta.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+            'border-closed': richiesta.status === 'CLOSED',
+            'border-canceled': richiesta.status === 'CANCELED'
+          }">
           <div class="card-header">
             <div class="request-info">
               <div class="university-name">{{ richiesta.institution_name }}</div>
@@ -100,6 +108,7 @@
     </div>
   }
   @else {
+    <!-- SE LA RICHIESTA È SELEZIONATA, MOSTRA IL DETTAGLIO -->
     <app-request-detail
       [requestId]="richiestaSelezionata"
       (onBack)="chiudiDettaglio()">

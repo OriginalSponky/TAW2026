@@ -168,15 +168,17 @@
   </div>
 }
 
-<!-- ANGULAR MODAL: CONFERMA SALVATAGGIO BOZZA -->
+<!-- MODALE DI CONFERMA SALVATAGGIO -->
 @if (mostraModale) {
   <div class="modal-overlay">
     <div class="modal">
-      <h3>Conferma Modifiche</h3>
-      <p>Stai per aggiornare i dati della tua bozza. Sei sicuro che le nuove mappature degli esami siano corrette?</p>
-      <div class="modal-actions">
-        <button class="btn-outline" (click)="chiudiModale()" [disabled]="isSubmitting">Annulla</button>
-        <button class="btn-primary" (click)="confermaSalvataggio()" [disabled]="isSubmitting">
+      <h3 style="font-size: 1.5rem; margin-bottom: 12px;">💾 Conferma Modifiche 📝</h3>
+      <p style="color: var(--text-muted); margin-bottom: 32px; font-size: 15px; line-height: 1.6;">
+        Stai per aggiornare i dati della tua bozza. Sei sicuro che le nuove mappature degli esami siano corrette?
+      </p>
+      <div class="modal-actions" style="display: flex; gap: 12px; width: 100%;">
+        <button class="btn-outline" style="flex: 1; justify-content: center; padding: 12px;" (click)="chiudiModale()" [disabled]="isSubmitting">Annulla</button>
+        <button class="btn-primary" style="flex: 1; justify-content: center; padding: 12px;" (click)="confermaSalvataggio()" [disabled]="isSubmitting">
           {{ isSubmitting ? 'Salvataggio...' : 'Conferma e Salva' }}
         </button>
       </div>

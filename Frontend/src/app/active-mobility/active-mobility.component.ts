@@ -198,6 +198,20 @@ export class ActiveMobilityComponent implements OnInit {
           btnText: 'Conferma e Parti',
         };
         break;
+      case 'update_dates':
+        if (!this.richiestaAttiva.arrival_date || !this.richiestaAttiva.departure_date) {
+          this.mostraFeedback('error', 'Inserisci entrambe le date per salvare.');
+          return;
+        }
+        this.modalConfig = {
+          action: azione,
+          icon: '📅',
+          title: 'Modifica Date',
+          text: 'Vuoi salvare le nuove date per la tua mobilità in corso?',
+          btnClass: 'btn-primary',
+          btnText: 'Salva Date',
+        };
+        break;
       case 'reject_mobility':
         this.modalConfig = {
           action: azione,

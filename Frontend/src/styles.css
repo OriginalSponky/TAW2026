@@ -214,3 +214,33 @@ input[type="file"]::file-selector-button:hover {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+/* BORDI "AURA" DINAMICI PER LE CARD DI STATO*/
+
+.card.border-created, .request-card.border-created {
+  border-left: 6px solid #94a3b8 !important;
+}
+
+.card.border-awaiting, .request-card.border-awaiting {
+  border-left: 6px solid #f59e0b !important;
+}
+
+.card.border-pre-departure, .request-card.border-pre-departure {
+  border-left: 6px solid #fde68a !important;
+}
+
+.card.border-in-progress, .request-card.border-in-progress {
+  border-left: 6px solid #3b82f6 !important;
+}
+
+.card.border-closed, .request-card.border-closed {
+  border-left: 6px solid #10b981 !important;
+}
+
+.card.border-canceled, .request-card.border-canceled {
+  border-left: 6px solid #ef4444 !important;
+}
+
+.card.border-waiting-score, .request-card.border-waiting-score {
+  border-left: 6px solid #a855f7 !important;
+}

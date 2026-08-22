@@ -16,7 +16,10 @@
 </header>
 
 <main (click)="menuAperto = false">
-  <h1 class="page-title">Nuova Richiesta Overseas</h1>
+  <div style="text-align: center; margin-bottom: 32px; margin-top: 16px;">
+    <h1 class="page-title" style="font-size: 2.5rem; margin-bottom: 8px;">✈️ Nuova Richiesta Overseas</h1>
+    <p style="color: var(--text-muted); font-size: 15px;">Compila tutti i campi per avviare la tua pratica di mobilità.</p>
+  </div>
 
   @if (erroreSalvataggio) {
     <div class="error-banner" style="display: block;">
@@ -24,12 +27,14 @@
     </div>
   }
 
-  <form>
-    <!-- SECTION 1: Mobility Details -->
-    <div class="card">
-      <h2>1. Dettagli della Mobilità</h2>
-      <div class="form-grid">
-        <!-- ANNO ACCADEMICO-->
+  <div class="main-form-container">
+
+    <form>
+      <!-- SECTION 1: Mobility Details -->
+      <div class="form-section-clean">
+        <h2 style="color: var(--primary);">1. Dettagli della Mobilità</h2>
+        <div class="form-grid">
+          <!-- ANNO ACCADEMICO-->
           <div class="form-group">
             <label>Anno Accademico</label>
             <select [(ngModel)]="datiRichiesta.academic_year" name="academic_year" [class.is-invalid]="showValidationErrors && !datiRichiesta.academic_year">
@@ -70,113 +75,126 @@
             </select>
           </div>
         </div>
-    </div>
-
-    <!-- SECTION 2: Exam Mapping -->
-    <div class="card">
-      <h2>2. Mappatura Esami (Exam Mapping)</h2>
-      <p style="font-size: 14px; color: #5f6368; margin-bottom: 20px;">Associa gli esami che intendi sostenere all'estero.</p>
-
-      @for (esame of esami; track $index) {
-        <div class="exam-mapping-container">
-
-          @if ($index > 0) {
-            <button type="button" class="remove-exam-btn" (click)="rimuoviEsame($index)">✖ Rimuovi Esame</button>
-          }
-          <!-- CORSO ESTERO -->
-          <div class="exam-section-title">✈️ Corso Estero (Host Institution)</div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Codice Insegnamento</label>
-              <input type="text" [(ngModel)]="esame.foreignCode" name="fcode_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.foreignCode">
-            </div>
-
-            <div class="form-group">
-              <label>Crediti</label>
-              <input type="number" [(ngModel)]="esame.foreignCredits" name="fcred_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.foreignCredits">
-            </div>
-
-            <div class="form-group full-width">
-              <label>Nome del Corso</label>
-              <input type="text" [(ngModel)]="esame.foreignName" name="fname_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.foreignName">
-            </div>
-          </div>
-
-          <!-- CORSO CA' FOSCARI -->
-          <div class="exam-section-title">🏛️ Corso Ca' Foscari</div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Codice Corso</label>
-              <input type="text" [(ngModel)]="esame.localCode" name="lcode_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.localCode">
-            </div>
-
-            <div class="form-group">
-              <label>Crediti</label>
-              <input type="number" [(ngModel)]="esame.localCredits" name="lcred_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.localCredits">
-            </div>
-
-            <div class="form-group full-width">
-              <label>Titolo del Corso</label>
-              <input type="text" [(ngModel)]="esame.localName" name="lname_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.localName">
-            </div>
-          </div>
-
-        </div>
-      }
-      <button type="button" class="btn btn-outline" (click)="aggiungiEsame()">+ Aggiungi un altro esame</button>
-    </div>
-
-    <!-- SECTION 3: Upload Documenti -->
-    <div class="card">
-      <h2>3. Upload Documenti</h2>
-      <div class="form-group full-width">
-
-        <!-- DOWNLOAD TEMPLATE -->
-        <div class="template-download-section">
-          <div class="template-info">
-            <span class="icon" style="font-size: 28px;">📄</span>
-            <div style="display: flex; flex-direction: column;">
-              <strong style="color: var(--text-main); font-size: 15px;">Learning Agreement Template</strong>
-              <span style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Scarica, compila e firma prima di procedere.</span>
-            </div>
-          </div>
-          <button type="button" class="btn-download" (click)="scaricaTemplate()">
-            <span>⬇️</span> Scarica
-          </button>
-        </div>
-
-        <!-- PURE DRAG & DROP ZONE -->
-        <div class="drag-drop-zone"
-             [class.active-glow]="isDragging"
-             (dragover)="onDragOver($event)"
-             (dragleave)="onDragLeave($event)"
-             (drop)="onDrop($event)">
-
-          <div class="upload-content">
-            <div class="upload-circle">
-              <span class="icon" style="font-size: 32px;">📥</span>
-            </div>
-
-            @if (!fileSelezionato) {
-              <h4 style="margin: 16px 0 8px 0; color: var(--primary); font-size: 18px;">Trascina qui il tuo PDF</h4>
-              <p style="margin: 0; color: var(--text-muted); font-size: 14px;">Rilascia il documento all'interno dell'area tratteggiata</p>
-            } @else {
-              <h4 style="margin: 16px 0 8px 0; color: var(--success); font-size: 18px;">✅ Acquisito!</h4>
-              <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 15px;">{{ fileSelezionato.name }}</p>
-            }
-          </div>
-        </div>
-
       </div>
-    </div>
 
-    <div class="submit-container">
-      <button class="btn-primary" (click)="validaEApriModale()">Invia Richiesta Overseas</button>
-    </div>
-  </form>
+      <!-- SECTION 2: Exam Mapping -->
+      <div class="form-section-clean">
+        <h2 style="color: var(--primary);">2. Mappatura Esami (Exam Mapping)</h2>
+        <p style="font-size: 14px; color: #5f6368; margin-bottom: 20px;">Associa gli esami che intendi sostenere all'estero.</p>
+
+        @for (esame of esami; track $index) {
+          <div class="exam-mapping-container">
+
+            @if ($index > 0) {
+              <button type="button" class="remove-exam-btn" (click)="rimuoviEsame($index)">✖ Rimuovi Esame</button>
+            }
+            <!-- CORSO ESTERO -->
+            <div class="exam-section-title">✈️ Corso Estero (Host Institution)</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Codice Insegnamento</label>
+                <input type="text" [(ngModel)]="esame.foreignCode" name="fcode_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.foreignCode">
+              </div>
+
+              <div class="form-group">
+                <label>Crediti</label>
+                <input type="number" [(ngModel)]="esame.foreignCredits" name="fcred_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.foreignCredits">
+              </div>
+
+              <div class="form-group full-width">
+                <label>Nome del Corso</label>
+                <input type="text" [(ngModel)]="esame.foreignName" name="fname_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.foreignName">
+              </div>
+            </div>
+
+            <!-- CORSO CA' FOSCARI -->
+            <div class="exam-section-title">🏛️ Corso Ca' Foscari</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Codice Corso</label>
+                <input type="text" [(ngModel)]="esame.localCode" name="lcode_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.localCode">
+              </div>
+
+              <div class="form-group">
+                <label>Crediti</label>
+                <input type="number" [(ngModel)]="esame.localCredits" name="lcred_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.localCredits">
+              </div>
+
+              <div class="form-group full-width">
+                <label>Titolo del Corso</label>
+                <input type="text" [(ngModel)]="esame.localName" name="lname_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.localName">
+              </div>
+            </div>
+
+          </div>
+        }
+        <button type="button" class="btn btn-outline" (click)="aggiungiEsame()">+ Aggiungi un altro esame</button>
+      </div>
+
+      <!-- SECTION 3: Upload Documenti (RIPRISTINATO DRAG & DROP) -->
+      <div class="form-section-clean">
+        <h2 style="color: var(--primary);">3. Upload Documenti</h2>
+        <div class="form-group full-width">
+
+          <!-- DOWNLOAD TEMPLATE -->
+          <div class="template-download-section">
+            <div class="template-info">
+              <span class="icon" style="font-size: 28px;">📄</span>
+              <div style="display: flex; flex-direction: column;">
+                <strong style="color: var(--text-main); font-size: 15px;">Learning Agreement Template</strong>
+                <span style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Scarica, compila e firma prima di procedere.</span>
+              </div>
+            </div>
+            <button type="button" class="btn-download" (click)="scaricaTemplate()">
+              <span>⬇️</span> Scarica
+            </button>
+          </div>
+
+          <!-- DRAG & DROP ZONE RIPRISTINATA (Con click funzionante) -->
+          <div class="form-group full-width" style="margin-top: 32px;">
+            <label style="display: block; margin-bottom: 12px; font-weight: 600; color: var(--text-main); font-size: 15px;">Carica il Learning Agreement firmato (PDF):</label>
+
+            <div class="drag-drop-zone"
+                 [class.active-glow]="isDragging"
+                 (dragover)="onDragOver($event)"
+                 (dragleave)="onDragLeave($event)"
+                 (drop)="onDrop($event)"
+                 (click)="fileInput.click()"
+                 style="cursor: pointer;">
+
+              <!-- Input file nascosto attivato al click -->
+              <input type="file" #fileInput accept=".pdf" style="display: none;" (change)="onFileSelected($event)">
+
+              <div class="upload-content">
+                <div class="upload-circle">
+                  <span class="icon" style="font-size: 32px;">📥</span>
+                </div>
+
+                @if (!fileSelezionato) {
+                  <h4 style="margin: 16px 0 8px 0; color: var(--primary); font-size: 18px;">Trascina qui il tuo PDF</h4>
+                  <p style="margin: 0; color: var(--text-muted); font-size: 14px;">Rilascia il documento all'interno dell'area tratteggiata</p>
+                } @else {
+                  <h4 style="margin: 16px 0 8px 0; color: var(--success); font-size: 18px;">✅ Acquisito!</h4>
+                  <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 15px;">{{ fileSelezionato.name }}</p>
+                }
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- BOTTONE DI INVIO (ora dentro il contenitore bianco) -->
+      <div class="submit-container" style="margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--border);">
+        <button type="button" class="btn-primary" (click)="validaEApriModale()" style="width: 100%; padding: 16px; font-size: 18px;">Invia Richiesta Overseas</button>
+      </div>
+    </form>
+
+  </div> <!-- FINE main-form-container -->
+
 </main>
 
-<!-- ANGULAR MODAL -->
+<!-- ANGULAR MODAL DI CONFERMA INVIO -->
 @if (mostraModale) {
   <div class="modal-overlay">
     <div class="modal">
@@ -217,7 +235,7 @@
   </div>
 }
 
-<!-- ALERT POPUP DI SISTEMA (Sostituisce alert() nativo) -->
+<!-- ALERT POPUP DI SISTEMA (TOAST) -->
 @if (mostraAlert) {
   <div class="custom-alert" [ngClass]="alertType === 'success' ? 'alert-success' : 'alert-error'">
     <div class="alert-icon">{{ alertType === 'success' ? '✅' : '❌' }}</div>

@@ -37,11 +37,23 @@
 
     <!-- VISTA 1: GESTIONE MOBILITÀ ATTIVA -->
     @if (activeView === 'activeMobility') {
-      <div class="card">
+      <div class="card" [ngClass]="{
+          'border-created': richiestaAttiva.status === 'CREATED',
+          'border-awaiting': richiestaAttiva.status === 'AWAITING_FOR_APPROVAL' || richiestaAttiva.status === 'AWAITING_MODIFICATION_APPROVAL',
+          'border-pre-departure': richiestaAttiva.status === 'PRE_DEPARTURE_COMPLETED',
+          'border-in-progress': richiestaAttiva.status === 'MOBILITY_IN_PROGRESS',
+          'border-waiting-score': richiestaAttiva.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+          'border-closed': richiestaAttiva.status === 'CLOSED',
+          'border-canceled': richiestaAttiva.status === 'CANCELED'
+        }">
         <div class="card-header-flex">
           <div>
-            <h2>{{ richiestaAttiva.institution_name }} @if (richiestaAttiva.country) { ({{ richiestaAttiva.country }}) }</h2>
-            <p class="desc">A.A. {{ richiestaAttiva.academic_year }} - {{ richiestaAttiva.mobility_period }}</p>
+            <h2 style="font-size: 28px; font-weight: 700; color: #1e293b; letter-spacing: -0.5px; margin-bottom: 8px;">
+              {{ richiestaAttiva.institution_name }} @if (richiestaAttiva.country) { ({{ richiestaAttiva.country }}) }
+            </h2>
+            <p style="font-size: 15px; color: #64748b; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
+              📅 A.A. {{ richiestaAttiva.academic_year }} • ⏱️ {{ richiestaAttiva.mobility_period }}
+            </p>
           </div>
           <!-- Badge dinamico con i colori standard del progetto -->
           <div class="status-badge" [ngClass]="{
@@ -96,14 +108,16 @@
           @if (activePanel === 'la') {
             <div class="collapsible-panel">
               <div class="form-group full-width" style="margin-bottom: 24px;">
-                <label>Motivo della variazione (Obbligatorio per il docente):</label>
-                <textarea rows="3" [(ngModel)]="motivoVariazioneLA" placeholder="Es. Il corso X si sovrappone al corso Y..."></textarea>
+                <label style="font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                  💬 Motivo della variazione (Obbligatorio per il docente):
+                </label>
+                <textarea rows="3" [(ngModel)]="motivoVariazioneLA" placeholder="Es. Il corso X si sovrappone al corso Y o ci sono variazioni nel piano di studi..." style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: 14px; background-color: var(--bg-color); outline: none;"></textarea>
               </div>
 
               <!-- LOOP DINAMICO ESAMI -->
               @for (esame of nuoviEsamiLA; track $index) {
-                <div class="exam-row">
-                  <button class="remove-btn" (click)="rimuoviEsameLA($index)">✖ Rimuovi</button>
+                <div class="exam-row" style="position: relative;">
+                  <button type="button" class="remove-exam-btn" (click)="rimuoviEsameLA($index)">❌ Rimuovi Insegnamento</button>
                   <h4 style="color: var(--primary); margin-top: 0;">Nuova Mappatura #{{ $index + 1 }}</h4>
 
                   <label class="section-label">✈️ Corso Estero</label>
@@ -124,10 +138,31 @@
 
               <button class="btn-outline" style="margin-bottom: 24px;" (click)="aggiungiEsameLA()">+ Aggiungi Insegnamento</button>
 
+              <!-- UPLOAD DRAG & DROP CON EMOJI -->
               <div class="form-group full-width">
-                <label>Carica il nuovo L.A. firmato (PDF):</label>
-                <input type="file" accept=".pdf" (change)="onFileLASelected($event)">
+                <label style="font-weight: 600; display: block; margin-bottom: 8px;">📄 Carica il nuovo L.A. firmato (PDF):</label>
+
+                <div class="drag-drop-zone"
+                     (click)="fileInputLA.click()"
+                     style="cursor: pointer; padding: 24px; border: 2px dashed #cbd5e1; border-radius: var(--radius-lg); background-color: var(--bg-color); text-align: center;">
+
+                  <input type="file" #fileInputLA accept=".pdf" style="display: none;" (change)="onFileLASelected($event)">
+
+                  <div class="upload-content">
+                    <div class="upload-circle" style="width: 50px; height: 50px; background: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); margin-bottom: 8px;">
+                      <span style="font-size: 24px;">📥</span>
+                    </div>
+                    @if (!fileLA) {
+                      <h4 style="margin: 4px 0; color: var(--primary); font-size: 16px;">Trascina qui il tuo PDF o clicca per caricarlo</h4>
+                      <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Formato accettato: .PDF</p>
+                    } @else {
+                      <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">✅ File Acquisito!</h4>
+                      <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 14px;">{{ fileLA.name }}</p>
+                    }
+                  </div>
+                </div>
               </div>
+
               <div class="actions right">
                 <button class="btn-outline" (click)="togglePanel('la')">Annulla</button>
                 <button class="btn-primary" (click)="apriModaleConferma('submit_la')">Invia Proposta</button>
@@ -135,16 +170,40 @@
             </div>
           }
 
+          <!-- PANNELLO MODIFICA DATE -->
+          @if (activePanel === 'dates') {
+            <div class="collapsible-panel">
+              <h3 style="color: var(--primary); margin-top: 0;">📅 Aggiorna le tue Date</h3>
+              <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">Se i tuoi piani sono cambiati, puoi aggiornare le date di arrivo e partenza.</p>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Nuova Data di Arrivo:</label>
+                  <input type="date" [(ngModel)]="richiestaAttiva.arrival_date">
+                </div>
+                <div class="form-group">
+                  <label>Nuova Data di Partenza:</label>
+                  <input type="date" [(ngModel)]="richiestaAttiva.departure_date">
+                </div>
+              </div>
+
+              <div class="actions right" style="margin-top: 24px;">
+                <button class="btn-outline" (click)="togglePanel('dates')">Annulla</button>
+                <button class="btn-primary" (click)="apriModaleConferma('update_dates')">Salva Nuove Date</button>
+              </div>
+            </div>
+          }
+
           <!-- PANNELLO TRANSCRIPT (TOR) -->
           @if (activePanel === 'tor') {
             <div class="collapsible-panel" style="border: 2px solid var(--success);">
-              <h3 style="color: var(--success); margin-top: 0;">Caricamento Voti Finali</h3>
+              <h3 style="color: var(--success); margin-top: 0;">🎓 Caricamento Voti Finali</h3>
               <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">Inserisci i voti esatti riportati nel documento ufficiale della tua università ospitante.</p>
 
               <!-- LOOP DINAMICO ESAMI ToR -->
               @for (esame of esamiToR; track $index) {
-                <div class="exam-row" style="border-color: var(--success);">
-                  <button class="remove-btn" (click)="rimuoviEsameToR($index)">✖ Rimuovi</button>
+                <div class="exam-row" style="border-color: var(--success); position: relative;">
+                  <button type="button" class="remove-exam-btn" (click)="rimuoviEsameToR($index)">❌ Rimuovi Esame</button>
                   <h4 style="color: var(--success); margin-top: 0;">Esame Sostenuto #{{ $index + 1 }}</h4>
 
                   <label class="section-label">✈️ Corso Estero</label>
@@ -162,10 +221,10 @@
                   </div>
 
                   <div class="form-grid" style="margin-top: 16px; border-top: 1px dashed var(--border); padding-top: 16px;">
-                    <div class="form-group"><label>Voto Ottenuto (Score):</label>
+                    <div class="form-group"><label>🏆 Voto Ottenuto (Score):</label>
                       <input type="text" [(ngModel)]="esame.score" placeholder="Es. 30, A, B+...">
                     </div>
-                    <div class="form-group"><label>Data Esame (Date taken):</label>
+                    <div class="form-group"><label>📅 Data Esame:</label>
                       <input type="date" [(ngModel)]="esame.date">
                     </div>
                   </div>
@@ -174,10 +233,31 @@
 
               <button class="btn-outline" style="margin-bottom: 24px; color: var(--success); border-color: var(--success);" (click)="aggiungiEsameToR()">+ Aggiungi Esame Sostenuto</button>
 
+              <!-- UPLOAD DRAG & DROP TOR CON EMOJI -->
               <div class="form-group full-width">
-                <label>Carica il Transcript of Records originale (PDF):</label>
-                <input type="file" accept=".pdf" (change)="onFileToRSelected($event)">
+                <label style="font-weight: 600; display: block; margin-bottom: 8px;">📄 Carica il Transcript of Records originale (PDF):</label>
+
+                <div class="drag-drop-zone"
+                     (click)="fileInputToR.click()"
+                     style="cursor: pointer; padding: 24px; border: 2px dashed #86efac; border-radius: var(--radius-lg); background-color: var(--bg-color); text-align: center;">
+
+                  <input type="file" #fileInputToR accept=".pdf" style="display: none;" (change)="onFileToRSelected($event)">
+
+                  <div class="upload-content">
+                    <div class="upload-circle" style="width: 50px; height: 50px; background: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); margin-bottom: 8px;">
+                      <span style="font-size: 24px;">📥</span>
+                    </div>
+                    @if (!fileToR) {
+                      <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">Trascina qui il tuo ToR o clicca per caricarlo</h4>
+                      <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Formato accettato: .PDF</p>
+                    } @else {
+                      <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">✅ File Acquisito!</h4>
+                      <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 14px;">{{ fileToR.name }}</p>
+                    }
+                  </div>
+                </div>
               </div>
+
               <div class="actions right">
                 <button class="btn-outline" (click)="togglePanel('tor')">Annulla</button>
                 <button class="btn-success" (click)="apriModaleConferma('submit_tor')">Invia Voti Ufficiali</button>
@@ -188,12 +268,12 @@
           <!-- PANNELLO DI CORREZIONE (Puntato dal bottone Rifiuto) -->
           @if (activePanel === 'correction') {
             <div class="collapsible-panel" style="border: 2px solid #ef4444; border-radius: 8px; padding: 24px;">
-              <h3 style="color: #ef4444; margin-top: 0; font-size: 1.25rem;">Correggi i Dati Rifiutati</h3>
+              <h3 style="color: #ef4444; margin-top: 0; font-size: 1.25rem;">⚠️ Correggi i Dati Rifiutati</h3>
               <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">Modifica gli esami o i dati richiesti e carica il nuovo documento corretto.</p>
 
               @for (esame of nuoviEsamiLA; track $index) {
                 <div class="exam-row" style="border: 1px solid var(--border); padding: 20px; border-radius: 6px; position: relative;">
-                  <button class="remove-btn" (click)="rimuoviEsameLA($index)">✕ Rimuovi</button>
+                  <button type="button" class="remove-exam-btn" (click)="rimuoviEsameLA($index)">❌ Rimuovi Esame</button>
                   <h4 style="color: #ef4444; margin-top: 0; margin-bottom: 16px; font-size: 1.1rem;">Esame #{{ $index + 1 }}</h4>
 
                   <label class="section-label" style="color: var(--primary); font-weight: 600; font-size: 11px;">✈️ CORSO ESTERO</label>
@@ -214,9 +294,29 @@
 
               <button class="btn-outline" style="color: var(--primary); border-color: var(--primary); margin-bottom: 24px;" (click)="aggiungiEsameLA()">+ Aggiungi Insegnamento</button>
 
+              <!-- UPLOAD DRAG & DROP CORRETTO CON EMOJI -->
               <div class="form-group full-width" style="margin-bottom: 32px;">
-                <label style="color: var(--text-main); font-weight: 500; font-size: 14px;">Carica il Documento Corretto (PDF):</label>
-                <input type="file" accept=".pdf" (change)="onFileLASelected($event)">
+                <label style="color: var(--text-main); font-weight: 500; font-size: 14px; display: block; margin-bottom: 8px;">📄 Carica il Documento Corretto (PDF):</label>
+
+                <div class="drag-drop-zone"
+                     (click)="fileInputCorrection.click()"
+                     style="cursor: pointer; padding: 24px; border: 2px dashed #fca5a5; border-radius: var(--radius-lg); background-color: var(--bg-color); text-align: center;">
+
+                  <input type="file" #fileInputCorrection accept=".pdf" style="display: none;" (change)="onFileLASelected($event)">
+
+                  <div class="upload-content">
+                    <div class="upload-circle" style="width: 50px; height: 50px; background: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); margin-bottom: 8px;">
+                      <span style="font-size: 24px;">📥</span>
+                    </div>
+                    @if (!fileLA) {
+                      <h4 style="margin: 4px 0; color: #ef4444; font-size: 16px;">Trascina qui il PDF corretto o clicca</h4>
+                      <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Formato accettato: .PDF</p>
+                    } @else {
+                      <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">✅ File Acquisito!</h4>
+                      <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 14px;">{{ fileLA.name }}</p>
+                    }
+                  </div>
+                </div>
               </div>
 
               <div class="actions right" style="border-top: 1px solid var(--border); padding-top: 20px;">
@@ -325,7 +425,7 @@
   </div>
 }
 
-<!-- ALERT POPUP DI SISTEMA (Sostituisce alert() nativo) -->
+<!-- ALERT POPUP DI SISTEMA (TOAST) -->
 @if (mostraAlert) {
   <div class="custom-alert" [ngClass]="alertType === 'success' ? 'alert-success' : 'alert-error'">
     <div class="alert-icon">{{ alertType === 'success' ? '✅' : '❌' }}</div>

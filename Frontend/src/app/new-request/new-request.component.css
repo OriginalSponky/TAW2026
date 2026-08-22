@@ -432,3 +432,27 @@ input[type="file"] {
 .drag-drop-zone.active-glow .upload-circle {
   transform: translateY(-5px);
 }
+
+/* NUOVO CONTENITORE BIANCO PRINCIPALE */
+.main-form-container {
+  background-color: var(--surface);
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  margin-bottom: 40px;
+}
+
+.form-section-clean {
+  margin-bottom: 48px;
+}
+
+.form-section-clean h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-top: 0;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border);
+}
