@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-request-detail',
@@ -11,13 +12,16 @@ import { FormsModule } from '@angular/forms';
 })
 export class RequestDetailComponent implements OnInit {
   @Input() requestId!: number;
+  @Input() utente: any;
   @Output() onBack = new EventEmitter<void>();
+  @Output() onLogout = new EventEmitter<void>();
 
   dettagli: any = null;
   dettagliBackup: any = null;
   isEditing: boolean = false;
   mostraModale: boolean = false;
   isSubmitting: boolean = false;
+  menuAperto: boolean = false;
 
   // --- VARIABILI PER IL TOAST GLOBALE ---
   mostraAlert: boolean = false;
@@ -28,7 +32,10 @@ export class RequestDetailComponent implements OnInit {
   isDragging: boolean = false;
   fileSelezionato: File | null = null;
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    public themeService: ThemeService,
+  ) {}
 
   ngOnInit() {
     this.caricaDettagli();
@@ -222,5 +229,18 @@ export class RequestDetailComponent implements OnInit {
         this.fileSelezionato = null;
       }
     }
+  }
+
+  effettuaLogout(event: Event) {
+    event.preventDefault();
+    this.onLogout.emit();
+  }
+  toggleMenu(event: Event) {
+    event.stopPropagation();
+    this.menuAperto = !this.menuAperto;
+  }
+  get iniziali(): string {
+    if (!this.utente) return '';
+    return (this.utente.first_name.charAt(0) + this.utente.last_name.charAt(0)).toUpperCase();
   }
 }

@@ -1,3 +1,136 @@
+/* FONT */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ========================================= */
+/* 🎨 TEMA CHIARO GLOBALE (LIGHT MODE)       */
+/* ========================================= */
+:root {
+  /* Sfondi */
+  --bg-color: #f8fafc;
+  --surface: #ffffff;
+
+  /* Testi */
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+
+  /* Bordi */
+  --border: #e2e8f0;
+
+  /* SMUSSATURE GLOBALI (Border Radius) */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Colori Primari e d'Accento */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-light: #eff6ff;
+
+  --success: #10b981;
+  --success-hover: #059669; /* Aggiunto */
+  --danger: #ef4444;
+  --danger-light: #fee2e2;
+  --warning: #f59e0b;
+  --warning-light: #fef3c7;
+
+  /* Ombre */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* ========================================= */
+/* 🌙 TEMA SCURO GLOBALE (DARK MODE)         */
+/* ========================================= */
+
+/* TRANSIZIONI FLUIDE */
+body, .card, .request-card, header, .form-section-clean, .modal, .main-form-container, input, select, textarea {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+body.dark-mode {
+  /* Sfondi Strutturali */
+  --bg-color: #0f172a;
+  --surface: #1e293b;
+
+  /* Testi */
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+
+  /* Bordi */
+  --border: #334155;
+
+  /* Colori d'Accento (adattati per leggibilità) */
+  --primary-light: rgba(37, 99, 235, 0.2);
+  --danger-light: rgba(239, 68, 68, 0.15);
+  --warning-light: rgba(245, 158, 11, 0.15);
+
+  /* Ombre (più intense su sfondi scuri) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
+}
+
+/* FIX SPECIFICI PER LA DARK MODE */
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+  background-color: #0f172a;
+  color: var(--text-main);
+  border-color: #475569;
+  color-scheme: dark;
+}
+
+body.dark-mode input:focus,
+body.dark-mode select:focus,
+body.dark-mode textarea:focus {
+  border-color: var(--primary);
+}
+
+body.dark-mode .drag-drop-zone {
+  background-color: #0f172a;
+  border-color: #475569;
+}
+body.dark-mode .upload-circle {
+  background-color: var(--surface);
+}
+
+body.dark-mode .main-form-container {
+  background-color: var(--surface);
+  border-color: var(--border);
+}
+
+body.dark-mode header,
+body.dark-mode .dropdown {
+  background-color: var(--surface);
+  border-color: var(--border);
+}
+
+body.dark-mode .home-box {
+  background-color: var(--surface);
+  border-color: var(--border);
+}
+body.dark-mode .home-box:hover {
+  background-color: #334155;
+}
+
+/* ========================================= */
+/* IMPOSTAZIONI GLOBALI HTML/BODY E TESTI    */
+/* ========================================= */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+
+
+/* ========================================= */
+/* COMPONENTI STRUTTURALI                    */
+/* ========================================= */
+
 /* TITLE */
 .page-title { font-size: 2rem; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
 .page-subtitle { color: var(--text-muted); font-size: 15px; margin-bottom: 40px; }
@@ -282,6 +415,35 @@ input[type="file"]:hover {
 
 @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUpModal { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* DROPDOWN E HEADER-ACTIONS */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.theme-toggle-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+  color: var(--text-main);
+}
+
+.theme-toggle-btn:hover {
+  transform: rotate(15deg) scale(1.05);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+}
 
 /* ALERT POPUP DI SISTEMA (TOAST)*/
 .custom-alert {

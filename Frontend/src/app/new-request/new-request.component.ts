@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-new-request',
@@ -16,7 +17,10 @@ export class NewRequestComponent implements OnInit {
   @Output() onLogout = new EventEmitter<void>();
   @Output() onSuccess = new EventEmitter<void>();
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    public themeService: ThemeService,
+  ) {}
 
   // Form data model
   datiRichiesta: any = {

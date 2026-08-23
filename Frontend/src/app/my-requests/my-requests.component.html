@@ -1,16 +1,21 @@
 <header>
-  <!-- Event to return to dashboard -->
   <a href="#" class="back-btn" (click)="tornaIndietro($event)">← Home</a>
 
-  <div class="profile-container">
-    <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
-    <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
-      <a href="#">Gestisci il tuo Account</a>
-      <a href="#">Impostazioni</a>
-      <a href="#">Aiuto e feedback</a>
-      <div class="divider"></div>
-      <!-- Triggers the logout -->
-      <a href="#" class="logout" (click)="effettuaLogout($event)">🚪 Log out</a>
+  <div class="header-actions" style="display: flex; align-items: center; gap: 16px;">
+
+    <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
+      {{ themeService.isDark ? '☀️' : '🌙' }}
+    </button>
+
+    <div class="profile-container">
+      <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
+      <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
+        <a href="#">Gestisci il tuo Account</a>
+        <a href="#">Impostazioni</a>
+        <a href="#">Aiuto e feedback</a>
+        <div class="divider"></div>
+        <a href="#" class="logout" (click)="effettuaLogout($event)">🚪 Log out</a>
+      </div>
     </div>
   </div>
 </header>
@@ -72,14 +77,19 @@
                 }
               } @else {
                 <!-- SE SIAMO IN FASE DI CONFERMA INLINE -->
-                <div class="inline-delete-confirmation">
-                  <span style="font-size: 13px; color: var(--danger); font-weight: 500; margin-right: 12px;">Sei sicuro?</span>
-                  <button class="btn-outline" style="padding: 6px 12px; font-size: 13px; margin-right: 8px;" (click)="annullaEliminazione()" [disabled]="isDeleting">
-                    Annulla
-                  </button>
-                  <button class="btn-outline btn-danger" style="padding: 6px 12px; font-size: 13px; background-color: var(--danger); color: white;" (click)="confermaEliminazioneDefinitiva(richiesta.id)" [disabled]="isDeleting">
-                    {{ isDeleting ? 'Eliminazione...' : 'Conferma' }}
-                  </button>
+                <div class="modern-delete-bar">
+                  <div class="delete-message">
+                    <span class="warning-icon">⚠️</span>
+                    <span>Sei sicuro?</span>
+                  </div>
+                  <div class="delete-actions">
+                    <button class="btn-cancel-pill" (click)="annullaEliminazione()" [disabled]="isDeleting">
+                      Annulla
+                    </button>
+                    <button class="btn-confirm-pill" (click)="confermaEliminazioneDefinitiva(richiesta.id)" [disabled]="isDeleting">
+                      {{ isDeleting ? 'Attendere...' : 'Conferma' }}
+                    </button>
+                  </div>
                 </div>
               }
             </div>

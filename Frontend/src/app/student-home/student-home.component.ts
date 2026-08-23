@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { NewRequestComponent } from '../new-request/new-request.component';
 import { MyRequestsComponent } from '../my-requests/my-requests.component';
 import { ActiveMobilityComponent } from '../active-mobility/active-mobility.component';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-student-home',
@@ -27,7 +28,10 @@ export class StudentHomeComponent {
   idRichiestaDaModificare: number | null = null;
   praticaAttiva: any = null;
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    public themeService: ThemeService,
+  ) {}
 
   ngOnInit() {
     // Check if the user has an active mobility when the dashboard loads

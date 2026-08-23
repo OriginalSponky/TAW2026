@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-active-mobility',
@@ -35,7 +36,10 @@ export class ActiveMobilityComponent implements OnInit {
   fileLA: File | null = null;
   fileToR: File | null = null;
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    public themeService: ThemeService,
+  ) {}
 
   get iniziali(): string {
     if (!this.utente) return 'ST';
@@ -298,7 +302,6 @@ export class ActiveMobilityComponent implements OnInit {
       fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/cancel`, {
         method: 'PUT',
       });
-
     } else if (this.modalConfig.action === 'submit_la') {
       const payloadEsami = this.nuoviEsamiLA.map((e) => ({ ...e, is_proposed_change: true }));
 

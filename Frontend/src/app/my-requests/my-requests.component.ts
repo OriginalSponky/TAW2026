@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RequestDetailComponent } from '../request-detail/request-detail.component';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-my-requests',
@@ -21,17 +22,20 @@ export class MyRequestsComponent implements OnInit {
   richiestaSelezionata: number | null = null;
   menuAperto: boolean = false;
 
+
   // --- VARIABILI PER IL TOAST GLOBALE ---
   mostraAlert: boolean = false;
   alertType: 'success' | 'error' = 'success';
   alertMessage: string = '';
 
-  // --- NUOVA LOGICA ELIMINAZIONE INLINE ---
-  // Invece di un modale, memorizziamo l'ID della richiesta che stiamo per confermare
+  // --- ELIMINAZIONE INLINE ---
   confermaEliminazioneId: number | null = null;
   isDeleting: boolean = false;
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    public themeService: ThemeService,
+  ) {}
 
   get iniziali(): string {
     if (!this.utente) return '';
@@ -40,7 +44,6 @@ export class MyRequestsComponent implements OnInit {
 
   ngOnInit() {
     const emailSicura = encodeURIComponent(this.utente.email);
-
     fetch(`http://localhost:3000/api/applications?email=${emailSicura}`)
       .then((res) => {
         if (!res.ok) throw new Error('Errore dal server');

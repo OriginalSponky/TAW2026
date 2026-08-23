@@ -1,12 +1,17 @@
 <header>
   <a href="#" class="back-btn" (click)="tornaIndietro($event)">← Torna alla Home</a>
-  <div class="profile-container">
-    <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
-    <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
-      <a href="#">Il mio profilo</a>
-      <a href="#">Impostazioni</a>
-      <div class="divider"></div>
-      <a href="#" class="logout" (click)="effettuaLogout($event)">🚪 Log out</a>
+  <div class="header-actions">
+    <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
+      {{ themeService.isDark ? '☀️' : '🌙' }}
+    </button>
+    <div class="profile-container">
+      <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
+      <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
+        <a href="#">Il mio profilo</a>
+        <a href="#">Impostazioni</a>
+        <div class="divider"></div>
+        <a href="#" class="logout" (click)="effettuaLogout($event)">🚪 Log out</a>
+      </div>
     </div>
   </div>
 </header>
@@ -48,10 +53,12 @@
         }">
         <div class="card-header-flex">
           <div>
-            <h2 style="font-size: 28px; font-weight: 700; color: #1e293b; letter-spacing: -0.5px; margin-bottom: 8px;">
+            <!-- TITOLO SISTEMATO: Usa var(--text-main) per adattarsi alla Dark Mode -->
+            <h2 style="font-size: 28px; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; margin-bottom: 8px;">
               {{ richiestaAttiva.institution_name }} @if (richiestaAttiva.country) { ({{ richiestaAttiva.country }}) }
             </h2>
-            <p style="font-size: 15px; color: #64748b; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
+            <!-- SOTTOTITOLO SISTEMATO: Usa var(--text-muted) -->
+            <p style="font-size: 15px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
               📅 A.A. {{ richiestaAttiva.academic_year }} • ⏱️ {{ richiestaAttiva.mobility_period }}
             </p>
           </div>

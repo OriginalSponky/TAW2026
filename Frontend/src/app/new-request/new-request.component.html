@@ -3,6 +3,11 @@
     {{ editRequestId ? '← Torna alle mie richieste' : '← Home' }}
   </a>
 
+  <div class="header-actions">
+  <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
+    {{ themeService.isDark ? '☀️' : '🌙' }}
+  </button>
+
   <div class="profile-container">
     <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
     <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
@@ -12,6 +17,7 @@
       <div class="divider"></div>
       <a href="#" class="logout" (click)="effettuaLogout($event)">🚪 Log out</a>
     </div>
+  </div>
   </div>
 </header>
 
