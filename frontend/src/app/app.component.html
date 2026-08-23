@@ -112,10 +112,10 @@
   }
 
   @else if (utenteLoggato.role === 'STAFF') {
-    <div style="text-align: center; padding: 100px;">
-      <h1 style="font-size: 30px;">🏛️ Area Ufficio (STAFF)</h1>
-      <p style="color: var(--text-muted); margin-bottom: 24px;">La dashboard amministrativa è in costruzione.</p>
-      <button class="btn-primary" (click)="eseguiLogout()">Log out</button>
-    </div>
+    <!-- Area STAFF -->
+    <app-staff-dashboard
+      [utente]="utenteLoggato"
+      (onLogout)="eseguiLogout()">
+    </app-staff-dashboard>
   }
 }

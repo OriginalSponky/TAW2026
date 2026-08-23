@@ -667,6 +667,54 @@ app.put('/api/lecturer/applications/:id/review', async (req, res) => {
     }
 });
 
+// ROTTE PER LO STAFF (UFFICIO OVERSEAS)
+// 1. L'ufficio recupera l'intero archivio di tutte le pratiche
+app.get('/api/staff/applications', async (req, res) => {
+    try {
+        const [rows] = await dbPool.query(`
+            SELECT 
+                a.id, a.academic_year, a.mobility_period, a.status, 
+                i.name AS institution, i.country,
+                s.first_name AS student_first_name, s.last_name AS student_last_name, s.matriculation_number AS matricola,
+                l.email AS teacher,
+                (SELECT COUNT(*) FROM Documents d WHERE d.application_id = a.id AND d.status = 'PENDING') AS pending_docs
+            FROM Applications a
+            JOIN Institutions i ON a.institution_id = i.id
+            JOIN Users s ON a.student_id = s.id
+            JOIN Users l ON a.lecturer_id = l.id
+            ORDER BY a.updated_at DESC
+        `);
+        res.json(rows);
+    } catch (error) {
+        console.error("Errore recupero pratiche Staff:", error);
+        res.status(500).send("Errore interno");
+    }
+});
+
+// 2. L'ufficio approva o rifiuta (Segnala) una pratica per fagli cambiare stato
+app.put('/api/staff/applications/:id/review', async (req, res) => {
+    const appId = req.params.id;
+    const { action, actionType, rejection_reason } = req.body;
+
+    try {
+        let newStatus;
+        if (actionType === 'pre-departure') {
+            newStatus = action === 'APPROVE' ? 'MOBILITY_IN_PROGRESS' : 'CANCELED';
+        } else if (actionType === 'closure') {
+            newStatus = action === 'APPROVE' ? 'CLOSED' : 'CANCELED';
+        }
+
+        await dbPool.query(
+            `UPDATE Applications SET status = ?, la_rejection_reason = ? WHERE id = ?`,
+            [newStatus, rejection_reason || null, appId]
+        );
+        res.json({ message: "Pratica processata dall'ufficio con successo." });
+    } catch (error) {
+        console.error("Errore review staff:", error);
+        res.status(500).send("Errore server");
+    }
+});
+
 app.listen(3000, () => {
     console.log('Backend in ascolto sulla porta 3000');
 });

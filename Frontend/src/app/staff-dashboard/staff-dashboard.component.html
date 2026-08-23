@@ -1,0 +1,274 @@
+<header>
+  <div class="logo-area">Ufficio Overseas</div>
+
+  <div class="header-actions">
+    <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
+      {{ themeService.isDark ? '☀️' : '🌙' }}
+    </button>
+    <div class="profile-container">
+      <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
+      <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
+        <a href="#">Impostazioni Account</a>
+        <div class="divider"></div>
+        <a href="#" class="logout" (click)="effettuaLogout($event)">🚪 Log out</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main (click)="menuAperto = false">
+
+  <!-- VISTA 1: HOME DASHBOARD -->
+  @if (activeView === 'homeView') {
+    <div class="hero">
+      <h1 class="page-title">Ciao Staff, {{ utente.first_name }} {{ utente.last_name }}</h1>
+      <p class="page-subtitle">Pannello di controllo dell'Ufficio Mobilità Overseas di UniVe.</p>
+    </div>
+
+    <div class="boxes-container">
+      <div class="home-box" (click)="switchView('preDepartureView')">
+        <div class="box-icon">🛫</div>
+        <h2>Verifiche Pre-Partenza</h2>
+        <p>Pratiche approvate dai docenti, in attesa di nulla osta per la partenza.</p>
+        @if (preDepartureApps.length > 0) { <div class="badge-count">{{ preDepartureApps.length }} in coda</div> }
+      </div>
+
+      <div class="home-box" (click)="switchView('closureView')">
+        <div class="box-icon">🏁</div>
+        <h2>Chiusura Pratiche</h2>
+        <p>Mobilità concluse, con voti approvati. In attesa di chiusura definitiva.</p>
+        @if (closureApps.length > 0) { <div class="badge-count">{{ closureApps.length }} in coda</div> }
+      </div>
+
+      <div class="home-box" (click)="switchView('allAppsView')">
+        <div class="box-icon">🗂️</div>
+        <h2>Tutte le Pratiche</h2>
+        <p>Accedi all'archivio per filtrare e cercare qualsiasi richiesta.</p>
+      </div>
+    </div>
+  }
+
+  @else if (activeView === 'preDepartureView') {
+    <!-- VISTA 2: VERIFICHE PRE-PARTENZA -->
+    <button class="back-header-btn" (click)="switchView('homeView')">← Torna al menù</button>
+    <h1 class="page-title" style="text-align: left;">🛫 Verifiche Pre-Partenza</h1>
+    <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">Studenti pronti a partire.</p>
+
+    <div class="requests-list">
+      @if (preDepartureApps.length === 0) {
+        <p style="color: var(--text-muted);">🎉 Nessuna pratica in questa coda.</p>
+      }
+
+      @for (app of preDepartureApps; track app.id) {
+        <div class="request-card card-departure">
+          <div class="request-info">
+            <div class="student-name">🧑‍🎓 {{ app.name }} (Mat. {{ app.matricola }})</div>
+            <div class="details">🌍 Destinazione: {{ app.institution }} | ✉️ Docente: {{ app.teacher }}</div>
+            <div class="status-badge badge-warning">Awaiting Pre-Departure Verification</div>
+          </div>
+          <div class="actions">
+            <button class="btn-primary" (click)="startReview(app, 'pre-departure', 'Learning Agreement')">Apri Pratica</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @else if (activeView === 'closureView') {
+    <!-- VISTA 3: CHIUSURA PRATICHE -->
+    <button class="back-header-btn" (click)="switchView('homeView')">← Torna al menù</button>
+    <h1 class="page-title" style="text-align: left;">🏁 Pratiche pronte per la Chiusura</h1>
+    <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">Archiviazione definitiva delle mobilità concluse.</p>
+
+    <div class="requests-list">
+      @if (closureApps.length === 0) {
+        <p style="color: var(--text-muted);">🎉 Nessuna pratica in questa coda.</p>
+      }
+
+      @for (app of closureApps; track app.id) {
+        <div class="request-card card-closure">
+          <div class="request-info">
+            <div class="student-name">🧑‍🎓 {{ app.name }} (Mat. {{ app.matricola }})</div>
+            <div class="details">🌍 Destinazione: {{ app.institution }} | ✉️ Docente: {{ app.teacher }}</div>
+            <div class="status-badge badge-success">Voti Approvati - Ready to Close</div>
+          </div>
+          <div class="actions">
+            <button class="btn-primary" (click)="startReview(app, 'closure', 'Transcript of Records')">Apri Pratica</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @else if (activeView === 'allAppsView') {
+    <!-- VISTA 4: ARCHIVIO E FILTRI -->
+    <button class="back-header-btn" (click)="switchView('homeView')">← Torna al menù</button>
+    <h1 class="page-title" style="text-align: left;">🗂️ Archivio Generale Pratiche</h1>
+
+    <div class="filter-container">
+      <div class="filter-title">🔎 Cerca e Filtra</div>
+      <div class="filter-grid">
+        <input type="text" [(ngModel)]="filtri.studente" placeholder="Nome o Matricola studente..." (input)="applicaFiltri()">
+        <input type="text" [(ngModel)]="filtri.docente" placeholder="Email Docente..." (input)="applicaFiltri()">
+        <select [(ngModel)]="filtri.stato" (change)="applicaFiltri()">
+          <option value="">Tutti gli Stati</option>
+          <option value="CREATED">CREATED</option>
+          <option value="AWAITING_FOR_APPROVAL">AWAITING_FOR_APPROVAL</option>
+          <option value="PRE_DEPARTURE_COMPLETED">PRE_DEPARTURE_COMPLETED</option>
+          <option value="MOBILITY_IN_PROGRESS">MOBILITY_IN_PROGRESS</option>
+          <option value="AWAITING_MODIFICATION_APPROVAL">AWAITING_MODIFICATION_APPROVAL</option>
+          <option value="WAITING_FOR_EXAM_SCORE_APPROVAL">WAITING_FOR_EXAM_SCORE_APPROVAL</option>
+          <option value="CLOSED">CLOSED</option>
+          <option value="CANCELED">CANCELED</option>
+        </select>
+
+        <!-- ISTRUZIONI DINAMICHE PER NAZIONE E ISTITUTO -->
+        <select [(ngModel)]="filtri.nazione" (change)="applicaFiltri()">
+          <option value="">Tutti i Paesi</option>
+          @for (nazione of uniqueNazioni; track nazione) {
+            <option [value]="nazione">{{ nazione }}</option>
+          }
+        </select>
+        <select [(ngModel)]="filtri.istituzione" (change)="applicaFiltri()">
+          <option value="">Tutte le Istituzioni</option>
+          @for (ist of uniqueIstituzioni; track ist) {
+            <option [value]="ist">{{ ist }}</option>
+          }
+        </select>
+      </div>
+      <div class="filter-actions">
+        <button class="btn-outline" (click)="resettaFiltri()">Resetta Filtri</button>
+      </div>
+    </div>
+
+    <!-- Lista Filtrata -->
+    <div class="requests-list">
+      @if (praticheFiltrate.length === 0) {
+        <p style="color: var(--text-muted); padding: 20px; text-align: center; background: var(--surface); border-radius: 8px;">
+          Nessuna pratica trovata con i filtri selezionati.
+        </p>
+      } @else {
+        @for (app of praticheFiltrate; track app.id) {
+          <!-- Bordo "Aura" Dinamico in base allo stato! -->
+          <div class="request-card" [ngClass]="{
+            'border-created': app.status === 'CREATED',
+            'border-awaiting': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
+            'border-pre-departure': app.status === 'PRE_DEPARTURE_COMPLETED',
+            'border-in-progress': app.status === 'MOBILITY_IN_PROGRESS',
+            'border-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+            'border-closed': app.status === 'CLOSED',
+            'border-canceled': app.status === 'CANCELED'
+          }">
+            <div class="request-info">
+              <div class="student-name">🧑‍🎓 {{ app.name }} (Mat. {{ app.matricola }})</div>
+              <div class="details">🌍 Destinazione: {{ app.institution }} ({{ app.country }}) | ✉️ Docente: {{ app.teacher }}</div>
+              <div class="status-badge" [ngClass]="app.enumColor">{{ app.status.replace('_', ' ') }}</div>
+            </div>
+            <button class="btn-outline" (click)="apriDettagli(app.id)">🔍 Dettagli</button>
+          </div>
+        }
+      }
+    </div>
+  }
+</main>
+
+<!-- MODALE DI REVISIONE (STAFF) -->
+@if (mostraModaleReview) {
+  <div class="modal-overlay">
+    <div class="modal">
+
+      @if (modalStep === 'read' || modalStep === 'reject-reason') {
+        <h3 style="margin-bottom: 8px;">{{ reviewData.studentName }}</h3>
+        <p style="color: var(--text-muted); margin-bottom: 24px;">{{ reviewData.actionType === 'pre-departure' ? 'Verifica Pre-Partenza' : 'Verifica per Chiusura Pratica' }}</p>
+      }
+
+      @if (modalStep === 'read') {
+        <a href="#" class="doc-link" target="_blank" download>
+          📄 Controlla {{ reviewData.docName }}
+        </a>
+
+        <div class="checklist" style="text-align: left;">
+          <strong>Controlli previsti dal sistema:</strong>
+          <ul>
+            @if (reviewData.actionType === 'pre-departure') {
+              <li>Dati essenziali della mobilità inseriti</li>
+              <li>Learning Agreement caricato e firmato</li>
+              <li>Learning Agreement <strong style="color: var(--success);">approvato</strong> dal docente referente</li>
+            } @else {
+              <li>Transcript of Records finale caricato</li>
+              <li>Tutti i voti <strong style="color: var(--success);">approvati</strong> dal docente referente</li>
+            }
+          </ul>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 24px;">
+          <button class="btn-outline" (click)="chiudiReviewModal()">Annulla</button>
+          <button class="btn-danger" (click)="impostaStep('reject-reason')">Segnala Errore / Rifiuta</button>
+          <button class="btn-success" (click)="chiediConferma('approve')">Approva Pratica</button>
+        </div>
+      }
+
+      @else if (modalStep === 'reject-reason') {
+        <p style="font-weight: 600; text-align: left; margin-bottom: 4px; color: var(--text-main);">Motivazione della Segnalazione:</p>
+        <p style="font-size: 13px; color: var(--text-muted); text-align: left; margin-bottom: 12px;">Questa motivazione verrà inviata allo studente e al docente referente.</p>
+        <textarea class="reject-textarea" [(ngModel)]="motivoRifiuto" placeholder="Spiega dettagliatamente cosa manca o quale errore è stato riscontrato..."></textarea>
+
+        <div class="modal-actions" style="margin-top: 24px;">
+          <button class="btn-outline" (click)="impostaStep('read')">Indietro</button>
+          <button class="btn-danger" (click)="chiediConferma('reject')">Procedi</button>
+        </div>
+      }
+
+      @else if (modalStep === 'confirm') {
+        <div style="text-align: center; margin-bottom: 24px; padding-top: 16px;">
+          <h2 style="font-size: 64px; margin-top: 0; margin-bottom: 16px; line-height: 1;">{{ pendingAction === 'approve' ? '✅' : '❓' }}</h2>
+          <h3 style="margin-bottom: 8px;">{{ pendingAction === 'approve' ? (reviewData.actionType === 'pre-departure' ? 'Conferma Partenza' : 'Conferma Chiusura') : 'Conferma Segnalazione' }}</h3>
+          <p style="font-size: 15px; color: var(--text-muted); font-weight: 500;">
+            {{ pendingAction === 'approve' ? 'Lo stato verrà aggiornato automaticamente nel sistema.' : 'La tua segnalazione verrà inviata allo studente.' }}
+          </p>
+        </div>
+        <div class="modal-actions center">
+          <button class="btn-outline" (click)="impostaStep('read')">Annulla</button>
+          <button [class]="pendingAction === 'approve' ? 'btn-success' : 'btn-danger'" (click)="eseguiAzione()">
+            Conferma Definitiva
+          </button>
+        </div>
+      }
+
+      @else if (modalStep === 'success') {
+        <div style="text-align: center; margin-bottom: 24px; padding-top: 16px;">
+          <h2 style="font-size: 64px; margin-top: 0; margin-bottom: 16px; line-height: 1;">🎉</h2>
+          <h3 style="margin-bottom: 8px; color: var(--success);">Operazione completata!</h3>
+          <p style="font-size: 14px; color: var(--text-muted);">
+            L'ufficio ha gestito la richiesta e la coda è stata aggiornata.
+          </p>
+        </div>
+        <div class="modal-actions center">
+          <button class="btn-primary" (click)="chiudiSuccesso()">Torna in Dashboard</button>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- MODALE DETTAGLI ARCHIVIO -->
+@if (mostraModaleDettagli && appSelezionata) {
+  <div class="modal-overlay">
+    <div class="modal" style="text-align: left; max-width: 500px;">
+      <h3 style="margin-bottom: 4px; margin-top: 0;">🧑‍🎓 {{ appSelezionata.name }}</h3>
+      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px; margin-top: 0;">Matricola: {{ appSelezionata.matricola }}</p>
+
+      <div class="status-badge" [ngClass]="appSelezionata.enumColor" style="margin-bottom: 24px;">{{ appSelezionata.status }}</div>
+
+      <div style="background: var(--bg-color); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+        <p style="margin-bottom: 8px; font-size: 14px; color: var(--text-main);"><strong>🌍 Destinazione:</strong> {{ appSelezionata.institution }} ({{ appSelezionata.country }})</p>
+        <p style="margin-bottom: 8px; font-size: 14px; color: var(--text-main);"><strong>📅 Periodo:</strong> A.A. {{ appSelezionata.academic_year }}</p>
+        <p style="font-size: 14px; color: var(--text-main); margin: 0;"><strong>✉️ Docente Ref:</strong> {{ appSelezionata.teacher }}</p>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 32px; justify-content: center;">
+        <button class="btn-primary" (click)="mostraModaleDettagli = false">Chiudi</button>
+      </div>
+    </div>
+  </div>
+}

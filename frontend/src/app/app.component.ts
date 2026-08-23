@@ -3,11 +3,18 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StudentHomeComponent } from './student-home/student-home.component';
 import { LecturerDashboardComponent } from './lecturer-dashboard/lecturer-dashboard.component';
+import { StaffDashboardComponent } from './staff-dashboard/staff-dashboard.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, StudentHomeComponent, LecturerDashboardComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    StudentHomeComponent,
+    LecturerDashboardComponent,
+    StaffDashboardComponent,
+  ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
