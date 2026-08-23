@@ -1,0 +1,206 @@
+<header>
+  <div class="header-logo">Area Docente Referente</div>
+
+  <div class="header-actions">
+    <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
+      {{ themeService.isDark ? '☀️' : '🌙' }}
+    </button>
+
+    <div class="profile-container">
+      <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
+      <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
+        <a href="#">Il mio profilo</a>
+        <a href="#">Impostazioni</a>
+        <div class="divider"></div>
+        <a href="#" class="logout" (click)="effettuaLogout($event)">🚪 Log out</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main (click)="menuAperto = false">
+
+  <!-- VISTA 1: HOME DASHBOARD -->
+  @if (activeView === 'homeView') {
+    <div class="hero">
+      <h1 class="page-title">Dashboard Docente</h1>
+      <p class="page-subtitle">Benvenuto. Scegli un'area di competenza per gestire le richieste degli studenti.</p>
+    </div>
+
+    <div class="boxes-container">
+      <div class="home-box" (click)="switchView('laView')">
+        <div class="box-icon">📝</div>
+        <h2>Approvazioni L.A.</h2>
+        <p>Valuta i Learning Agreement pre-partenza o le modifiche in itinere.</p>
+        <!-- Numero dinamico L.A. -->
+        @if (pendingLAs.length > 0) { <div class="badge-count">{{ pendingLAs.length }} in attesa</div> }
+      </div>
+
+      <div class="home-box" (click)="switchView('torView')">
+        <div class="box-icon">🎓</div>
+        <h2>Valutazione Voti</h2>
+        <p>Controlla e approva i Transcript of Records al rientro.</p>
+        <!-- Numero dinamico ToR -->
+        @if (pendingToRs.length > 0) { <div class="badge-count badge-count-purple">{{ pendingToRs.length }} in attesa</div> }
+      </div>
+
+      <div class="home-box" (click)="switchView('handledView')">
+        <div class="box-icon">✅</div>
+        <h2>Storico Pratiche</h2>
+        <p>Consulta tutte le pratiche gestite, già approvate o archiviate.</p>
+      </div>
+    </div>
+  }
+
+  @else if (activeView === 'laView') {
+    <!-- VISTA 2: APPROVAZIONE LEARNING AGREEMENT -->
+    <button class="back-header-btn" (click)="switchView('homeView')">← Torna alla Dashboard</button>
+    <h1 class="page-title" style="text-align: left;">Valutazione Learning Agreement</h1>
+    <p class="page-subtitle" style="text-align: left;">Richieste di approvazione dei piani di studio esteri.</p>
+
+    <div class="requests-list">
+      @if (pendingLAs.length === 0) {
+        <p style="color: var(--text-muted);">Nessuna pratica in attesa di revisione.</p>
+      }
+
+      <!-- Loop Reale sulle L.A. -->
+      @for (app of pendingLAs; track app.id) {
+        <div class="request-card" [ngClass]="app.status === 'AWAITING_FOR_APPROVAL' ? 'border-warning' : 'border-info'">
+          <div class="request-info">
+            <div class="student-name">Studente: {{ app.student_first_name }} {{ app.student_last_name }}</div>
+            <div class="details">Destinazione: {{ app.institution_name }} ({{ app.country }}) | A.A. {{ app.academic_year }}</div>
+            <div class="status-badge" [ngClass]="app.status === 'AWAITING_FOR_APPROVAL' ? 'badge-warning' : 'badge-info'">
+              {{ app.status === 'AWAITING_FOR_APPROVAL' ? 'L.A. Pre-Partenza' : 'Modifica L.A. in itinere' }}
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn-primary" (click)="startReview(app, 'LEARNING_AGREEMENT')">Valuta L.A.</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @else if (activeView === 'torView') {
+    <!-- VISTA 3: TRANSCRIPT OF RECORDS -->
+    <button class="back-header-btn" (click)="switchView('homeView')">← Torna alla Dashboard</button>
+    <h1 class="page-title" style="text-align: left;">Approvazione Voti (ToR)</h1>
+    <p class="page-subtitle" style="text-align: left;">Studenti rientrati in attesa della conversione voti.</p>
+
+    <div class="requests-list">
+      @if (pendingToRs.length === 0) {
+        <p style="color: var(--text-muted);">Nessun libretto voti in attesa.</p>
+      }
+
+      <!-- Loop Reale sui ToR -->
+      @for (app of pendingToRs; track app.id) {
+        <div class="request-card border-purple">
+          <div class="request-info">
+            <div class="student-name">Studente: {{ app.student_first_name }} {{ app.student_last_name }}</div>
+            <div class="details">Destinazione: {{ app.institution_name }} ({{ app.country }}) | A.A. {{ app.academic_year }}</div>
+            <div class="status-badge badge-purple">In attesa conversione voti</div>
+          </div>
+          <div class="actions">
+            <button class="btn-purple" (click)="startReview(app, 'TRANSCRIPT_OF_RECORDS')">Valuta Voti</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @else if (activeView === 'handledView') {
+    <!-- VISTA 4: STORICO -->
+    <button class="back-header-btn" (click)="switchView('homeView')">← Torna alla Dashboard</button>
+    <h1 class="page-title" style="text-align: left;">Pratiche Gestite</h1>
+    <p class="page-subtitle" style="text-align: left;">Storico delle tue approvazioni passate.</p>
+
+    <div class="requests-list">
+      @if (handledApps.length === 0) {
+        <p style="color: var(--text-muted);">Nessuna pratica nello storico.</p>
+      }
+
+      <!-- Loop Reale sullo Storico -->
+      @for (app of handledApps; track app.id) {
+        <div class="request-card" [ngClass]="app.status === 'CANCELED' ? 'border-danger' : 'border-success'">
+          <div class="request-info">
+            <div class="student-name">Studente: {{ app.student_first_name }} {{ app.student_last_name }}</div>
+            <div class="details">Destinazione: {{ app.institution_name }} | A.A. {{ app.academic_year }}</div>
+            <div class="status-badge" [ngClass]="app.status === 'CANCELED' ? 'badge-danger' : 'badge-success'">
+              Stato Pratica: {{ formattaStato(app.status) }}
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</main>
+
+<!-- MODALE VALUTAZIONE (SPA Angular Style) -->
+@if (mostraModaleReview) {
+  <div class="modal-overlay">
+    <div class="modal">
+      <h3>{{ reviewData.studentName }}</h3>
+      <p style="color: var(--text-muted); margin-bottom: 24px;">{{ reviewData.actionType }}</p>
+
+      <!-- STEP 1: LETTURA E REVISIONE -->
+      @if (modalStep === 'read') {
+        @if (reviewData.studentNote) {
+          <div class="student-note-box">
+            <strong>Motivazione Studente (o info extra):</strong>
+            <span>{{ reviewData.studentNote }}</span>
+          </div>
+        }
+
+        <!-- APRE IL PDF REALMENTE SCARICATO -->
+        <a [href]="reviewData.docUrl" class="doc-link" target="_blank">📄 Apri File: {{ reviewData.docName }}</a>
+
+        <p style="font-size: 14px; font-weight: 600; text-align: left; margin-bottom: 8px; color: var(--text-main);">Dati Mappatura Inseriti:</p>
+        <div class="exam-data-box" [innerHTML]="reviewData.examsHtml"></div>
+
+        <div class="modal-actions" style="margin-top: 24px;">
+          <button class="btn-outline" (click)="chiudiReviewModal()">Annulla</button>
+          <button class="btn-danger" (click)="impostaStep('reject-reason')">Rifiuta</button>
+          <button class="btn-success" (click)="chiediConferma('approve')">Approva Pratica</button>
+        </div>
+      }
+
+      @else if (modalStep === 'reject-reason') {
+        <!-- STEP 2: INSERIMENTO MOTIVO RIFIUTO -->
+        <p style="font-weight: 600; text-align: left; margin-bottom: 8px; color: var(--text-main);">Motivazione del Rifiuto (Obbligatoria):</p>
+        <textarea class="reject-textarea" [(ngModel)]="motivoRifiuto" placeholder="Spiega dettagliatamente cosa lo studente deve correggere..."></textarea>
+        <div class="modal-actions" style="margin-top: 24px;">
+          <button class="btn-outline" (click)="impostaStep('read')">Indietro</button>
+          <button class="btn-danger" (click)="chiediConferma('reject')">Procedi col Rifiuto</button>
+        </div>
+      }
+
+      @else if (modalStep === 'confirm') {
+        <!-- STEP 3: CONFERMA FINALE -->
+        <div style="text-align: center; margin: 20px 0;">
+          <h2 style="font-size: 56px; margin-bottom: 16px;">{{ pendingAction === 'approve' ? '✅' : '⚠️' }}</h2>
+          <p style="font-size: 16px; font-weight: 500; color: var(--text-main);">
+            {{ pendingAction === 'approve' ? "Sei sicuro di voler APPROVARE definitivamente il documento?" : "Sei sicuro di voler RIFIUTARE la pratica dello studente?" }}
+          </p>
+        </div>
+        <div class="modal-actions center">
+          <button class="btn-outline" (click)="impostaStep('read')">Annulla</button>
+          <button [class]="pendingAction === 'approve' ? 'btn-success' : 'btn-danger'" (click)="eseguiAzione()">
+            Conferma {{ pendingAction === 'approve' ? 'Approvazione' : 'Rifiuto' }}
+          </button>
+        </div>
+      }
+
+      @else if (modalStep === 'success') {
+        <!-- STEP 4: SUCCESSO -->
+        <div style="text-align: center; margin: 20px 0;">
+          <h2 style="font-size: 56px; margin-bottom: 16px;">🎉</h2>
+          <p style="font-size: 16px; font-weight: 600; color: var(--success);">Operazione completata con successo!</p>
+          <p style="font-size: 14px; color: var(--text-muted);">Il database è stato aggiornato. Lo studente può vedere lo status modificato.</p>
+        </div>
+        <div class="modal-actions center">
+          <button class="btn-primary" (click)="chiudiSuccesso()">Torna alla Dashboard</button>
+        </div>
+      }
+    </div>
+  </div>
+}

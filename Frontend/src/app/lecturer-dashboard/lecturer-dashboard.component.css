@@ -1,0 +1,391 @@
+:host {
+  display: block;
+}
+
+/* HEADER & PROFILE */
+header {
+  background-color: var(--surface);
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--border);
+}
+
+.header-logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.profile-container { position: relative; }
+
+.profile-btn {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid transparent;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.profile-btn:hover {
+  background-color: var(--primary);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+}
+
+/* LAYOUT & TYPOGRAPHY */
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 60px 20px;
+}
+
+.hero { text-align: center; margin-bottom: 60px; }
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 12px 0;
+  letter-spacing: -1px;
+}
+
+.page-subtitle {
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.back-header-btn {
+  margin-bottom: 24px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.back-header-btn:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background-color: var(--primary-light);
+}
+
+/* CASELLE HOME (BOXES) - RIPRISTINATE PER LA GRAFICA */
+.boxes-container {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.home-box {
+  background: var(--surface);
+  border-radius: var(--radius-xl); /* Angoli super tondeggianti */
+  width: 320px;
+  padding: 40px 30px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* L'EFFETTO "AURA" AL PASSAGGIO DEL MOUSE */
+.home-box:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
+  transform: translateY(-5px);
+}
+
+/* EMOJI GRANDI */
+.box-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.home-box h2 {
+  font-size: 1.5rem;
+  color: var(--text-main);
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.home-box p {
+  color: var(--text-muted);
+  font-size: 15px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.badge-count {
+  background: var(--danger);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-block;
+  margin-top: 16px;
+}
+
+.badge-count-purple { background-color: #a855f7; }
+
+/* REQUEST CARDS (LISTS)*/
+.requests-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 40px; }
+
+.request-card {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-left-width: 6px;
+  transition: all 0.2s ease;
+}
+
+.request-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/* Bordi speciali extra aggiuntivi */
+.border-warning { border-left-color: var(--warning) !important; }
+.border-info { border-left-color: var(--primary) !important; }
+.border-purple { border-left-color: #a855f7 !important; }
+.border-success { border-left-color: var(--success) !important; }
+.border-danger { border-left-color: var(--danger) !important; }
+
+.request-info { display: flex; flex-direction: column; gap: 8px; }
+.student-name { font-size: 1.25rem; font-weight: 600; color: var(--text-main); }
+.details { font-size: 14px; color: var(--text-muted); }
+
+/* STATUS BADGES */
+.status-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-top: 4px;
+  width: fit-content;
+  letter-spacing: 0.5px;
+}
+
+.badge-warning { background-color: var(--warning-light); color: var(--warning); border: 1px solid #fde68a; }
+.badge-info { background-color: var(--primary-light); color: var(--primary); border: 1px solid #bfdbfe; }
+.badge-purple { background-color: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid #d8b4fe; }
+.badge-success { background-color: #dcfce7; color: var(--success); border: 1px solid #bbf7d0; }
+.badge-danger { background-color: var(--danger-light); color: var(--danger); border: 1px solid #fecaca; }
+
+/* BUTTONS SPECIFICI DOCENTE*/
+.actions { display: flex; gap: 12px; align-items: center; }
+button { font-family: inherit; }
+
+.btn-primary { background: var(--primary); color: white; border: none; padding: 10px 24px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: var(--shadow-sm); transition: all 0.2s ease; }
+.btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); padding: 10px 20px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+.btn-outline:hover { background: var(--bg-color); border-color: var(--primary); color: var(--primary); }
+
+.btn-purple { background-color: #a855f7; color: white; border: none; padding: 10px 24px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: var(--shadow-sm); transition: all 0.2s ease; }
+.btn-purple:hover { background-color: #9333ea; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+.btn-danger { background: var(--danger); color: white; border: none; padding: 10px 24px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: var(--shadow-sm); transition: all 0.2s ease; }
+.btn-danger:hover { background: #b91c1c; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+.btn-success { background: var(--success); color: white; border: none; padding: 10px 24px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: var(--shadow-sm); transition: all 0.2s ease; }
+.btn-success:hover { background: #166534; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+/* ELEMENTI INTERNI AL MODALE DI VALUTAZIONE*/
+.doc-link {
+  display: block;
+  padding: 16px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--primary);
+  font-weight: 600;
+  margin: 20px 0;
+  text-align: center;
+  transition: background 0.2s;
+}
+.doc-link:hover { background-color: var(--primary-light); }
+
+.reject-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  resize: vertical;
+  min-height: 120px;
+  margin-top: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.reject-textarea:focus {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px var(--danger-light);
+}
+
+.exam-data-box {
+  background-color: var(--bg-color);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  border: 1px solid var(--border);
+  margin-bottom: 15px;
+  text-align: left;
+  line-height: 1.6;
+  color: var(--text-main);
+}
+
+/* BOX MOTIVAZIONE STUDENTE */
+.student-note-box {
+  background-color: var(--primary-light);
+  border-left: 4px solid var(--primary);
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+  text-align: left;
+  font-size: 14px;
+  color: var(--text-main);
+}
+.student-note-box strong {
+  color: var(--primary);
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* MODALE DI VALUTAZIONE (OVERLAY E POPUP)*/
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Sfondo scuro semitrasparente */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px); /* Effetto blur moderno */
+  animation: fadeInModal 0.2s ease;
+}
+
+.modal {
+  background: var(--surface);
+  padding: 32px;
+  border-radius: var(--radius-xl); /* Modale super tondeggiante */
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  animation: slideUpModal 0.3s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal h3 {
+  margin-top: 0;
+  color: var(--text-main);
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+}
+
+@keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUpModal { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ELEMENTI INTERNI AL MODALE DI VALUTAZIONE*/
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  align-items: center;
+}
+
+.doc-link {
+  padding: 16px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--primary);
+  font-weight: 600;
+  margin: 20px 0;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+.doc-link:hover {
+  background-color: var(--primary-light);
+  border-color: var(--primary);
+}
+
+/* Casella Rifiuto Perfetta ed Uniforme */
+.reject-textarea {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  resize: vertical;
+  min-height: 120px;
+  margin-top: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.reject-textarea:focus {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px var(--danger-light);
+  background-color: var(--surface);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .request-card { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .actions { width: 100%; justify-content: flex-end; }
+}

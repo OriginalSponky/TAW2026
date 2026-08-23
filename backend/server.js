@@ -579,6 +579,93 @@ app.put('/api/applications/:id/resubmit-modification', upload.single('learning_a
     }
 });
 
+// ROTTE PER L'AREA DOCENTE (LECTURER DASHBOARD)
+
+// 1. Recupera tutte le pratiche assegnate al docente loggato
+app.get('/api/lecturer/applications', async (req, res) => {
+    const lecturerEmail = req.query.email;
+    if (!lecturerEmail) return res.status(400).send("Email mancante");
+
+    try {
+        const [rows] = await dbPool.query(`
+            SELECT 
+                a.id, a.academic_year, a.mobility_period, a.status, 
+                i.name AS institution_name, i.country,
+                s.first_name AS student_first_name, s.last_name AS student_last_name
+            FROM Applications a
+            JOIN Institutions i ON a.institution_id = i.id
+            JOIN Users s ON a.student_id = s.id
+            JOIN Users l ON a.lecturer_id = l.id
+            WHERE l.email = ?
+            ORDER BY a.updated_at DESC
+        `, [lecturerEmail]);
+        res.json(rows);
+    } catch (error) {
+        console.error("Errore recupero pratiche docente:", error);
+        res.status(500).send("Errore interno");
+    }
+});
+
+// 2. Approva o Rifiuta un documento (L.A. o ToR)
+app.put('/api/lecturer/applications/:id/review', async (req, res) => {
+    const appId = req.params.id;
+    // action sarà 'APPROVE' o 'REJECT'
+    const { document_type, action, rejection_reason } = req.body;
+
+    const connection = await dbPool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // 1. Aggiorna lo stato del singolo documento in sospeso
+        await connection.query(`
+            UPDATE Documents 
+            SET status = ?, decision_date = CURDATE(), rejection_reason = ? 
+            WHERE application_id = ? AND document_type = ? AND status = 'PENDING'
+            ORDER BY upload_date DESC LIMIT 1
+        `, [action === 'APPROVE' ? 'APPROVED' : 'REJECTED', rejection_reason || null, appId, document_type]);
+
+        // 2. Se APPROVATO, fa progredire lo stato dell'intera pratica
+        if (action === 'APPROVE') {
+            if (document_type === 'LEARNING_AGREEMENT') {
+                // Verifichiamo se era un LA iniziale o una modifica
+                const [app] = await connection.query(`SELECT status FROM Applications WHERE id = ?`, [appId]);
+                const currentStatus = app[0].status;
+                const newStatus = (currentStatus === 'AWAITING_MODIFICATION_APPROVAL')
+                    ? 'MOBILITY_IN_PROGRESS'
+                    : 'PRE_DEPARTURE_COMPLETED';
+
+                await connection.query(`
+                    UPDATE Applications 
+                    SET status = ?, is_la_approved = TRUE, la_decision_date = CURDATE(), la_rejection_reason = NULL 
+                    WHERE id = ?`, [newStatus, appId]);
+
+                // Consolida gli esami
+                await connection.query(`
+                    UPDATE ExamsMapping 
+                    SET is_approved_by_lecturer = TRUE, is_proposed_change = FALSE 
+                    WHERE application_id = ?`, [appId]);
+            }
+            else if (document_type === 'TRANSCRIPT_OF_RECORDS') {
+                // Chiude la pratica con successo
+                await connection.query(`
+                    UPDATE Applications 
+                    SET status = 'CLOSED', are_exams_approved = TRUE 
+                    WHERE id = ?`, [appId]);
+            }
+        }
+        // Se RIFIUTATO, il documento risulta REJECTED e lo studente lo vedrà, abilitando il tasto di reinvio.
+
+        await connection.commit();
+        res.json({ message: "Revisione completata con successo" });
+    } catch (error) {
+        await connection.rollback();
+        console.error("Errore durante la review del docente:", error);
+        res.status(500).send("Errore server");
+    } finally {
+        connection.release();
+    }
+});
+
 app.listen(3000, () => {
     console.log('Backend in ascolto sulla porta 3000');
 });

@@ -94,9 +94,28 @@
   </div>
 }
 @else {
-  <!-- DASHBOARD-->
-  <app-student-home
-    [utente]="utenteLoggato"
-    (onLogout)="eseguiLogout()">
-  </app-student-home>
+  <!-- GESTIONE RUOLI (DASHBOARD) -->
+  @if (utenteLoggato.role === 'LECTURER') {
+    <!-- Area Professori -->
+    <app-lecturer-dashboard
+      [utente]="utenteLoggato"
+      (onLogout)="eseguiLogout()">
+    </app-lecturer-dashboard>
+  }
+
+  @else if (utenteLoggato.role === 'STUDENT') {
+    <!-- Area Studenti -->
+    <app-student-home
+      [utente]="utenteLoggato"
+      (onLogout)="eseguiLogout()">
+    </app-student-home>
+  }
+
+  @else if (utenteLoggato.role === 'STAFF') {
+    <div style="text-align: center; padding: 100px;">
+      <h1 style="font-size: 30px;">🏛️ Area Ufficio (STAFF)</h1>
+      <p style="color: var(--text-muted); margin-bottom: 24px;">La dashboard amministrativa è in costruzione.</p>
+      <button class="btn-primary" (click)="eseguiLogout()">Log out</button>
+    </div>
+  }
 }
