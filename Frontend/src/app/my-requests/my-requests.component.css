@@ -95,7 +95,6 @@ main {
 }
 
 /* REQUEST CARDS LIST*/
-
 .requests-list {
   display: flex;
   flex-direction: column;
@@ -128,9 +127,8 @@ main {
 .university-name { font-size: 1.25rem; font-weight: 600; color: var(--text-main); }
 .details { font-size: 14px; color: var(--text-muted); display: flex; gap: 16px; margin-bottom: 8px; }
 
-
 /* Card Actions */
-.actions { display: flex; gap: 12px; align-items: center; }
+.actions { display: flex; gap: 12px; align-items: center; min-height: 40px; }
 .actions button { margin: 0; }
 
 /* EDIT PANEL*/
@@ -220,47 +218,77 @@ main {
   .actions { width: 100%; justify-content: flex-end; }
 }
 
-.btn-danger-text {
-  background: transparent;
-  color: #ef4444; /* Rosso pericolo */
-  border: none;
+/* ========================================= */
+/* BARRA ELIMINAZIONE INLINE (MODERNA)       */
+/* ========================================= */
+.modern-delete-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: var(--surface);
+  padding: 6px 6px 6px 16px;
+  border-radius: 50px; /* Effetto Pillola Perfetta */
+  border: 1px solid var(--danger);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+  animation: slideInLeft 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.delete-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.warning-icon {
+  font-size: 16px;
+}
+
+.delete-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-cancel-pill {
+  background-color: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
   transition: all 0.2s ease;
 }
 
-.btn-danger-text:hover {
-  background-color: #fef2f2;
+.btn-cancel-pill:hover {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  border-color: var(--text-muted);
 }
 
-.inline-delete-confirmation {
-  display: flex;
-  align-items: center;
-  background-color: #fef2f2;
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
-  border: 1px dashed #fca5a5;
-  animation: slideLeft 0.3s ease;
-}
-
-.btn-danger-filled {
-  background-color: #ef4444;
+.btn-confirm-pill {
+  background-color: var(--danger);
   color: white;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+  transition: all 0.2s ease;
 }
 
-.btn-danger-filled:hover {
+.btn-confirm-pill:hover {
   background-color: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(239, 68, 68, 0.4);
 }
 
-@keyframes slideLeft {
-  from { opacity: 0; transform: translateX(10px); }
-  to { opacity: 1; transform: translateX(0); }
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(20px) scale(0.95); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
 }

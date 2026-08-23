@@ -588,14 +588,15 @@ app.get('/api/lecturer/applications', async (req, res) => {
 
     try {
         const [rows] = await dbPool.query(`
-            SELECT 
-                a.id, a.academic_year, a.mobility_period, a.status, 
+            SELECT
+                a.id, a.academic_year, a.mobility_period, a.status,
                 i.name AS institution_name, i.country,
-                s.first_name AS student_first_name, s.last_name AS student_last_name
+                s.first_name AS student_first_name, s.last_name AS student_last_name,
+                (SELECT COUNT(*) FROM Documents d WHERE d.application_id = a.id AND d.status = 'PENDING') AS pending_docs
             FROM Applications a
-            JOIN Institutions i ON a.institution_id = i.id
-            JOIN Users s ON a.student_id = s.id
-            JOIN Users l ON a.lecturer_id = l.id
+                     JOIN Institutions i ON a.institution_id = i.id
+                     JOIN Users s ON a.student_id = s.id
+                     JOIN Users l ON a.lecturer_id = l.id
             WHERE l.email = ?
             ORDER BY a.updated_at DESC
         `, [lecturerEmail]);

@@ -53,16 +53,14 @@
         }">
         <div class="card-header-flex">
           <div>
-            <!-- TITOLO SISTEMATO: Usa var(--text-main) per adattarsi alla Dark Mode -->
             <h2 style="font-size: 28px; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; margin-bottom: 8px;">
               {{ richiestaAttiva.institution_name }} @if (richiestaAttiva.country) { ({{ richiestaAttiva.country }}) }
             </h2>
-            <!-- SOTTOTITOLO SISTEMATO: Usa var(--text-muted) -->
             <p style="font-size: 15px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
               📅 A.A. {{ richiestaAttiva.academic_year }} • ⏱️ {{ richiestaAttiva.mobility_period }}
             </p>
           </div>
-          <!-- Badge dinamico con i colori standard del progetto -->
+          <!-- Badge dinamico -->
           <div class="status-badge" [ngClass]="{
               'status-created': richiestaAttiva.status === 'CREATED',
               'status-awaiting-la': richiestaAttiva.status === 'AWAITING_FOR_APPROVAL' || richiestaAttiva.status === 'AWAITING_MODIFICATION_APPROVAL',
@@ -151,12 +149,12 @@
 
                 <div class="drag-drop-zone"
                      (click)="fileInputLA.click()"
-                     style="cursor: pointer; padding: 24px; border: 2px dashed #cbd5e1; border-radius: var(--radius-lg); background-color: var(--bg-color); text-align: center;">
+                     style="cursor: pointer; padding: 24px; border: 2px dashed var(--primary); border-radius: var(--radius-lg); background-color: var(--bg-color); text-align: center;">
 
                   <input type="file" #fileInputLA accept=".pdf" style="display: none;" (change)="onFileLASelected($event)">
 
                   <div class="upload-content">
-                    <div class="upload-circle" style="width: 50px; height: 50px; background: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); margin-bottom: 8px;">
+                    <div class="upload-circle" style="width: 50px; height: 50px; background-color: var(--surface); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); margin-bottom: 8px;">
                       <span style="font-size: 24px;">📥</span>
                     </div>
                     @if (!fileLA) {
@@ -246,12 +244,12 @@
 
                 <div class="drag-drop-zone"
                      (click)="fileInputToR.click()"
-                     style="cursor: pointer; padding: 24px; border: 2px dashed #86efac; border-radius: var(--radius-lg); background-color: var(--bg-color); text-align: center;">
+                     style="cursor: pointer; padding: 24px; border: 2px dashed var(--success); border-radius: var(--radius-lg); background-color: var(--bg-color); text-align: center;">
 
                   <input type="file" #fileInputToR accept=".pdf" style="display: none;" (change)="onFileToRSelected($event)">
 
                   <div class="upload-content">
-                    <div class="upload-circle" style="width: 50px; height: 50px; background: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); margin-bottom: 8px;">
+                    <div class="upload-circle" style="width: 50px; height: 50px; background-color: var(--surface); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); margin-bottom: 8px;">
                       <span style="font-size: 24px;">📥</span>
                     </div>
                     @if (!fileToR) {
@@ -274,14 +272,14 @@
 
           <!-- PANNELLO DI CORREZIONE (Puntato dal bottone Rifiuto) -->
           @if (activePanel === 'correction') {
-            <div class="collapsible-panel" style="border: 2px solid #ef4444; border-radius: 8px; padding: 24px;">
-              <h3 style="color: #ef4444; margin-top: 0; font-size: 1.25rem;">⚠️ Correggi i Dati Rifiutati</h3>
+            <div class="collapsible-panel" style="border: 2px solid var(--danger); border-radius: 8px; padding: 24px;">
+              <h3 style="color: var(--danger); margin-top: 0; font-size: 1.25rem;">⚠️ Correggi i Dati Rifiutati</h3>
               <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">Modifica gli esami o i dati richiesti e carica il nuovo documento corretto.</p>
 
               @for (esame of nuoviEsamiLA; track $index) {
                 <div class="exam-row" style="border: 1px solid var(--border); padding: 20px; border-radius: 6px; position: relative;">
                   <button type="button" class="remove-exam-btn" (click)="rimuoviEsameLA($index)">❌ Rimuovi Esame</button>
-                  <h4 style="color: #ef4444; margin-top: 0; margin-bottom: 16px; font-size: 1.1rem;">Esame #{{ $index + 1 }}</h4>
+                  <h4 style="color: var(--danger); margin-top: 0; margin-bottom: 16px; font-size: 1.1rem;">Esame #{{ $index + 1 }}</h4>
 
                   <label class="section-label" style="color: var(--primary); font-weight: 600; font-size: 11px;">✈️ CORSO ESTERO</label>
                   <div class="exam-details-grid">
@@ -307,16 +305,16 @@
 
                 <div class="drag-drop-zone"
                      (click)="fileInputCorrection.click()"
-                     style="cursor: pointer; padding: 24px; border: 2px dashed #fca5a5; border-radius: var(--radius-lg); background-color: var(--bg-color); text-align: center;">
+                     style="cursor: pointer; padding: 24px; border: 2px dashed var(--danger); border-radius: var(--radius-lg); background-color: var(--bg-color); text-align: center;">
 
                   <input type="file" #fileInputCorrection accept=".pdf" style="display: none;" (change)="onFileLASelected($event)">
 
                   <div class="upload-content">
-                    <div class="upload-circle" style="width: 50px; height: 50px; background: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); margin-bottom: 8px;">
+                    <div class="upload-circle" style="width: 50px; height: 50px; background-color: var(--surface); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); margin-bottom: 8px;">
                       <span style="font-size: 24px;">📥</span>
                     </div>
                     @if (!fileLA) {
-                      <h4 style="margin: 4px 0; color: #ef4444; font-size: 16px;">Trascina qui il PDF corretto o clicca</h4>
+                      <h4 style="margin: 4px 0; color: var(--danger); font-size: 16px;">Trascina qui il PDF corretto o clicca</h4>
                       <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Formato accettato: .PDF</p>
                     } @else {
                       <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">✅ File Acquisito!</h4>
@@ -373,19 +371,19 @@
 
                 <!-- Dettagli se il file è stato RIFIUTATO -->
                 @if (doc.status === 'REJECTED') {
-                  <div style="padding: 16px; background-color: #fff1f2; border-top: 1px solid #fee2e2;">
-                    <strong style="color: #ef4444; font-size: 14px; display: block; margin-bottom: 8px;">Motivazione del Rifiuto:</strong>
-                    <p style="margin: 0 0 16px 0; font-size: 14px; color: #ef4444;">
+                  <div style="padding: 20px; background-color: var(--danger-light); border-top: 1px solid var(--danger);">
+                    <strong style="color: var(--danger); font-size: 14px; display: block; margin-bottom: 8px;">⚠️ Motivazione del Rifiuto:</strong>
+                    <p style="margin: 0 0 16px 0; font-size: 14px; color: var(--danger); font-weight: 500;">
                       "{{ doc.rejection_reason }}"
                     </p>
 
                     <!-- Nascondo il pulsante se c'è già una proposta in attesa di essere valutata dal prof! -->
                     @if (!hasPendingModifications) {
-                      <button style="background: transparent; border: 1px solid var(--primary); color: var(--primary); border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;" (click)="apriCorrezione()">
-                        Modifica e Reinvia
+                      <button class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px;" (click)="apriCorrezione()">
+                        <span>✏️</span> Modifica e Reinvia
                       </button>
                     } @else {
-                      <p style="margin:0; font-size: 13px; color: var(--text-muted);"><em>Hai già inviato una nuova revisione, attendi l'esito.</em></p>
+                      <p style="margin:0; font-size: 13px; color: var(--text-muted); font-weight: 500;"><em>⏳ Hai già inviato una nuova revisione, attendi l'esito.</em></p>
                     }
                   </div>
                 }

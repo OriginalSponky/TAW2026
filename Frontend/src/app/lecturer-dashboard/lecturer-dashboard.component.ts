@@ -17,19 +17,19 @@ export class LecturerDashboardComponent implements OnInit {
   menuAperto: boolean = false;
   activeView: 'homeView' | 'laView' | 'torView' | 'handledView' = 'homeView';
 
-  // ARRAY REALI DAL DATABASE
   pendingLAs: any[] = [];
   pendingToRs: any[] = [];
   handledApps: any[] = [];
 
-  // Stato Modale di Revisione
   mostraModaleReview: boolean = false;
   modalStep: 'read' | 'reject-reason' | 'confirm' | 'success' = 'read';
   reviewData: any = {};
   pendingAction: 'approve' | 'reject' | null = null;
   motivoRifiuto: string = '';
 
-  // AGGIUNTO CHANGEDETECTORREF NEL COSTRUTTORE
+  mostraModaleStorico: boolean = false;
+  historicalDetails: any = null;
+
   constructor(
     public themeService: ThemeService,
     private cdr: ChangeDetectorRef,
@@ -45,22 +45,26 @@ export class LecturerDashboardComponent implements OnInit {
     fetch(`http://localhost:3000/api/lecturer/applications?email=${this.utente.email}`)
       .then((res) => res.json())
       .then((data) => {
-        this.pendingLAs = data.filter(
-          (a: any) =>
-            a.status === 'AWAITING_FOR_APPROVAL' || a.status === 'AWAITING_MODIFICATION_APPROVAL',
-        );
-        this.pendingToRs = data.filter((a: any) => a.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL');
-        this.handledApps = data.filter(
-          (a: any) =>
-            ![
-              'AWAITING_FOR_APPROVAL',
-              'AWAITING_MODIFICATION_APPROVAL',
-              'WAITING_FOR_EXAM_SCORE_APPROVAL',
-              'CREATED',
-            ].includes(a.status),
-        );
+        const praticheVisibili = data.filter((a: any) => a.status !== 'CREATED');
 
-        // FORZA ANGULAR AD AGGIORNARE I NUMERINI IMMEDIATAMENTE!
+        this.pendingLAs = praticheVisibili.filter(
+          (a: any) =>
+            (a.status === 'AWAITING_FOR_APPROVAL' ||
+              a.status === 'AWAITING_MODIFICATION_APPROVAL') &&
+            a.pending_docs > 0,
+        );
+        this.pendingToRs = praticheVisibili.filter(
+          (a: any) => a.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' && a.pending_docs > 0,
+        );
+        this.handledApps = praticheVisibili.filter((a: any) => {
+          const isPendingLA =
+            (a.status === 'AWAITING_FOR_APPROVAL' ||
+              a.status === 'AWAITING_MODIFICATION_APPROVAL') &&
+            a.pending_docs > 0;
+          const isPendingToR = a.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' && a.pending_docs > 0;
+          return !isPendingLA && !isPendingToR;
+        });
+
         this.cdr.detectChanges();
       })
       .catch((err) => console.error('Errore recupero pratiche:', err));
@@ -84,6 +88,7 @@ export class LecturerDashboardComponent implements OnInit {
   switchView(view: 'homeView' | 'laView' | 'torView' | 'handledView') {
     this.activeView = view;
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.cdr.detectChanges();
   }
 
   startReview(app: any, docType: 'LEARNING_AGREEMENT' | 'TRANSCRIPT_OF_RECORDS') {
@@ -126,7 +131,7 @@ export class LecturerDashboardComponent implements OnInit {
         this.reviewData = {
           appId: app.id,
           docType: docType,
-          studentName: `Studente: ${app.student_first_name} ${app.student_last_name}`,
+          studentName: `🧑‍🎓 Studente: ${app.student_first_name} ${app.student_last_name}`,
           actionType: actionType,
           studentNote: pendingDoc ? pendingDoc.modification_description : null,
           docName: pendingDoc ? pendingDoc.file_name : 'Documento non trovato',
@@ -138,8 +143,6 @@ export class LecturerDashboardComponent implements OnInit {
         this.motivoRifiuto = '';
         this.pendingAction = null;
         this.mostraModaleReview = true;
-
-        // FORZA L'APERTURA DEL MODALE
         this.cdr.detectChanges();
       });
   }
@@ -171,8 +174,8 @@ export class LecturerDashboardComponent implements OnInit {
       .then((res) => {
         if (!res.ok) throw new Error("Errore durante l'azione server");
         this.modalStep = 'success';
-        this.caricaPratiche(); // Ricarica le notifiche in background
-        this.cdr.detectChanges(); // FORZA IL CAMBIO SCHERMATA A "SUCCESSO"
+        this.caricaPratiche();
+        this.cdr.detectChanges();
       })
       .catch((err) => console.error(err));
   }
@@ -180,6 +183,28 @@ export class LecturerDashboardComponent implements OnInit {
   chiudiSuccesso() {
     this.chiudiReviewModal();
     this.switchView('homeView');
+  }
+
+  // LOGICA MODALE STORICO AGGIORNATA
+  openHistoricalDetails(app: any) {
+    fetch(`http://localhost:3000/api/applications/${app.id}`)
+      .then((res) => res.json())
+      .then((details) => {
+        this.historicalDetails = {
+          ...details,
+          student_first_name: app.student_first_name,
+          student_last_name: app.student_last_name,
+        };
+        this.mostraModaleStorico = true;
+        this.cdr.detectChanges();
+      })
+      .catch((err) => console.error('Errore recupero dettagli storici:', err));
+  }
+
+  chiudiModaleStorico() {
+    this.mostraModaleStorico = false;
+    this.historicalDetails = null;
+    this.cdr.detectChanges();
   }
 
   formattaStato(status: string): string {
