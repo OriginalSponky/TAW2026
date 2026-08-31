@@ -1,4 +1,12 @@
-import { Component, OnInit, ChangeDetectorRef, Input, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectorRef,
+  Input,
+  Output,
+  EventEmitter,
+  HostListener,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ThemeService } from '../services/theme.service';
@@ -12,29 +20,31 @@ import { ThemeService } from '../services/theme.service';
 })
 export class ActiveMobilityComponent implements OnInit {
   @Input() utente: any;
-  @Input() pratica: any;
+  @Input() pratica: any; // Mantenuto per compatibilità, ma ora peschiamo tutte le attive
   @Output() onBack = new EventEmitter<void>();
   @Output() onLogout = new EventEmitter<void>();
 
   menuAperto: boolean = false;
   activeView: 'activeMobility' | 'modifications' = 'activeMobility';
-  activePanel: string | null = null;
-  richiestaAttiva: any = null;
 
-  nuoviEsamiLA: any[] = [];
-  esamiToR: any[] = [];
+  // ARRAY CON TUTTE LE MOBILITÀ ATTIVE DELLO STUDENTE
+  richiesteAttive: any[] = [];
+
+  // SELEZIONE PER IL DROPDOWN NELLA VISTA "STATO MODIFICHE"
+  selectedHistoryApp: any = null;
+  historyDropdownAperto: boolean = false;
+
+  // MODALE CONFERMA
   mostraModale: boolean = false;
   modalConfig: any = { icon: '', title: '', text: '', action: '', btnClass: '', btnText: '' };
+  appInModifica: any = null;
+  motivoRinuncia: string = '';
+  isSubmitting: boolean = false;
 
+  // TOAST
   mostraAlert: boolean = false;
   alertType: 'success' | 'error' = 'success';
   alertMessage: string = '';
-
-  motivoRinuncia: string = '';
-  motivoVariazioneLA: string = '';
-  isSubmitting: boolean = false;
-  fileLA: File | null = null;
-  fileToR: File | null = null;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -46,14 +56,17 @@ export class ActiveMobilityComponent implements OnInit {
     return (this.utente.first_name.charAt(0) + this.utente.last_name.charAt(0)).toUpperCase();
   }
 
+  // Notifica globale se ALMENO UNA pratica ha documenti rifiutati
   get hasNotifiche(): boolean {
-    if (!this.richiestaAttiva || !this.richiestaAttiva.documents) return false;
-    return this.richiestaAttiva.documents.some((doc: any) => doc.status === 'REJECTED');
+    if (!this.richiesteAttive) return false;
+    return this.richiesteAttive.some(
+      (app) => app.documents && app.documents.some((doc: any) => doc.status === 'REJECTED'),
+    );
   }
 
-  get hasPendingModifications(): boolean {
-    if (!this.richiestaAttiva || !this.richiestaAttiva.documents) return false;
-    return this.richiestaAttiva.documents.some(
+  hasPendingModifications(app: any): boolean {
+    if (!app.documents) return false;
+    return app.documents.some(
       (doc: any) => doc.document_type === 'LEARNING_AGREEMENT' && doc.status === 'PENDING',
     );
   }
@@ -64,83 +77,141 @@ export class ActiveMobilityComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this.pratica && this.pratica.id) {
-      this.caricaDatiReali(this.pratica.id);
-    }
+    this.caricaTutteLeAttive();
   }
 
-  caricaDatiReali(appId: number) {
-    fetch(`http://localhost:3000/api/applications/${appId}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Errore di rete');
-        return res.json();
-      })
+  // CHIUSURA DROPDOWN CLICCANDO FUORI
+  @HostListener('document:click')
+  clickout() {
+    this.menuAperto = false;
+    this.historyDropdownAperto = false;
+  }
+
+  caricaTutteLeAttive() {
+    const emailSicura = encodeURIComponent(this.utente.email);
+    fetch(`http://localhost:3000/api/applications?email=${emailSicura}`)
+      .then((res) => res.json())
       .then((data) => {
-        if (data.documents && data.documents.length > 0) {
-          data.documents.sort((a: any, b: any) => {
-            return new Date(b.upload_date).getTime() - new Date(a.upload_date).getTime();
+        // Filtriamo per ottenere SOLO le pratiche attive (non in bozza, non chiuse o annullate)
+        const statiAttivi = [
+          'AWAITING_FOR_APPROVAL',
+          'PRE_DEPARTURE_COMPLETED',
+          'MOBILITY_IN_PROGRESS',
+          'AWAITING_MODIFICATION_APPROVAL',
+          'WAITING_FOR_EXAM_SCORE_APPROVAL',
+        ];
+        const activeApps = data.filter((a: any) => statiAttivi.includes(a.status));
+
+        // Facciamo una fetch dettagliata per ogni pratica attiva (per avere esami e documenti)
+        const promises = activeApps.map((a: any) =>
+          fetch(`http://localhost:3000/api/applications/${a.id}`).then((res) => res.json()),
+        );
+
+        Promise.all(promises).then((detailedApps) => {
+          this.richiesteAttive = detailedApps.map((app) => {
+            // Ordina cronologia documenti
+            if (app.documents && app.documents.length > 0) {
+              app.documents.sort(
+                (a: any, b: any) =>
+                  new Date(b.upload_date).getTime() - new Date(a.upload_date).getTime(),
+              );
+            }
+            // Inizializza lo stato indipendente per ogni singola card
+            return {
+              ...app,
+              activePanel: null,
+              nuoviEsamiLA: [],
+              esamiToR: [],
+              fileLA: null,
+              fileToR: null,
+              fileCorrection: null,
+              motivoVariazioneLA: '',
+            };
           });
-        }
-        this.richiestaAttiva = data;
-        this.cdr.detectChanges();
+
+          // Seleziona la prima pratica attiva come default per la vista Storico File
+          if (this.richiesteAttive.length > 0) {
+            // Mantiene la selezione precedente se esiste, altrimenti prende la prima
+            if (this.selectedHistoryApp) {
+              this.selectedHistoryApp =
+                this.richiesteAttive.find((a) => a.id === this.selectedHistoryApp.id) ||
+                this.richiesteAttive[0];
+            } else {
+              this.selectedHistoryApp = this.richiesteAttive[0];
+            }
+          } else {
+            this.selectedHistoryApp = null;
+          }
+
+          this.cdr.detectChanges();
+        });
       })
       .catch((err) => console.error('Errore fetch database:', err));
   }
 
   cambiaVista(vista: 'activeMobility' | 'modifications') {
     this.activeView = vista;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // LOGICA AGGIORNATA PER L'APERTURA DEI PANNELLI
-  togglePanel(panel: string) {
-    this.activePanel = this.activePanel === panel ? null : panel;
+  // GESTIONE DROPDOWN STORICO MODIFICHE
+  toggleHistoryDropdown(event: Event) {
+    event.stopPropagation();
+    this.historyDropdownAperto = !this.historyDropdownAperto;
+    this.menuAperto = false;
+  }
 
-    // Se lo studente vuole proporre una NUOVA modifica (L.A.), partiamo dagli esami UFFICIALI (is_proposed_change = false/0)
+  selezionaHistoryApp(app: any, event: Event) {
+    event.stopPropagation();
+    this.selectedHistoryApp = app;
+    this.historyDropdownAperto = false;
+  }
+
+  // APERTURA PANNELLI PER SPECIFICA PRATICA
+  togglePanel(app: any, panel: string) {
+    app.activePanel = app.activePanel === panel ? null : panel;
+
     if (panel === 'la') {
-      if (this.richiestaAttiva && this.richiestaAttiva.exams) {
-        const esamiUfficiali = this.richiestaAttiva.exams.filter((e: any) => !e.is_proposed_change);
-        this.popolaArrayEsami(esamiUfficiali, this.nuoviEsamiLA);
+      if (app.exams) {
+        const esamiUfficiali = app.exams.filter((e: any) => !e.is_proposed_change);
+        this.popolaArrayEsami(esamiUfficiali, app.nuoviEsamiLA);
       }
-      if (this.nuoviEsamiLA.length === 0) this.aggiungiEsameLA();
+      if (app.nuoviEsamiLA.length === 0) this.aggiungiEsameLA(app);
     }
 
-    // Se lo studente vuole chiudere l'Erasmus (ToR), partiamo dagli esami UFFICIALI
     if (panel === 'tor') {
-      if (this.richiestaAttiva && this.richiestaAttiva.exams) {
-        const esamiUfficiali = this.richiestaAttiva.exams.filter((e: any) => !e.is_proposed_change);
-        this.popolaArrayEsami(esamiUfficiali, this.esamiToR);
+      if (app.exams) {
+        const esamiUfficiali = app.exams.filter((e: any) => !e.is_proposed_change);
+        this.popolaArrayEsami(esamiUfficiali, app.esamiToR);
       }
-      if (this.esamiToR.length === 0) this.aggiungiEsameToR();
+      if (app.esamiToR.length === 0) this.aggiungiEsameToR(app);
     }
   }
 
-  // LOGICA AGGIORNATA PER LA CORREZIONE DI UN RIFIUTO
-  apriCorrezione() {
+  apriCorrezione(app: any) {
     this.cambiaVista('activeMobility');
-    this.activePanel = 'correction';
+    app.activePanel = 'correction';
 
-    if (this.richiestaAttiva && this.richiestaAttiva.exams) {
-      // Quando correggiamo un rifiuto, cerchiamo di mostrare la PROPOSTA rifiutata (is_proposed_change = true/1)
-      const esamiProposti = this.richiestaAttiva.exams.filter((e: any) => !!e.is_proposed_change);
-
-      // Se il backend li ha già cancellati (come da tua logica di "pulizia" su rifiuto),
-      // ricarichiamo gli esami ufficiali originali come base per la nuova proposta.
+    if (app.exams) {
+      const esamiProposti = app.exams.filter((e: any) => !!e.is_proposed_change);
       if (esamiProposti.length > 0) {
-        this.popolaArrayEsami(esamiProposti, this.nuoviEsamiLA);
+        this.popolaArrayEsami(esamiProposti, app.nuoviEsamiLA);
       } else {
-        const esamiUfficiali = this.richiestaAttiva.exams.filter((e: any) => !e.is_proposed_change);
-        this.popolaArrayEsami(esamiUfficiali, this.nuoviEsamiLA);
+        const esamiUfficiali = app.exams.filter((e: any) => !e.is_proposed_change);
+        this.popolaArrayEsami(esamiUfficiali, app.nuoviEsamiLA);
       }
     }
+    if (app.nuoviEsamiLA.length === 0) this.aggiungiEsameLA(app);
 
-    if (this.nuoviEsamiLA.length === 0) {
-      this.aggiungiEsameLA();
-    }
+    // Scorri giù verso la pratica interessata
+    setTimeout(() => {
+      document
+        .getElementById('app-card-' + app.id)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   }
 
-  // UTILITY PER POPOLARE GLI ARRAY (Mantiene il codice pulito)
   popolaArrayEsami(sorgente: any[], destinazione: any[]) {
-    // Svuota l'array di destinazione prima di riempirlo
     destinazione.splice(0, destinazione.length);
     const mappatura = sorgente.map((e: any) => ({
       foreignCode: e.foreign_course_code,
@@ -149,14 +220,15 @@ export class ActiveMobilityComponent implements OnInit {
       localCode: e.unive_course_code,
       localName: e.unive_course_title,
       localCredits: e.unive_course_credits,
-      score: e.score_obtained || '', // Aggiunto per il ToR
-      date: e.exam_date ? e.exam_date.substring(0, 10) : '', // Aggiunto per il ToR
+      score: e.score_obtained || '',
+      date: e.exam_date ? e.exam_date.substring(0, 10) : '',
     }));
     destinazione.push(...mappatura);
   }
 
-  aggiungiEsameLA() {
-    this.nuoviEsamiLA.push({
+  // AGGIUNTA/RIMOZIONE ESAMI NELLE SPECIFICHE CARD
+  aggiungiEsameLA(app: any) {
+    app.nuoviEsamiLA.push({
       foreignCode: '',
       foreignName: '',
       foreignCredits: null,
@@ -165,11 +237,11 @@ export class ActiveMobilityComponent implements OnInit {
       localCredits: null,
     });
   }
-  rimuoviEsameLA(indice: number) {
-    this.nuoviEsamiLA.splice(indice, 1);
+  rimuoviEsameLA(app: any, indice: number) {
+    app.nuoviEsamiLA.splice(indice, 1);
   }
-  aggiungiEsameToR() {
-    this.esamiToR.push({
+  aggiungiEsameToR(app: any) {
+    app.esamiToR.push({
       foreignCode: '',
       foreignName: '',
       foreignCredits: null,
@@ -180,16 +252,34 @@ export class ActiveMobilityComponent implements OnInit {
       date: '',
     });
   }
-  rimuoviEsameToR(indice: number) {
-    this.esamiToR.splice(indice, 1);
+  rimuoviEsameToR(app: any, indice: number) {
+    app.esamiToR.splice(indice, 1);
   }
 
-  apriModaleConferma(azione: string) {
+  // FILE UPLOAD TRIGGERS
+  triggerFileInput(id: string) {
+    document.getElementById(id)?.click();
+  }
+
+  onFileLASelected(event: any, app: any) {
+    if (event.target.files.length > 0) app.fileLA = event.target.files[0];
+  }
+  onFileToRSelected(event: any, app: any) {
+    if (event.target.files.length > 0) app.fileToR = event.target.files[0];
+  }
+  onFileCorrectionSelected(event: any, app: any) {
+    if (event.target.files.length > 0) app.fileCorrection = event.target.files[0];
+  }
+
+  // MODALE CONFERMA
+  apriModaleConferma(azione: string, app: any) {
+    this.appInModifica = app;
     this.modalConfig.action = azione;
     this.motivoRinuncia = '';
+
     switch (azione) {
       case 'start_mobility':
-        if (!this.richiestaAttiva.arrival_date || !this.richiestaAttiva.departure_date) {
+        if (!app.arrival_date || !app.departure_date) {
           this.mostraFeedback('error', 'Inserisci entrambe le date per proseguire.');
           return;
         }
@@ -203,7 +293,7 @@ export class ActiveMobilityComponent implements OnInit {
         };
         break;
       case 'update_dates':
-        if (!this.richiestaAttiva.arrival_date || !this.richiestaAttiva.departure_date) {
+        if (!app.arrival_date || !app.departure_date) {
           this.mostraFeedback('error', 'Inserisci entrambe le date per salvare.');
           return;
         }
@@ -262,6 +352,83 @@ export class ActiveMobilityComponent implements OnInit {
 
   chiudiModale() {
     this.mostraModale = false;
+    this.appInModifica = null;
+  }
+
+  eseguiAzione() {
+    if (this.isSubmitting || !this.appInModifica) return;
+    this.isSubmitting = true;
+
+    const app = this.appInModifica;
+    const appId = app.id;
+    let fetchPromise: Promise<any>;
+
+    if (
+      this.modalConfig.action === 'start_mobility' ||
+      this.modalConfig.action === 'update_dates'
+    ) {
+      const isStart = this.modalConfig.action === 'start_mobility';
+      fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/dates`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          arrival_date: app.arrival_date,
+          departure_date: app.departure_date,
+          start_mobility: isStart,
+        }),
+      });
+    } else if (this.modalConfig.action === 'reject_mobility') {
+      fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/cancel`, {
+        method: 'PUT',
+      });
+    } else if (this.modalConfig.action === 'submit_la') {
+      const payloadEsami = app.nuoviEsamiLA.map((e: any) => ({ ...e, is_proposed_change: true }));
+      const formData = new FormData();
+      formData.append('exams', JSON.stringify(payloadEsami));
+      formData.append('reason', app.motivoVariazioneLA);
+      if (app.fileLA) formData.append('learning_agreement_file', app.fileLA);
+      fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/modify-la`, {
+        method: 'PUT',
+        body: formData,
+      });
+    } else if (this.modalConfig.action === 'submit_tor') {
+      const formData = new FormData();
+      formData.append('exams', JSON.stringify(app.esamiToR));
+      if (app.fileToR) formData.append('tor_file', app.fileToR);
+      fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/tor`, {
+        method: 'POST',
+        body: formData,
+      });
+    } else if (this.modalConfig.action === 'resubmit_modification') {
+      const payloadEsami = app.nuoviEsamiLA.map((e: any) => ({ ...e, is_proposed_change: true }));
+      const formData = new FormData();
+      formData.append('exams', JSON.stringify(payloadEsami));
+      if (app.fileCorrection) formData.append('learning_agreement_file', app.fileCorrection);
+      fetchPromise = fetch(
+        `http://localhost:3000/api/applications/${appId}/resubmit-modification`,
+        { method: 'PUT', body: formData },
+      );
+    } else {
+      return;
+    }
+
+    fetchPromise
+      .then((res) => {
+        if (!res.ok) throw new Error("Errore durante l'operazione server");
+        return res.json();
+      })
+      .then(() => {
+        this.mostraModale = false;
+        this.mostraFeedback('success', 'Operazione registrata con successo!');
+        this.caricaTutteLeAttive(); // Ricarica tutto dal DB
+      })
+      .catch((err) => {
+        this.mostraModale = false;
+        this.mostraFeedback('error', err.message);
+      })
+      .finally(() => {
+        this.isSubmitting = false;
+      });
   }
 
   mostraFeedback(tipo: 'success' | 'error', messaggio: string) {
@@ -277,86 +444,6 @@ export class ActiveMobilityComponent implements OnInit {
     this.mostraAlert = false;
   }
 
-  eseguiAzione() {
-    if (this.isSubmitting) return;
-    this.isSubmitting = true;
-
-    const appId = this.richiestaAttiva.id;
-    let fetchPromise: Promise<any>;
-
-    if (
-      this.modalConfig.action === 'start_mobility' ||
-      this.modalConfig.action === 'update_dates'
-    ) {
-      const isStart = this.modalConfig.action === 'start_mobility';
-      fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/dates`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          arrival_date: this.richiestaAttiva.arrival_date,
-          departure_date: this.richiestaAttiva.departure_date,
-          start_mobility: isStart,
-        }),
-      });
-    } else if (this.modalConfig.action === 'reject_mobility') {
-      fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/cancel`, {
-        method: 'PUT',
-      });
-    } else if (this.modalConfig.action === 'submit_la') {
-      const payloadEsami = this.nuoviEsamiLA.map((e) => ({ ...e, is_proposed_change: true }));
-
-      const formData = new FormData();
-      formData.append('exams', JSON.stringify(payloadEsami));
-      formData.append('reason', this.motivoVariazioneLA);
-      if (this.fileLA) formData.append('learning_agreement_file', this.fileLA);
-      fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/modify-la`, {
-        method: 'PUT',
-        body: formData,
-      });
-    } else if (this.modalConfig.action === 'submit_tor') {
-      const formData = new FormData();
-      formData.append('exams', JSON.stringify(this.esamiToR));
-      if (this.fileToR) formData.append('tor_file', this.fileToR);
-      fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/tor`, {
-        method: 'POST',
-        body: formData,
-      });
-    } else if (this.modalConfig.action === 'resubmit_modification') {
-      // Anche qui diciamo al server che questi esami sono le nuove proposte
-      const payloadEsami = this.nuoviEsamiLA.map((e) => ({ ...e, is_proposed_change: true }));
-
-      const formData = new FormData();
-      formData.append('exams', JSON.stringify(payloadEsami));
-      if (this.fileLA) formData.append('learning_agreement_file', this.fileLA);
-      fetchPromise = fetch(
-        `http://localhost:3000/api/applications/${appId}/resubmit-modification`,
-        { method: 'PUT', body: formData },
-      );
-    } else {
-      return;
-    }
-
-    fetchPromise
-      .then((res) => {
-        if (!res.ok) throw new Error("Errore durante l'operazione server");
-        return res.json();
-      })
-      .then(() => {
-        this.activePanel = null;
-        this.mostraModale = false;
-        this.mostraFeedback('success', 'Operazione registrata con successo!');
-        this.caricaDatiReali(appId);
-      })
-      .catch((err) => {
-        this.mostraModale = false;
-        // Se c'è un errore, lo mostriamo col toast e sblocchiamo il pulsante!
-        this.mostraFeedback('error', err.message);
-      })
-      .finally(() => {
-        this.isSubmitting = false;
-      });
-  }
-
   tornaIndietro(event: Event) {
     event.preventDefault();
     this.onBack.emit();
@@ -364,15 +451,10 @@ export class ActiveMobilityComponent implements OnInit {
   toggleMenu(event: Event) {
     event.stopPropagation();
     this.menuAperto = !this.menuAperto;
+    this.historyDropdownAperto = false;
   }
   effettuaLogout(event: Event) {
     event.preventDefault();
     this.onLogout.emit();
-  }
-  onFileLASelected(event: any) {
-    if (event.target.files.length > 0) this.fileLA = event.target.files[0];
-  }
-  onFileToRSelected(event: any) {
-    if (event.target.files.length > 0) this.fileToR = event.target.files[0];
   }
 }

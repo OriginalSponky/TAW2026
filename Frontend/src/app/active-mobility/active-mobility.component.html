@@ -22,60 +22,63 @@
     <p class="page-subtitle">Gestisci la tua mobilità e verifica lo stato delle tue proposte.</p>
   </div>
 
-  @if (richiestaAttiva) {
-    <!-- MENU NAVIGAZIONE A BOTTONI -->
-    <div class="boxes-container">
-      <div class="home-box" [class.box-active]="activeView === 'activeMobility'" (click)="cambiaVista('activeMobility')">
-        <div class="box-icon">🌍</div>
-        <h2>Gestione Mobilità</h2>
-        <p>Inserisci date, proponi modifiche al Learning Agreement o carica il Transcript finale.</p>
-      </div>
-      <div class="home-box" [class.box-active]="activeView === 'modifications'" (click)="cambiaVista('modifications')">
-        <div class="box-icon">📋</div>
-        <h2>Stato Modifiche</h2>
-        <p>Controlla se il docente ha accettato o rifiutato le tue variazioni e i tuoi voti.</p>
-        @if (hasNotifiche) {
-          <div class="badge-count">1 Notifica</div>
-        }
-      </div>
+  <div class="boxes-container">
+    <div class="home-box" [class.box-active]="activeView === 'activeMobility'" (click)="cambiaVista('activeMobility')">
+      <div class="box-icon">🌍</div>
+      <h2>Gestione Mobilità</h2>
+      <p>Inserisci date, proponi modifiche al Learning Agreement o carica il Transcript finale.</p>
     </div>
+    <div class="home-box" [class.box-active]="activeView === 'modifications'" (click)="cambiaVista('modifications')">
+      <div class="box-icon">📋</div>
+      <h2>Stato Modifiche</h2>
+      <p>Controlla se il docente ha accettato o rifiutato le tue variazioni e i tuoi voti.</p>
+      @if (hasNotifiche) {
+        <div class="badge-count">1 Notifica</div>
+      }
+    </div>
+  </div>
 
-    <!-- VISTA 1: GESTIONE MOBILITÀ ATTIVA -->
-    @if (activeView === 'activeMobility') {
-      <div class="card" [ngClass]="{
-          'border-created': richiestaAttiva.status === 'CREATED',
-          'border-awaiting': richiestaAttiva.status === 'AWAITING_FOR_APPROVAL' || richiestaAttiva.status === 'AWAITING_MODIFICATION_APPROVAL',
-          'border-pre-departure': richiestaAttiva.status === 'PRE_DEPARTURE_COMPLETED',
-          'border-in-progress': richiestaAttiva.status === 'MOBILITY_IN_PROGRESS',
-          'border-waiting-score': richiestaAttiva.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
-          'border-closed': richiestaAttiva.status === 'CLOSED',
-          'border-canceled': richiestaAttiva.status === 'CANCELED'
+  @if (activeView === 'activeMobility') {
+
+    @if (richiesteAttive.length === 0) {
+      <div style="text-align: center; padding: 40px; color: var(--text-muted); background: var(--surface); border-radius: var(--radius-xl); border: 1px solid var(--border);">
+        <p style="font-size: 18px; font-weight: 600;">Non hai mobilità attive da gestire in questo momento.</p>
+      </div>
+    }
+
+    @for (app of richiesteAttive; track app.id) {
+      <div class="card" id="app-card-{{app.id}}" [ngClass]="{
+          'border-created': app.status === 'CREATED',
+          'border-awaiting': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
+          'border-pre-departure': app.status === 'PRE_DEPARTURE_COMPLETED',
+          'border-in-progress': app.status === 'MOBILITY_IN_PROGRESS',
+          'border-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+          'border-closed': app.status === 'CLOSED',
+          'border-canceled': app.status === 'CANCELED'
         }">
         <div class="card-header-flex">
           <div>
             <h2 style="font-size: 28px; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; margin-bottom: 8px;">
-              {{ richiestaAttiva.institution_name }} @if (richiestaAttiva.country) { ({{ richiestaAttiva.country }}) }
+              {{ app.institution_name }} @if (app.country) { ({{ app.country }}) }
             </h2>
             <p style="font-size: 15px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
-              📅 A.A. {{ richiestaAttiva.academic_year }} • ⏱️ {{ richiestaAttiva.mobility_period }}
+              📅 A.A. {{ app.academic_year }} • ⏱️ {{ app.mobility_period }}
             </p>
           </div>
-          <!-- Badge dinamico -->
           <div class="status-badge" [ngClass]="{
-              'status-created': richiestaAttiva.status === 'CREATED',
-              'status-awaiting-la': richiestaAttiva.status === 'AWAITING_FOR_APPROVAL' || richiestaAttiva.status === 'AWAITING_MODIFICATION_APPROVAL',
-              'status-pre-departure': richiestaAttiva.status === 'PRE_DEPARTURE_COMPLETED',
-              'status-in-progress': richiestaAttiva.status === 'MOBILITY_IN_PROGRESS',
-              'status-waiting-score': richiestaAttiva.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
-              'status-closed': richiestaAttiva.status === 'CLOSED',
-              'status-canceled': richiestaAttiva.status === 'CANCELED'
+              'status-created': app.status === 'CREATED',
+              'status-awaiting-la': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
+              'status-pre-departure': app.status === 'PRE_DEPARTURE_COMPLETED',
+              'status-in-progress': app.status === 'MOBILITY_IN_PROGRESS',
+              'status-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+              'status-closed': app.status === 'CLOSED',
+              'status-canceled': app.status === 'CANCELED'
             }">
-            {{ formattaStato(richiestaAttiva.status) }}
+            {{ formattaStato(app.status) }}
           </div>
         </div>
 
-        <!-- FASE 1: PRE-PARTENZA (INSERIMENTO DATE) -->
-        @if (richiestaAttiva.status === 'PRE_DEPARTURE_COMPLETED') {
+        @if (app.status === 'PRE_DEPARTURE_COMPLETED') {
           <div class="highlight-box">
             <h3 style="color: var(--warning); margin-bottom: 12px;">L'Ufficio ha approvato la partenza!</h3>
             <p style="font-size: 14px; margin-bottom: 16px;">Per avviare ufficialmente la tua mobilità, inserisci le date effettive del soggiorno e conferma.</p>
@@ -83,46 +86,43 @@
             <div class="form-grid">
               <div class="form-group">
                 <label>Data di Arrivo:</label>
-                <input type="date" [(ngModel)]="richiestaAttiva.arrival_date">
+                <input type="date" [(ngModel)]="app.arrival_date">
               </div>
               <div class="form-group">
                 <label>Data di Partenza:</label>
-                <input type="date" [(ngModel)]="richiestaAttiva.departure_date">
+                <input type="date" [(ngModel)]="app.departure_date">
               </div>
             </div>
 
             <div class="actions right">
-              <button class="btn-danger-outline" (click)="apriModaleConferma('reject_mobility')">❌ Rinuncia</button>
-              <button class="btn-primary" (click)="apriModaleConferma('start_mobility')">✅ Avvia Erasmus</button>
+              <button class="btn-danger-outline" (click)="apriModaleConferma('reject_mobility', app)">❌ Rinuncia</button>
+              <button class="btn-primary" (click)="apriModaleConferma('start_mobility', app)">✅ Avvia Erasmus</button>
             </div>
           </div>
         }
 
-        <!-- FASE 2: MOBILITÀ IN CORSO -->
-        @if (richiestaAttiva.status === 'MOBILITY_IN_PROGRESS') {
+        @if (app.status === 'MOBILITY_IN_PROGRESS' || app.status === 'AWAITING_MODIFICATION_APPROVAL' || app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL') {
           <div class="actions" style="border-top: 1px solid var(--border); padding-top: 24px;">
             <p style="width: 100%; font-size: 15px; color: var(--primary); font-weight: 600; margin-bottom: 12px; margin-top: 0;">
               Erasmus Attivo! Cosa devi gestire?
             </p>
-            <button class="btn-outline" [class.btn-active]="activePanel === 'dates'" (click)="togglePanel('dates')">📅 Modifica Date</button>
-            <button class="btn-outline" [class.btn-active]="activePanel === 'la'" (click)="togglePanel('la')">📝 Proponi Modifica L.A.</button>
-            <button class="btn-success" [class.btn-active]="activePanel === 'tor'" (click)="togglePanel('tor')">🎓 Chiudi Erasmus (Carica ToR)</button>
+            <button class="btn-outline" [class.btn-active]="app.activePanel === 'dates'" (click)="togglePanel(app, 'dates')">📅 Modifica Date</button>
+            <button class="btn-outline" [class.btn-active]="app.activePanel === 'la'" (click)="togglePanel(app, 'la')">📝 Proponi Modifica L.A.</button>
+            <button class="btn-success" [class.btn-active]="app.activePanel === 'tor'" (click)="togglePanel(app, 'tor')">🎓 Chiudi Erasmus (Carica ToR)</button>
           </div>
 
-          <!-- PANNELLO MODIFICA L.A. -->
-          @if (activePanel === 'la') {
+          @if (app.activePanel === 'la') {
             <div class="collapsible-panel">
               <div class="form-group full-width" style="margin-bottom: 24px;">
                 <label style="font-weight: 600; display: flex; align-items: center; gap: 6px;">
                   💬 Motivo della variazione (Obbligatorio per il docente):
                 </label>
-                <textarea rows="3" [(ngModel)]="motivoVariazioneLA" placeholder="Es. Il corso X si sovrappone al corso Y o ci sono variazioni nel piano di studi..." style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: 14px; background-color: var(--bg-color); outline: none;"></textarea>
+                <textarea rows="3" [(ngModel)]="app.motivoVariazioneLA" placeholder="Es. Il corso X si sovrappone al corso Y o ci sono variazioni nel piano di studi..." style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: 14px; background-color: var(--bg-color); outline: none;"></textarea>
               </div>
 
-              <!-- LOOP DINAMICO ESAMI -->
-              @for (esame of nuoviEsamiLA; track $index) {
+              @for (esame of app.nuoviEsamiLA; track $index) {
                 <div class="exam-row" style="position: relative;">
-                  <button type="button" class="remove-exam-btn" (click)="rimuoviEsameLA($index)">❌ Rimuovi Insegnamento</button>
+                  <button type="button" class="remove-exam-btn" (click)="rimuoviEsameLA(app, $index)">❌ Rimuovi Insegnamento</button>
                   <h4 style="color: var(--primary); margin-top: 0;">Nuova Mappatura #{{ $index + 1 }}</h4>
 
                   <label class="section-label">✈️ Corso Estero</label>
@@ -141,42 +141,37 @@
                 </div>
               }
 
-              <button class="btn-outline" style="margin-bottom: 24px;" (click)="aggiungiEsameLA()">+ Aggiungi Insegnamento</button>
+              <button class="btn-outline" style="margin-bottom: 24px;" (click)="aggiungiEsameLA(app)">+ Aggiungi Insegnamento</button>
 
-              <!-- UPLOAD DRAG & DROP CON EMOJI -->
               <div class="form-group full-width">
                 <label style="font-weight: 600; display: block; margin-bottom: 8px;">📄 Carica il nuovo L.A. firmato (PDF):</label>
 
-                <div class="drag-drop-zone"
-                     (click)="fileInputLA.click()"
-                     style="cursor: pointer; padding: 24px; border: 2px dashed var(--primary); border-radius: var(--radius-lg); background-color: var(--bg-color); text-align: center;">
-
-                  <input type="file" #fileInputLA accept=".pdf" style="display: none;" (change)="onFileLASelected($event)">
+                <div class="drag-drop-zone" (click)="triggerFileInput('fileLA-' + app.id)">
+                  <input type="file" id="fileLA-{{app.id}}" accept=".pdf" style="display: none;" (change)="onFileLASelected($event, app)">
 
                   <div class="upload-content">
-                    <div class="upload-circle" style="width: 50px; height: 50px; background-color: var(--surface); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); margin-bottom: 8px;">
+                    <div class="upload-circle">
                       <span style="font-size: 24px;">📥</span>
                     </div>
-                    @if (!fileLA) {
+                    @if (!app.fileLA) {
                       <h4 style="margin: 4px 0; color: var(--primary); font-size: 16px;">Trascina qui il tuo PDF o clicca per caricarlo</h4>
                       <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Formato accettato: .PDF</p>
                     } @else {
                       <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">✅ File Acquisito!</h4>
-                      <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 14px;">{{ fileLA.name }}</p>
+                      <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 14px;">{{ app.fileLA.name }}</p>
                     }
                   </div>
                 </div>
               </div>
 
               <div class="actions right">
-                <button class="btn-outline" (click)="togglePanel('la')">Annulla</button>
-                <button class="btn-primary" (click)="apriModaleConferma('submit_la')">Invia Proposta</button>
+                <button class="btn-outline" (click)="togglePanel(app, 'la')">Annulla</button>
+                <button class="btn-primary" (click)="apriModaleConferma('submit_la', app)">Invia Proposta</button>
               </div>
             </div>
           }
 
-          <!-- PANNELLO MODIFICA DATE -->
-          @if (activePanel === 'dates') {
+          @if (app.activePanel === 'dates') {
             <div class="collapsible-panel">
               <h3 style="color: var(--primary); margin-top: 0;">📅 Aggiorna le tue Date</h3>
               <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">Se i tuoi piani sono cambiati, puoi aggiornare le date di arrivo e partenza.</p>
@@ -184,31 +179,29 @@
               <div class="form-grid">
                 <div class="form-group">
                   <label>Nuova Data di Arrivo:</label>
-                  <input type="date" [(ngModel)]="richiestaAttiva.arrival_date">
+                  <input type="date" [(ngModel)]="app.arrival_date">
                 </div>
                 <div class="form-group">
                   <label>Nuova Data di Partenza:</label>
-                  <input type="date" [(ngModel)]="richiestaAttiva.departure_date">
+                  <input type="date" [(ngModel)]="app.departure_date">
                 </div>
               </div>
 
               <div class="actions right" style="margin-top: 24px;">
-                <button class="btn-outline" (click)="togglePanel('dates')">Annulla</button>
-                <button class="btn-primary" (click)="apriModaleConferma('update_dates')">Salva Nuove Date</button>
+                <button class="btn-outline" (click)="togglePanel(app, 'dates')">Annulla</button>
+                <button class="btn-primary" (click)="apriModaleConferma('update_dates', app)">Salva Nuove Date</button>
               </div>
             </div>
           }
 
-          <!-- PANNELLO TRANSCRIPT (TOR) -->
-          @if (activePanel === 'tor') {
+          @if (app.activePanel === 'tor') {
             <div class="collapsible-panel" style="border: 2px solid var(--success);">
               <h3 style="color: var(--success); margin-top: 0;">🎓 Caricamento Voti Finali</h3>
               <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">Inserisci i voti esatti riportati nel documento ufficiale della tua università ospitante.</p>
 
-              <!-- LOOP DINAMICO ESAMI ToR -->
-              @for (esame of esamiToR; track $index) {
+              @for (esame of app.esamiToR; track $index) {
                 <div class="exam-row" style="border-color: var(--success); position: relative;">
-                  <button type="button" class="remove-exam-btn" (click)="rimuoviEsameToR($index)">❌ Rimuovi Esame</button>
+                  <button type="button" class="remove-exam-btn" (click)="rimuoviEsameToR(app, $index)">❌ Rimuovi Esame</button>
                   <h4 style="color: var(--success); margin-top: 0;">Esame Sostenuto #{{ $index + 1 }}</h4>
 
                   <label class="section-label">✈️ Corso Estero</label>
@@ -236,49 +229,44 @@
                 </div>
               }
 
-              <button class="btn-outline" style="margin-bottom: 24px; color: var(--success); border-color: var(--success);" (click)="aggiungiEsameToR()">+ Aggiungi Esame Sostenuto</button>
+              <button class="btn-outline" style="margin-bottom: 24px; color: var(--success); border-color: var(--success);" (click)="aggiungiEsameToR(app)">+ Aggiungi Esame Sostenuto</button>
 
-              <!-- UPLOAD DRAG & DROP TOR CON EMOJI -->
               <div class="form-group full-width">
                 <label style="font-weight: 600; display: block; margin-bottom: 8px;">📄 Carica il Transcript of Records originale (PDF):</label>
 
-                <div class="drag-drop-zone"
-                     (click)="fileInputToR.click()"
-                     style="cursor: pointer; padding: 24px; border: 2px dashed var(--success); border-radius: var(--radius-lg); background-color: var(--bg-color); text-align: center;">
-
-                  <input type="file" #fileInputToR accept=".pdf" style="display: none;" (change)="onFileToRSelected($event)">
+                <div class="drag-drop-zone" style="border-color: var(--success);" (click)="triggerFileInput('fileToR-' + app.id)">
+                  <input type="file" id="fileToR-{{app.id}}" accept=".pdf" style="display: none;" (change)="onFileToRSelected($event, app)">
 
                   <div class="upload-content">
-                    <div class="upload-circle" style="width: 50px; height: 50px; background-color: var(--surface); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); margin-bottom: 8px;">
+                    <div class="upload-circle">
                       <span style="font-size: 24px;">📥</span>
                     </div>
-                    @if (!fileToR) {
+                    @if (!app.fileToR) {
                       <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">Trascina qui il tuo ToR o clicca per caricarlo</h4>
                       <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Formato accettato: .PDF</p>
                     } @else {
                       <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">✅ File Acquisito!</h4>
-                      <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 14px;">{{ fileToR.name }}</p>
+                      <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 14px;">{{ app.fileToR.name }}</p>
                     }
                   </div>
                 </div>
               </div>
 
               <div class="actions right">
-                <button class="btn-outline" (click)="togglePanel('tor')">Annulla</button>
-                <button class="btn-success" (click)="apriModaleConferma('submit_tor')">Invia Voti Ufficiali</button>
+                <button class="btn-outline" (click)="togglePanel(app, 'tor')">Annulla</button>
+                <button class="btn-success" (click)="apriModaleConferma('submit_tor', app)">Invia Voti Ufficiali</button>
               </div>
             </div>
           }
 
-          <!-- PANNELLO DI CORREZIONE (Puntato dal bottone Rifiuto) -->
-          @if (activePanel === 'correction') {
+          @if (app.activePanel === 'correction') {
             <div class="collapsible-panel" style="border: 2px solid var(--danger); border-radius: 8px; padding: 24px;">
               <h3 style="color: var(--danger); margin-top: 0; font-size: 1.25rem;">⚠️ Correggi i Dati Rifiutati</h3>
               <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">Modifica gli esami o i dati richiesti e carica il nuovo documento corretto.</p>
 
-              @for (esame of nuoviEsamiLA; track $index) {
+              @for (esame of app.nuoviEsamiLA; track $index) {
                 <div class="exam-row" style="border: 1px solid var(--border); padding: 20px; border-radius: 6px; position: relative;">
-                  <button type="button" class="remove-exam-btn" (click)="rimuoviEsameLA($index)">❌ Rimuovi Esame</button>
+                  <button type="button" class="remove-exam-btn" (click)="rimuoviEsameLA(app, $index)">❌ Rimuovi Esame</button>
                   <h4 style="color: var(--danger); margin-top: 0; margin-bottom: 16px; font-size: 1.1rem;">Esame #{{ $index + 1 }}</h4>
 
                   <label class="section-label" style="color: var(--primary); font-weight: 600; font-size: 11px;">✈️ CORSO ESTERO</label>
@@ -297,115 +285,113 @@
                 </div>
               }
 
-              <button class="btn-outline" style="color: var(--primary); border-color: var(--primary); margin-bottom: 24px;" (click)="aggiungiEsameLA()">+ Aggiungi Insegnamento</button>
+              <button class="btn-outline" style="color: var(--primary); border-color: var(--primary); margin-bottom: 24px;" (click)="aggiungiEsameLA(app)">+ Aggiungi Insegnamento</button>
 
-              <!-- UPLOAD DRAG & DROP CORRETTO CON EMOJI -->
               <div class="form-group full-width" style="margin-bottom: 32px;">
                 <label style="color: var(--text-main); font-weight: 500; font-size: 14px; display: block; margin-bottom: 8px;">📄 Carica il Documento Corretto (PDF):</label>
 
-                <div class="drag-drop-zone"
-                     (click)="fileInputCorrection.click()"
-                     style="cursor: pointer; padding: 24px; border: 2px dashed var(--danger); border-radius: var(--radius-lg); background-color: var(--bg-color); text-align: center;">
-
-                  <input type="file" #fileInputCorrection accept=".pdf" style="display: none;" (change)="onFileLASelected($event)">
+                <div class="drag-drop-zone" style="border-color: var(--danger);" (click)="triggerFileInput('fileCorr-' + app.id)">
+                  <input type="file" id="fileCorr-{{app.id}}" accept=".pdf" style="display: none;" (change)="onFileCorrectionSelected($event, app)">
 
                   <div class="upload-content">
-                    <div class="upload-circle" style="width: 50px; height: 50px; background-color: var(--surface); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); margin-bottom: 8px;">
+                    <div class="upload-circle">
                       <span style="font-size: 24px;">📥</span>
                     </div>
-                    @if (!fileLA) {
+                    @if (!app.fileCorrection) {
                       <h4 style="margin: 4px 0; color: var(--danger); font-size: 16px;">Trascina qui il PDF corretto o clicca</h4>
                       <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Formato accettato: .PDF</p>
                     } @else {
                       <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">✅ File Acquisito!</h4>
-                      <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 14px;">{{ fileLA.name }}</p>
+                      <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 14px;">{{ app.fileCorrection.name }}</p>
                     }
                   </div>
                 </div>
               </div>
 
               <div class="actions right" style="border-top: 1px solid var(--border); padding-top: 20px;">
-                <button class="btn-outline" (click)="togglePanel('correction')">Annulla</button>
-                <button class="btn-primary" (click)="apriModaleConferma('resubmit_modification')">Invia Nuova Revisione</button>
+                <button class="btn-outline" (click)="togglePanel(app, 'correction')">Annulla</button>
+                <button class="btn-primary" (click)="apriModaleConferma('resubmit_modification', app)">Invia Nuova Revisione</button>
               </div>
             </div>
           }
         }
       </div>
     }
+  }
 
-    <!-- VISTA 2: STATO MODIFICHE E FEEDBACK PUNTATO SUI DOCUMENTI -->
-    @if (activeView === 'modifications') {
-      <div class="card">
-        <h2 style="margin-bottom: 24px; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+  @if (activeView === 'modifications') {
+    <div class="card">
+      <div class="card-header-flex" style="border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; position: relative;">
+        <h2 style="font-size: 1.25rem; display: flex; align-items: center; gap: 8px; margin: 0;">
           <span style="font-size: 1.2rem;">📄</span> Cronologia dei File Inviati
         </h2>
 
-        @if (richiestaAttiva.documents && richiestaAttiva.documents.length > 0) {
-          <div style="display: flex; flex-direction: column; gap: 16px;">
-            @for (doc of richiestaAttiva.documents; track doc.id) {
+        <div style="position: relative;">
+          <button class="history-uni-btn" (click)="toggleHistoryDropdown($event)">
+            🏛️ {{ selectedHistoryApp?.institution_name || 'Nessuna mobilità' }}
+            <span style="font-size: 10px; margin-left: 6px;">▼</span>
+          </button>
 
-              <!-- Contenitore Singolo Documento -->
-              <div style="border: 1px solid var(--border); border-radius: 8px; background: var(--surface); overflow: hidden;">
-
-                <!-- Intestazione File -->
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px;">
-                  <div>
-                    <strong style="font-size: 15px; color: var(--text-main); display: block; margin-bottom: 4px;">
-                      {{ doc.document_type === 'LEARNING_AGREEMENT' ? 'Learning Agreement' : 'Transcript of Records' }}
-                    </strong>
-                    <span style="font-size: 13px; color: var(--text-muted);">
-                      {{ doc.file_name }} • Caricato il: {{ doc.upload_date | date:'dd/MM/yyyy HH:mm' }}
-                    </span>
-                  </div>
-
-                  <!-- Badge dinamico per il documento (PENDING, APPROVED, REJECTED) -->
-                  <div class="status-badge" style="margin-top: 0; padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 700;" [ngClass]="{
-                    'badge-warning': doc.status === 'PENDING',
-                    'badge-danger': doc.status === 'REJECTED',
-                    'status-closed': doc.status === 'APPROVED'
-                  }">
-                    {{ doc.status === 'PENDING' ? 'IN ATTESA' : (doc.status === 'APPROVED' ? 'APPROVATO' : 'RIFIUTATO') }}
-                  </div>
-                </div>
-
-                <!-- Dettagli se il file è stato RIFIUTATO -->
-                @if (doc.status === 'REJECTED') {
-                  <div style="padding: 20px; background-color: var(--danger-light); border-top: 1px solid var(--danger);">
-                    <strong style="color: var(--danger); font-size: 14px; display: block; margin-bottom: 8px;">⚠️ Motivazione del Rifiuto:</strong>
-                    <p style="margin: 0 0 16px 0; font-size: 14px; color: var(--danger); font-weight: 500;">
-                      "{{ doc.rejection_reason }}"
-                    </p>
-
-                    <!-- Nascondo il pulsante se c'è già una proposta in attesa di essere valutata dal prof! -->
-                    @if (!hasPendingModifications) {
-                      <button class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px;" (click)="apriCorrezione()">
-                        <span>✏️</span> Modifica e Reinvia
-                      </button>
-                    } @else {
-                      <p style="margin:0; font-size: 13px; color: var(--text-muted); font-weight: 500;"><em>⏳ Hai già inviato una nuova revisione, attendi l'esito.</em></p>
-                    }
-                  </div>
-                }
-              </div>
+          <div class="history-dropdown-menu" [class.active]="historyDropdownAperto" (click)="$event.stopPropagation()">
+            @for (app of richiesteAttive; track app.id) {
+              <a (click)="selezionaHistoryApp(app, $event)">🏛️ {{ app.institution_name }}</a>
             }
           </div>
-        } @else {
-          <div style="text-align: center; padding: 40px; color: var(--text-muted);">
-            <p>Nessun documento caricato al momento.</p>
-          </div>
-        }
+        </div>
       </div>
-    }
 
-  } @else {
-    <div style="text-align: center; padding: 40px; color: var(--text-muted);">
-      <p style="font-size: 18px; font-weight: 600;">⏳ Caricamento dati della mobilità in corso...</p>
+      @if (selectedHistoryApp && selectedHistoryApp.documents && selectedHistoryApp.documents.length > 0) {
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          @for (doc of selectedHistoryApp.documents; track doc.id) {
+
+            <div style="border: 1px solid var(--border); border-radius: 8px; background: var(--surface); overflow: hidden;">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px;">
+                <div>
+                  <strong style="font-size: 15px; color: var(--text-main); display: block; margin-bottom: 4px;">
+                    {{ doc.document_type === 'LEARNING_AGREEMENT' ? 'Learning Agreement' : 'Transcript of Records' }}
+                  </strong>
+                  <span style="font-size: 13px; color: var(--text-muted);">
+                    {{ doc.file_name }} • Caricato il: {{ doc.upload_date | date:'dd/MM/yyyy HH:mm' }}
+                  </span>
+                </div>
+
+                <div class="status-badge" style="margin-top: 0; padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 700;" [ngClass]="{
+                  'badge-warning': doc.status === 'PENDING',
+                  'badge-danger': doc.status === 'REJECTED',
+                  'status-closed': doc.status === 'APPROVED'
+                }">
+                  {{ doc.status === 'PENDING' ? 'IN ATTESA' : (doc.status === 'APPROVED' ? 'APPROVATO' : 'RIFIUTATO') }}
+                </div>
+              </div>
+
+              @if (doc.status === 'REJECTED') {
+                <div style="padding: 20px; background-color: var(--danger-light); border-top: 1px solid var(--danger);">
+                  <strong style="color: var(--danger); font-size: 14px; display: block; margin-bottom: 8px;">⚠️ Motivazione del Rifiuto:</strong>
+                  <p style="margin: 0 0 16px 0; font-size: 14px; color: var(--danger); font-weight: 500;">
+                    "{{ doc.rejection_reason }}"
+                  </p>
+
+                  @if (!hasPendingModifications(selectedHistoryApp)) {
+                    <button class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px;" (click)="apriCorrezione(selectedHistoryApp)">
+                      <span>✏️</span> Modifica e Reinvia
+                    </button>
+                  } @else {
+                    <p style="margin:0; font-size: 13px; color: var(--text-muted); font-weight: 500;"><em>⏳ Hai già inviato una nuova revisione, attendi l'esito.</em></p>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+          <p>Nessun documento caricato per questa mobilità al momento.</p>
+        </div>
+      }
     </div>
   }
 </main>
 
-<!-- MODALE UNIVERSALE DI CONFERMA -->
 @if (mostraModale) {
   <div class="modal-overlay">
     <div class="modal">
@@ -430,7 +416,6 @@
   </div>
 }
 
-<!-- ALERT POPUP DI SISTEMA (TOAST) -->
 @if (mostraAlert) {
   <div class="custom-alert" [ngClass]="alertType === 'success' ? 'alert-success' : 'alert-error'">
     <div class="alert-icon">{{ alertType === 'success' ? '✅' : '❌' }}</div>

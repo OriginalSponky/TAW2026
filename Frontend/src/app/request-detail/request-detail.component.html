@@ -1,11 +1,15 @@
+<div class="detail-header">
+  <button class="back-header-btn" (click)="tornaIndietro($event)">
+    ← Torna a Le Mie Richieste
+  </button>
+</div>
+
 @if (dettagli) {
   <main>
-    <!-- TOP CARD: Dettagli Mobilità -->
-    <div class="card">
+    <div class="card" style="margin-bottom: 24px;">
       <div class="card-header-flex">
         <h2>Dettagli Mobilità</h2>
 
-        <!-- Mostra il bottone "Modifica" SOLO se la pratica è in bozza -->
         @if (dettagli.status === 'CREATED' && !isEditing) {
           <button class="btn-outline" (click)="attivaModifica()">✏️ Modifica Bozza</button>
         }
@@ -45,16 +49,66 @@
       </div>
     </div>
 
-    <!-- BOTTOM CARD: Esami e Documenti -->
+    @if (dettagli.status === 'CANCELED') {
+      <div class="cancellation-box">
+        <div class="cancellation-title">⚠️ Motivo dell'Annullamento / Rifiuto</div>
+        <p class="cancellation-reason">
+          "{{ dettagli.la_rejection_reason || 'La richiesta è stata annullata dall\'ufficio o su rinuncia dello studente.' }}"
+        </p>
+      </div>
+    }
+
+    @if (dettagli.actual_arrival_date || dettagli.actual_departure_date) {
+      <div class="card">
+        <h2>📅 Date di Soggiorno Effettive</h2>
+
+        <div class="dates-calendar-grid">
+          <div class="calendar-box">
+            <span class="calendar-label">Arrivo</span>
+            @if (dettagli.actual_arrival_date) {
+              <div class="calendar-widget">
+                <div class="cal-month">{{ dettagli.actual_arrival_date | date:'MMM' }}</div>
+                <div class="cal-day">{{ dettagli.actual_arrival_date | date:'dd' }}</div>
+                <div class="cal-year">{{ dettagli.actual_arrival_date | date:'yyyy' }}</div>
+              </div>
+            } @else {
+              <div class="calendar-widget empty">
+                <div class="cal-month">-</div>
+                <div class="cal-day">?</div>
+                <div class="cal-year">-</div>
+              </div>
+              <span class="empty-text">Non inserita</span>
+            }
+          </div>
+
+          <div class="calendar-box">
+            <span class="calendar-label">Partenza</span>
+            @if (dettagli.actual_departure_date) {
+              <div class="calendar-widget">
+                <div class="cal-month">{{ dettagli.actual_departure_date | date:'MMM' }}</div>
+                <div class="cal-day">{{ dettagli.actual_departure_date | date:'dd' }}</div>
+                <div class="cal-year">{{ dettagli.actual_departure_date | date:'yyyy' }}</div>
+              </div>
+            } @else {
+              <div class="calendar-widget empty">
+                <div class="cal-month">-</div>
+                <div class="cal-day">?</div>
+                <div class="cal-year">-</div>
+              </div>
+              <span class="empty-text">Non inserita</span>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
     <div class="card">
       <h2>Learning Agreement & Documenti</h2>
 
-      <!-- Lista Esami -->
       @if (dettagli.exams && dettagli.exams.length > 0) {
         @for (esame of dettagli.exams; track esame.id) {
           <div class="exam-row">
 
-            <!-- VIEW MODE (Sola Lettura) -->
             @if (!isEditing) {
               <div class="exam-half">
                 <h4>✈️ Corso Estero</h4>
@@ -74,7 +128,13 @@
               </div>
             }
 
-            <!-- EDIT MODE (Modifica Bozza) -->
+            @if (dettagli.status === 'CLOSED' || esame.score_obtained) {
+              <div class="exam-score-box">
+                <span class="score-label">🏆 Voto Finale</span>
+                <span class="score-value">{{ esame.score_obtained || 'Approvato' }}</span>
+              </div>
+            }
+
             @if (isEditing) {
               <div class="exam-half">
                 <h4>✈️ Corso Estero</h4>
@@ -105,7 +165,6 @@
         <p style="color: var(--text-muted); font-size: 14px;">Nessun esame associato a questa richiesta.</p>
       }
 
-      <!-- Sezione File Originale o Sostituzione in Modifica -->
       <div class="document-section">
         <h4>Documento Ufficiale</h4>
 
@@ -120,7 +179,6 @@
               Sostituisci il Learning Agreement (PDF facoltativo):
             </label>
 
-            <!-- DRAG & DROP ZONE UGUALE A NEW-REQUEST -->
             <div class="drag-drop-zone"
                  [class.active-glow]="isDragging"
                  (dragover)="onDragOver($event)"
@@ -149,7 +207,6 @@
         }
       </div>
 
-      <!-- Pulsanti in fondo per la Modalità Modifica -->
       @if (isEditing) {
         <div class="edit-actions">
           <button class="btn-outline" (click)="annullaModifica()">Annulla</button>
@@ -164,7 +221,6 @@
   </div>
 }
 
-<!-- MODALE DI CONFERMA SALVATAGGIO -->
 @if (mostraModale) {
   <div class="modal-overlay">
     <div class="modal">
@@ -182,7 +238,6 @@
   </div>
 }
 
-<!-- ALERT POPUP DI SISTEMA (TOAST) -->
 @if (mostraAlert) {
   <div class="custom-alert" [ngClass]="alertType === 'success' ? 'alert-success' : 'alert-error'">
     <div class="alert-icon">{{ alertType === 'success' ? '✅' : '❌' }}</div>

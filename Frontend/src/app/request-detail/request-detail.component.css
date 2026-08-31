@@ -399,3 +399,141 @@ input[type="number"]:focus {
 .drag-drop-zone.active-glow .upload-circle {
   transform: translateY(-5px);
 }
+.cancellation-box {
+  background-color: var(--danger-light);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.cancellation-title {
+  font-weight: 700;
+  color: var(--danger);
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.cancellation-reason {
+  margin: 0;
+  font-size: 14px;
+  color: var(--danger);
+  font-style: italic;
+}
+.exam-score-box {
+  background: var(--surface);
+  border: 1px solid var(--success);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  text-align: center;
+  min-width: 90px;
+  margin-top: 16px;
+}
+
+.score-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--success);
+  display: block;
+  text-transform: uppercase;
+}
+
+.score-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--success);
+}
+
+/* WIDGET CALENDARIO DATE DI SOGGIORNO*/
+.dates-calendar-grid {
+  display: flex;
+  gap: 24px;
+}
+
+.calendar-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg-color);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  min-width: 140px;
+  transition: all 0.2s ease;
+}
+
+.calendar-box:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.calendar-widget {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  width: 90px;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+}
+
+.cal-month {
+  background: var(--danger); /* Linguetta rossa del calendario */
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 6px 0;
+  letter-spacing: 1px;
+}
+
+.cal-day {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text-main);
+  padding: 8px 0 0 0;
+  line-height: 1;
+}
+
+.cal-year {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 4px 0 12px 0;
+}
+
+/* Stile per data mancante */
+.calendar-widget.empty {
+  border: 2px dashed var(--border);
+  box-shadow: none;
+  opacity: 0.7;
+}
+
+.calendar-widget.empty .cal-month {
+  background: var(--text-muted);
+}
+
+.empty-text {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .dates-calendar-grid {
+    flex-direction: column;
+    gap: 16px;
+  }
+}

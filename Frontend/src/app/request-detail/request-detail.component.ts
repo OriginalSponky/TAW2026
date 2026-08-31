@@ -200,6 +200,11 @@ export class RequestDetailComponent implements OnInit {
     return status.replace(/_/g, ' ');
   }
 
+  tornaIndietro(event: Event) {
+    event.preventDefault();
+    this.onBack.emit();
+  }
+
   // Funzioni Drag & Drop
   onDragOver(event: DragEvent) {
     event.preventDefault();

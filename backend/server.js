@@ -278,7 +278,7 @@ app.get('/api/applications/:id', async (req, res) => {
     const appId = req.params.id;
     try {
         const [appRows] = await dbPool.query(`
-            SELECT a.*, i.name AS institution_name, i.country, i.city
+            SELECT a.*, i.name AS institution_name, i.country, i.city, i.website_url
             FROM Applications a
                      JOIN Institutions i ON a.institution_id = i.id
             WHERE a.id = ?
