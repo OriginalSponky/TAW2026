@@ -1,24 +1,17 @@
-* { box-sizing: border-box; }
+/* ==========================================================
+   HOME COMPONENT STYLES (Student Home)
+   Tutti gli stili globali (Header, Bottoni, Dropdown,
+   Theme, Dark Mode) sono nel file styles.css
+   ========================================================== */
 
 :host {
   display: block;
   width: 100%;
 }
 
-/* HEADER & PROFILE */
-header {
-  background-color: var(--surface);
-  padding: 16px 32px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: var(--shadow-sm);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  border-bottom: 1px solid var(--border);
-}
-
+/* -----------------------------------------------------------
+   HEADER LOGO (Specifico per questa pagina)
+   ----------------------------------------------------------- */
 .header-logo {
   font-size: 1.4rem;
   font-weight: 700;
@@ -27,103 +20,9 @@ header {
   letter-spacing: -0.5px;
 }
 
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-/* BOTTONI HEADER */
-.theme-toggle-btn {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.3s ease;
-  color: var(--text-main);
-}
-
-.theme-toggle-btn:hover {
-  transform: rotate(15deg) scale(1.05);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary);
-}
-
-.lang-btn {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-weight: 600;
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--text-main);
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
-}
-
-.lang-btn:hover {
-  background: var(--bg-color);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.profile-container { position: relative; }
-
-.profile-btn {
-  background-color: var(--primary-light);
-  color: var(--primary);
-  border: 1px solid transparent;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.profile-btn:hover {
-  background-color: var(--primary);
-  color: white;
-  transform: scale(1.05);
-  box-shadow: var(--shadow-md);
-}
-
-.dropdown {
-  position: absolute;
-  top: 60px;
-  right: 0;
-  background: var(--surface);
-  width: 220px;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  display: none;
-  flex-direction: column;
-  overflow: hidden;
-  z-index: 101;
-  border: 1px solid var(--border);
-}
-
-.dropdown.active { display: flex; }
-.dropdown a { text-decoration: none; color: var(--text-main); padding: 12px 20px; font-size: 14px; transition: background 0.2s; }
-.dropdown a:hover { background-color: var(--bg-color); }
-.dropdown .divider { height: 1px; background-color: var(--border); margin: 4px 0; }
-.dropdown .logout { color: var(--danger); font-weight: 600; }
-
-/* LAYOUT & CARDS */
+/* -----------------------------------------------------------
+   LAYOUT PRINCIPALE E HERO
+   ----------------------------------------------------------- */
 main {
   max-width: 1100px;
   margin: 0 auto;
@@ -150,6 +49,9 @@ main {
   margin: 12px 0 0 0;
 }
 
+/* -----------------------------------------------------------
+   LAYOUT DELLE CARD (Menu di navigazione)
+   ----------------------------------------------------------- */
 .cards-layout {
   display: flex;
   flex-direction: column;
@@ -197,6 +99,9 @@ main {
   margin: 0;
 }
 
+/* -----------------------------------------------------------
+   CARD EVIDENZIATA (Es. "In Erasmus")
+   ----------------------------------------------------------- */
 .card-highlight {
   border: 2px solid var(--primary);
   background-color: var(--primary-light);

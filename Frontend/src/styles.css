@@ -1,7 +1,19 @@
-/* FONT */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* ==========================================================================
+   OVERSEAS PROGRAM - GLOBAL STYLESHEET
+   Questo file gestisce l'intero design system dell'applicazione, inclusi
+   colori (Light/Dark mode), tipografia, bottoni, modali e notifiche (Toasts).
+   ========================================================================== */
 
-/* 🎨 TEMA CHIARO GLOBALE (LIGHT MODE)*/
+/* --------------------------------------------------------------------------
+   1. FONT E TYPOGRAPHY
+   -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap');
+
+/* --------------------------------------------------------------------------
+   2. VARIABILI E TEMI (LIGHT & DARK MODE)
+   -------------------------------------------------------------------------- */
+/* TEMA CHIARO (Default) */
 :root {
   /* Sfondi */
   --bg-color: #f8fafc;
@@ -14,104 +26,73 @@
   /* Bordi */
   --border: #e2e8f0;
 
-  /* Smussature (Border Radius) - FONDAMENTALI PER GLI ELEMENTI TONDEGGIANTI */
+  /* Smussature (Border Radius) */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
 
-  /* Colori Primari e d'Accento */
+  /* Colore Primario (Sovrascrivibile tramite ThemeService TS) */
   --primary: #2563eb;
   --primary-hover: #1d4ed8;
   --primary-light: #eff6ff;
 
+  /* Colori di Stato */
   --success: #10b981;
   --danger: #ef4444;
   --danger-light: #fee2e2;
   --warning: #f59e0b;
   --warning-light: #fef3c7;
 
-  /* Ombre */
+  /* Ombre Standard */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-/* 🌙 TEMA SCURO GLOBALE (DARK MODE)*/
-
-/* TRANSIZIONI FLUIDE */
-body, .card, .request-card, header, .form-section-clean, .modal, .main-form-container, input, select, textarea {
+/* Transizioni Fluide Globali per Cambio Tema */
+body, header, .card, .request-card, .form-section-clean, .modal, .main-form-container, input, select, textarea, .dropdown {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* TEMA SCURO (Attivato tramite class 'dark-mode' sul body) */
 body.dark-mode {
-  /* Sfondi Strutturali */
   --bg-color: #0f172a;
   --surface: #1e293b;
-
-  /* Testi */
   --text-main: #f1f5f9;
   --text-muted: #94a3b8;
-
-  /* Bordi */
   --border: #334155;
 
-  /* Colori d'Accento (adattati per leggibilità) */
+  /* Colori d'Accento opacizzati per evitare abbagliamento su sfondi scuri */
   --primary-light: rgba(37, 99, 235, 0.2);
   --danger-light: rgba(239, 68, 68, 0.15);
   --warning-light: rgba(245, 158, 11, 0.15);
 
-  /* Ombre (più intense su sfondi scuri) */
+  /* Ombre modificate (più ampie e scure per compensare l'assenza di luce) */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
 }
 
-/* FIX SPECIFICI PER LA DARK MODE */
-
+/* Reset specifici Dark Mode per input e contenitori bianchi */
 body.dark-mode input,
 body.dark-mode select,
 body.dark-mode textarea {
-  background-color: #0f172a;
-  color: var(--text-main);
-  border-color: #475569;
-  color-scheme: dark;
+  color-scheme: dark; /* Forza l'UI del browser (es. calendari nativi) a diventare scura */
 }
 
-body.dark-mode input:focus,
-body.dark-mode select:focus,
-body.dark-mode textarea:focus {
-  border-color: var(--primary);
-}
-
-body.dark-mode .drag-drop-zone {
-  background-color: #0f172a;
-  border-color: #475569;
-}
+body.dark-mode .drag-drop-zone,
 body.dark-mode .upload-circle {
   background-color: var(--surface);
 }
 
-body.dark-mode .main-form-container {
-  background-color: var(--surface);
-  border-color: var(--border);
-}
-
-body.dark-mode header,
-body.dark-mode .dropdown {
-  background-color: var(--surface);
-  border-color: var(--border);
-}
-
-body.dark-mode .home-box {
-  background-color: var(--surface);
-  border-color: var(--border);
-}
 body.dark-mode .home-box:hover {
   background-color: #334155;
 }
 
-/* IMPOSTAZIONI GLOBALI HTML/BODY E TESTI*/
+/* --------------------------------------------------------------------------
+   3. BASE E RESET
+   -------------------------------------------------------------------------- */
 body {
   background-color: var(--bg-color);
   color: var(--text-main);
@@ -120,90 +101,43 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
-/* Forza tutti i titoli principali a seguire il tema chiaro/scuro */
 h1, h2, h3, h4, h5, h6, .page-title, .page-subtitle {
   color: var(--text-main);
 }
 
-/* COMPONENTI STRUTTURALI*/
-
-/* DROPDOWN MENU */
-.dropdown {
-  position: absolute;
-  top: 55px;
-  right: 0;
-  background: var(--surface);
-  width: 220px;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+/* --------------------------------------------------------------------------
+   4. FORM INPUTS (Stile universale per input, textarea e select)
+   -------------------------------------------------------------------------- */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+select,
+textarea {
+  width: 100%;
+  padding: 12px 16px;
   border: 1px solid var(--border);
-  display: none;
-  flex-direction: column;
-  overflow: hidden;
-  z-index: 1000;
-}
-.dropdown.active { display: flex; }
-.dropdown a { text-decoration: none; color: var(--text-main); padding: 12px 20px; font-size: 14px; transition: background 0.2s; cursor: pointer; }
-.dropdown a:hover { background-color: var(--bg-color); }
-.dropdown .divider { height: 1px; background-color: var(--border); margin: 4px 0; }
-.dropdown .logout { color: var(--danger); font-weight: 500; }
-
-/* BOTTONE DARK MODE */
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.theme-toggle-btn {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.3s ease;
-  color: var(--text-main);
-}
-
-.theme-toggle-btn:hover {
-  transform: rotate(15deg) scale(1.05);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary);
-}
-
-/* BOTTONI (Generici)*/
-
-/* Secondary Buttons */
-.btn-outline {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--primary);
-  padding: 8px 16px;
   border-radius: var(--radius-md);
   font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  font-family: inherit;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  outline: none;
+  box-sizing: border-box;
 }
-.btn-outline:hover { background: var(--primary-light); border-color: var(--primary); }
 
-/* Danger Buttons */
-.btn-danger, .btn-danger-outline { color: var(--danger); border-color: var(--danger-light); }
-.btn-danger:hover, .btn-danger-outline:hover { background: var(--danger-light); border-color: var(--danger); }
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
+  background-color: var(--surface);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
 
-/* Stile base per gli input file nativi */
+/* Customizzazione Input File nativo */
 input[type="file"] {
   font-family: 'Inter', sans-serif;
   color: var(--text-main);
 }
-
-/* Bottone grigio interno all'input file */
 input[type="file"]::file-selector-button {
   font-family: 'Inter', sans-serif;
   background-color: var(--primary-light);
@@ -216,13 +150,253 @@ input[type="file"]::file-selector-button {
   margin-right: 16px;
   transition: all 0.2s ease;
 }
-
 input[type="file"]::file-selector-button:hover {
   background-color: var(--primary);
   color: white;
 }
 
-/* BADGE DI STATO (Pratiche Erasmus)*/
+/* Errori Input */
+.is-invalid {
+  border-color: var(--danger) !important;
+  background-color: var(--danger-light) !important;
+}
+.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+}
+
+/* --------------------------------------------------------------------------
+   5. BOTTONI GLOBALI
+   -------------------------------------------------------------------------- */
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-outline:hover {
+  background: var(--bg-color);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn-success {
+  background-color: var(--success);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+.btn-success:hover { background-color: #059669; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+.btn-danger {
+  background-color: var(--danger);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+.btn-danger:hover { background-color: #b91c1c; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+.btn-danger-outline {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-danger-outline:hover { background: var(--danger-light); }
+
+/* --------------------------------------------------------------------------
+   6. COMPONENTI HEADER (Menu, Profilo, Temi, Lingue)
+   -------------------------------------------------------------------------- */
+header {
+  background-color: var(--surface);
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--border);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Pulsanti Tondi Header (Lingua / Dark Mode) */
+.lang-btn, .theme-toggle-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+.lang-btn {
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+}
+.theme-toggle-btn {
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lang-btn:hover, .theme-toggle-btn:hover {
+  background: var(--bg-color);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.theme-toggle-btn:hover { transform: rotate(15deg) scale(1.05); }
+
+/* Profilo Utente (Iniziali) */
+.profile-container { position: relative; }
+.profile-btn {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border: 2px solid transparent;
+  border-radius: 50%;
+  width: 46px;
+  height: 46px;
+  font-size: 17px;
+  font-weight: 800; /* Font bold per Iniziali */
+  font-family: 'Montserrat', 'Inter', sans-serif;
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.profile-btn:hover {
+  background-color: var(--primary);
+  color: white;
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 4px 12px var(--primary-light);
+}
+
+/* Dropdown Menu (Profilo & Colori) */
+.dropdown {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  background: var(--surface);
+  width: 240px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1000;
+}
+.dropdown.active { display: flex; }
+.dropdown a { text-decoration: none; color: var(--text-main); padding: 12px 20px; font-size: 14px; transition: background 0.2s; cursor: pointer; }
+.dropdown a:hover { background-color: var(--bg-color); }
+.dropdown .divider { height: 1px; background-color: var(--border); margin: 4px 0; }
+.dropdown .logout { color: var(--danger); font-weight: 600; }
+
+/* Theme Color Picker nel Dropdown */
+.color-picker-menu { padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+.color-picker-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.color-swatches { display: flex; gap: 12px; }
+.swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; padding: 0; }
+.swatch:hover { transform: scale(1.15); }
+.swatch.active { border-color: var(--text-main); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text-main); transform: scale(1.1); }
+.bg-blue { background-color: #2563eb; }
+.bg-purple { background-color: #9333ea; }
+.bg-emerald { background-color: #10b981; }
+.bg-rose { background-color: #e11d48; }
+
+
+/* --------------------------------------------------------------------------
+   7. MODALI E OVERLAY (Popup)
+   -------------------------------------------------------------------------- */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Semitrasparenza Sfondo */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px); /* Effetto Glassmorphism */
+  animation: fadeInModal 0.2s ease;
+}
+
+.modal {
+  background: var(--surface);
+  padding: 32px;
+  border-radius: var(--radius-xl);
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal h3 { margin-top: 0; color: var(--text-main); font-size: 1.5rem; margin-bottom: 8px; }
+.modal-actions { display: flex; justify-content: center; gap: 16px; margin-top: 24px; align-items: center; }
+
+@keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+
+/* --------------------------------------------------------------------------
+   8. BADGE DI STATO & EFFETTI BORDI AURA (Pratiche Erasmus)
+   -------------------------------------------------------------------------- */
 .status-badge {
   display: inline-block;
   padding: 6px 14px;
@@ -235,43 +409,42 @@ input[type="file"]::file-selector-button:hover {
   line-height: 1.4;
 }
 
+/* Colori Base Stati */
 .status-created { background-color: var(--bg-color); color: var(--text-muted); border: 1px solid var(--border); }
-.status-awaiting-la { background-color: var(--warning-light); color: var(--warning); border: 1px solid #fde68a; }
+.status-awaiting-la, .badge-warning { background-color: var(--warning-light); color: var(--warning); border: 1px solid #fde68a; }
 .status-pre-departure { background-color: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
-.status-in-progress { background-color: var(--primary-light); color: var(--primary); border: 1px solid #bfdbfe; }
-.status-awaiting-modification { background-color: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
-.status-waiting-score { background-color: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
-.status-closed { background-color: #dcfce7; color: var(--success); border: 1px solid #bbf7d0; }
-.status-canceled { background-color: var(--danger-light); color: var(--danger); border: 1px solid #fecaca; }
+.status-in-progress, .badge-info { background-color: var(--primary-light); color: var(--primary); border: 1px solid #bfdbfe; }
+.status-awaiting-modification { background-color: var(--warning-light); color: var(--warning); border: 1px solid #fde68a; }
+.status-waiting-score, .badge-purple { background-color: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid #d8b4fe; }
+.status-closed, .badge-success { background-color: #dcfce7; color: var(--success); border: 1px solid #bbf7d0; }
+.status-canceled, .badge-danger { background-color: var(--danger-light); color: var(--danger); border: 1px solid #fecaca; }
+.badge-neutral { background-color: var(--bg-color); color: var(--text-muted); border: 1px solid var(--border); }
 
-/* Badge accessori generici per file (PENDING/REJECTED) */
+/* Badge Generici / Documenti */
 .badge-warning { background-color: var(--warning-light); color: var(--warning); border: 1px solid #fde68a; }
 .badge-danger { background-color: var(--danger-light); color: var(--danger); border: 1px solid #fecaca; }
 
-/* BORDI "AURA" DINAMICI PER LE CARD*/
-.card.border-created, .request-card.border-created {
-  border-left: 6px solid #94a3b8 !important;
-}
-.card.border-awaiting, .request-card.border-awaiting {
-  border-left: 6px solid #f59e0b !important;
-}
-.card.border-pre-departure, .request-card.border-pre-departure {
-  border-left: 6px solid #fde68a !important;
-}
-.card.border-in-progress, .request-card.border-in-progress {
-  border-left: 6px solid #3b82f6 !important;
-}
-.card.border-closed, .request-card.border-closed {
-  border-left: 6px solid #10b981 !important;
-}
-.card.border-canceled, .request-card.border-canceled {
-  border-left: 6px solid #ef4444 !important;
-}
-.card.border-waiting-score, .request-card.border-waiting-score {
-  border-left: 6px solid #a855f7 !important;
-}
+/* Badge Generici / Documenti / Staff */
+.badge-neutral { background-color: var(--bg-color); color: var(--text-muted); border: 1px solid var(--border); }
+.badge-info { background-color: var(--primary-light); color: var(--primary); border: 1px solid #bfdbfe; }
+.badge-purple { background-color: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid #d8b4fe; }
+.badge-success { background-color: #dcfce7; color: var(--success); border: 1px solid #bbf7d0; }
+.badge-warning { background-color: var(--warning-light); color: var(--warning); border: 1px solid #fde68a; }
+.badge-danger { background-color: var(--danger-light); color: var(--danger); border: 1px solid #fecaca; }
 
-/* ALERT POPUP DI SISTEMA (TOAST GLOBALE)*/
+/* Aura Laterale Sinistra sulle Request Cards */
+.card.border-created, .request-card.border-created { border-left: 6px solid #94a3b8 !important; }
+.card.border-awaiting, .request-card.border-awaiting { border-left: 6px solid #f59e0b !important; }
+.card.border-pre-departure, .request-card.border-pre-departure { border-left: 6px solid #fde68a !important; }
+.card.border-in-progress, .request-card.border-in-progress { border-left: 6px solid #3b82f6 !important; }
+.card.border-closed, .request-card.border-closed { border-left: 6px solid #10b981 !important; }
+.card.border-canceled, .request-card.border-canceled { border-left: 6px solid #ef4444 !important; }
+.card.border-waiting-score, .request-card.border-waiting-score { border-left: 6px solid #a855f7 !important; }
+
+
+/* --------------------------------------------------------------------------
+   9. TOAST NOTIFICATIONS (Alert di sistema)
+   -------------------------------------------------------------------------- */
 .custom-alert {
   position: fixed;
   bottom: 24px;
@@ -295,19 +468,8 @@ input[type="file"]::file-selector-button:hover {
 .alert-success { border-left-color: var(--success); }
 .alert-error { border-left-color: var(--danger); }
 
-.alert-icon {
-  font-size: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.alert-message {
-  flex-grow: 1;
-  color: var(--text-main);
-  font-weight: 500;
-  font-size: 15px;
-}
+.alert-icon { font-size: 22px; display: flex; align-items: center; justify-content: center; }
+.alert-message { flex-grow: 1; color: var(--text-main); font-weight: 500; font-size: 15px; }
 
 .close-alert {
   background: none;
@@ -326,77 +488,3 @@ input[type="file"]::file-selector-button:hover {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
-
-/* --- INIZIALI PIÙ FIGHE --- */
-.profile-btn {
-  background-color: var(--primary-light);
-  color: var(--primary);
-  border: 2px solid transparent;
-  border-radius: 50%;
-  width: 46px;
-  height: 46px;
-  font-size: 17px;
-  font-weight: 800; /* Font molto più spesso */
-  font-family: 'Montserrat', 'Inter', sans-serif; /* Fallback su un font moderno */
-  letter-spacing: 1px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.profile-btn:hover {
-  background-color: var(--primary);
-  color: white;
-  transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 4px 12px var(--primary-light);
-}
-
-/* --- MENU SCELTA COLORI --- */
-.color-picker-menu {
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.color-picker-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.color-swatches {
-  display: flex;
-  gap: 12px;
-}
-
-.swatch {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  padding: 0;
-}
-
-.swatch:hover {
-  transform: scale(1.15);
-}
-
-/* Evidenzia il colore attualmente selezionato */
-.swatch.active {
-  border-color: var(--text-main);
-  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text-main);
-  transform: scale(1.1);
-}
-
-/* Colori dei bottoni swatch */
-.bg-blue { background-color: #2563eb; }
-.bg-purple { background-color: #9333ea; }
-.bg-emerald { background-color: #10b981; }
-.bg-rose { background-color: #e11d48; }

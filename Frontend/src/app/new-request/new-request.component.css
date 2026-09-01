@@ -1,133 +1,16 @@
+/* ==========================================================
+   NEW REQUEST COMPONENT STYLES
+   Tutti gli stili globali (Header, Bottoni, Modali, Dropdown,
+   Toast, Dark Mode, Classi generiche) sono in styles.css
+   ========================================================== */
+
 :host {
   display: block;
 }
 
-/* HEADER STYLES */
-header {
-  background-color: var(--surface);
-  padding: 16px 32px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: var(--shadow-sm);
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.back-btn {
-  text-decoration: none;
-  color: var(--text-muted);
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.back-btn:hover {
-  color: var(--primary);
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-/* LANG BTN IN HEADER */
-.lang-btn {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-weight: 600;
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--text-main);
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
-}
-
-.lang-btn:hover {
-  background: var(--bg-color);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-/* THEME AND PROFILE */
-.theme-toggle-btn {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.3s ease;
-  color: var(--text-main);
-}
-
-.theme-toggle-btn:hover {
-  transform: rotate(15deg) scale(1.05);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary);
-}
-
-.profile-container { position: relative; }
-
-.profile-btn {
-  background-color: var(--primary-light);
-  color: var(--primary);
-  border: none;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.profile-btn:hover {
-  background-color: var(--primary);
-  color: white;
-  transform: scale(1.05);
-  box-shadow: var(--shadow-md);
-}
-
-/* DROPDOWN */
-.dropdown {
-  position: absolute;
-  top: 60px;
-  right: 0;
-  background: var(--surface);
-  width: 220px;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  display: none;
-  flex-direction: column;
-  overflow: hidden;
-  z-index: 101;
-  border: 1px solid var(--border);
-}
-
-.dropdown.active { display: flex; }
-.dropdown a { text-decoration: none; color: var(--text-main); padding: 12px 20px; font-size: 14px; transition: background 0.2s; }
-.dropdown a:hover { background-color: var(--bg-color); }
-.dropdown .divider { height: 1px; background-color: var(--border); margin: 4px 0; }
-.dropdown .logout { color: var(--danger); font-weight: 600; }
-
-
-/* MAIN LAYOUT */
+/* -----------------------------------------------------------
+   LAYOUT PRINCIPALE E CONTENITORE FORM
+   ----------------------------------------------------------- */
 main {
   max-width: 900px;
   margin: 40px auto;
@@ -157,7 +40,9 @@ main {
   border-bottom: 2px solid var(--border);
 }
 
-/* FORM GRID */
+/* -----------------------------------------------------------
+   GRIGLIE DEL FORM E INPUT SPECIFICI
+   ----------------------------------------------------------- */
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -171,7 +56,9 @@ main {
   margin-bottom: 24px;
 }
 
-.form-group.full-width { grid-column: 1 / -1; }
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
 
 label {
   font-size: 14px;
@@ -179,34 +66,16 @@ label {
   color: var(--text-main);
 }
 
-input[type="text"],
-input[type="number"],
-select,
-input[type="file"] {
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-family: inherit;
-  background-color: var(--bg-color);
-  color: var(--text-main);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  outline: none;
-}
-
-input:focus, select:focus {
-  border-color: var(--primary);
-  background-color: var(--surface);
-  box-shadow: 0 0 0 3px var(--primary-light);
-}
-
+/* Input File Nascosto / Cliccabile specifico per questa vista */
 input[type="file"] {
   background-color: var(--surface);
   padding: 10px;
   cursor: pointer;
 }
 
-/* EXAM MAPPING */
+/* -----------------------------------------------------------
+   MAPPATURA ESAMI (EXAM MAPPING)
+   ----------------------------------------------------------- */
 .exam-mapping-container {
   background-color: var(--bg-color);
   border: 1px solid var(--border);
@@ -254,126 +123,9 @@ input[type="file"] {
   box-shadow: var(--shadow-sm);
 }
 
-.btn-outline {
-  width: 100%;
-  padding: 16px;
-  background-color: transparent;
-  border: 2px dashed var(--border);
-  border-radius: var(--radius-lg);
-  color: var(--primary);
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-outline:hover {
-  border-color: var(--primary);
-  background-color: var(--primary-light);
-}
-
-.submit-container {
-  margin-top: 48px;
-  display: flex;
-  justify-content: flex-end;
-  width: 100%;
-}
-
-.btn-primary {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 14px 32px;
-  border-radius: var(--radius-md);
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
-}
-
-.btn-primary:hover {
-  background: var(--primary-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-primary:disabled {
-  background: var(--text-muted);
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-/* MODALS */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(15, 23, 42, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(4px);
-}
-
-.modal {
-  background: var(--surface);
-  padding: 40px 32px;
-  border-radius: var(--radius-xl);
-  width: 90%;
-  max-width: 450px;
-  text-align: center;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-@keyframes popIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.modal h3 {
-  margin-top: 0;
-  margin-bottom: 12px;
-  color: var(--text-main);
-  font-size: 1.5rem;
-}
-
-.modal p {
-  color: var(--text-muted);
-  margin-bottom: 32px;
-  font-size: 15px;
-  line-height: 1.6;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-}
-
-.modal-actions .btn-outline {
-  width: auto;
-  border: 1px solid var(--border);
-  padding: 12px;
-}
-
-/* VALIDATION */
-.is-invalid {
-  border-color: var(--danger) !important;
-  background-color: var(--danger-light) !important;
-}
-
-.is-invalid:focus {
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
-}
-
-/* DOWNLOAD TEMPLATE */
+/* -----------------------------------------------------------
+   AREA DOWNLOAD TEMPLATE
+   ----------------------------------------------------------- */
 .template-download-section {
   display: flex;
   justify-content: space-between;
@@ -395,7 +147,7 @@ input[type="file"] {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: white;
+  background-color: var(--surface);
   color: var(--primary);
   border: 1px solid var(--border);
   padding: 10px 20px;
@@ -405,6 +157,7 @@ input[type="file"] {
   font-size: 14px;
   box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .btn-download:hover {
@@ -413,7 +166,9 @@ input[type="file"] {
   transform: translateY(-2px);
 }
 
-/* UPLOAD (Drag & Drop) */
+/* -----------------------------------------------------------
+   AREA UPLOAD E DRAG & DROP
+   ----------------------------------------------------------- */
 .drag-drop-zone {
   margin-top: 24px;
   padding: 48px 20px;
@@ -422,6 +177,7 @@ input[type="file"] {
   background-color: var(--bg-color);
   text-align: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
 
 .drag-drop-zone.active-glow {
@@ -434,49 +190,38 @@ input[type="file"] {
 .upload-circle {
   width: 72px;
   height: 72px;
-  background-color: white;
+  background-color: var(--surface);
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-md);
   transition: transform 0.3s ease;
+  margin: 0 auto;
 }
 
 .drag-drop-zone.active-glow .upload-circle {
   transform: translateY(-5px);
 }
 
-/* RESPONSIVE GRID */
-@media (max-width: 768px) {
-  .form-grid { grid-template-columns: 1fr; }
-  .submit-container { margin-top: 24px; }
+/* -----------------------------------------------------------
+   CONTENITORE BOTTONE INVIO FINALE
+   ----------------------------------------------------------- */
+.submit-container {
+  margin-top: 48px;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
 }
 
-/* TOAST ALERT */
-.custom-alert {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 24px;
-  border-radius: var(--radius-md);
-  background-color: var(--surface);
-  box-shadow: var(--shadow-lg);
-  z-index: 9999;
-  animation: slideInToast 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  min-width: 320px;
-  border-left: 6px solid;
-  border-top: 1px solid var(--border);
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+/* -----------------------------------------------------------
+   RESPONSIVE GRID
+   ----------------------------------------------------------- */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .submit-container {
+    margin-top: 24px;
+  }
 }
-.alert-success { border-left-color: var(--success); }
-.alert-error { border-left-color: var(--danger); }
-.alert-icon { font-size: 22px; display: flex; align-items: center; justify-content: center; }
-.alert-message { flex-grow: 1; color: var(--text-main); font-weight: 500; font-size: 15px; }
-.close-alert { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 0; display: flex; align-items: center; transition: color 0.2s; }
-.close-alert:hover { color: var(--text-main); }
-@keyframes slideInToast { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }

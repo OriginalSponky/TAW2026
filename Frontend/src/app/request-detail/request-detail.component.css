@@ -1,4 +1,9 @@
-/* HOST & MAIN LAYOUT*/
+/* ==========================================================
+   REQUEST DETAIL COMPONENT STYLES
+   Tutti gli stili globali (Header, Bottoni, Modali, Dropdown,
+   Toast, Dark Mode, Classi generiche) sono in styles.css
+   ========================================================== */
+
 :host {
   display: block;
   max-width: 1000px;
@@ -6,7 +11,9 @@
   padding: 0 20px;
 }
 
-/* HEADER & NAVIGATION*/
+/* -----------------------------------------------------------
+   TASTO INDIETRO SPECIFICO (Sopra le Card)
+   ----------------------------------------------------------- */
 .back-header-btn {
   margin-bottom: 24px;
   background: transparent;
@@ -28,7 +35,9 @@
   background-color: var(--primary-light);
 }
 
-/* CARDS STYLING*/
+/* -----------------------------------------------------------
+   CARDS GENERALI
+   ----------------------------------------------------------- */
 .card {
   background: var(--surface);
   border-radius: var(--radius-xl);
@@ -52,7 +61,6 @@
   letter-spacing: -0.5px;
 }
 
-/* Flex header for Title and Edit Button */
 .card-header-flex {
   display: flex;
   justify-content: space-between;
@@ -68,7 +76,9 @@
   padding: 0;
 }
 
-/* INFO GRID (Top Card)*/
+/* -----------------------------------------------------------
+   INFO GRID (Dati principali della Mobilità)
+   ----------------------------------------------------------- */
 .info-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -91,7 +101,122 @@
   margin: 0;
 }
 
-/* EXAM ROWS & EDIT MODE*/
+/* -----------------------------------------------------------
+   BOX DI ANNULLAMENTO / RIFIUTO
+   ----------------------------------------------------------- */
+.cancellation-box {
+  background-color: var(--danger-light);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.cancellation-title {
+  font-weight: 700;
+  color: var(--danger);
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.cancellation-reason {
+  margin: 0;
+  font-size: 14px;
+  color: var(--danger);
+  font-style: italic;
+}
+
+/* -----------------------------------------------------------
+   WIDGET CALENDARIO (Date Effettive di Soggiorno)
+   ----------------------------------------------------------- */
+.dates-calendar-grid {
+  display: flex;
+  gap: 24px;
+}
+
+.calendar-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg-color);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  min-width: 140px;
+  transition: all 0.2s ease;
+}
+
+.calendar-box:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.calendar-widget {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  width: 90px;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+}
+
+.cal-month {
+  background: var(--danger);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 6px 0;
+  letter-spacing: 1px;
+}
+
+.cal-day {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text-main);
+  padding: 8px 0 0 0;
+  line-height: 1;
+}
+
+.cal-year {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 4px 0 12px 0;
+}
+
+.calendar-widget.empty {
+  border: 2px dashed var(--border);
+  box-shadow: none;
+  opacity: 0.7;
+}
+
+.calendar-widget.empty .cal-month {
+  background: var(--text-muted);
+}
+
+.empty-text {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* -----------------------------------------------------------
+   RIGHE ESAMI (Visualizzazione e Modifica)
+   ----------------------------------------------------------- */
 .exam-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -125,7 +250,6 @@
   margin-right: 4px;
 }
 
-/* Edit Mode Inputs */
 .exam-details label {
   font-size: 12px;
   color: var(--text-muted);
@@ -135,29 +259,33 @@
   margin-bottom: 4px;
 }
 
-input[type="text"],
-input[type="number"],
-input[type="file"] {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
+.exam-score-box {
+  background: var(--surface);
+  border: 1px solid var(--success);
+  padding: 8px 16px;
   border-radius: var(--radius-md);
-  font-size: 14px;
-  font-family: inherit;
-  background-color: var(--surface);
-  color: var(--text-main);
-  box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  outline: none;
+  text-align: center;
+  min-width: 90px;
+  margin-top: 16px;
 }
 
-input[type="text"]:focus,
-input[type="number"]:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-light);
+.score-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--success);
+  display: block;
+  text-transform: uppercase;
 }
 
-/* DOCUMENT SECTION*/
+.score-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--success);
+}
+
+/* -----------------------------------------------------------
+   SEZIONE DOCUMENTI (Visualizzazione e Caricamento)
+   ----------------------------------------------------------- */
 .document-section {
   margin-top: 32px;
   padding-top: 24px;
@@ -207,164 +335,7 @@ input[type="number"]:focus {
   color: var(--text-main);
 }
 
-.doc-edit small {
-  display: block;
-  color: var(--text-muted);
-  font-size: 13px;
-  margin-top: 8px;
-}
-
-/* BUTTONS & ACTIONS*/
-.edit-actions {
-  display: flex;
-  gap: 16px;
-  margin-top: 32px;
-  justify-content: flex-end;
-  padding-top: 24px;
-  border-top: 1px dashed var(--border);
-}
-
-.btn-outline {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-main);
-  padding: 10px 20px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-outline:hover {
-  background: var(--bg-color);
-}
-
-.btn-primary {
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  padding: 10px 24px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
-}
-
-.btn-primary:hover {
-  background-color: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-primary:disabled {
-  background-color: var(--text-muted);
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-/* MODALS (Glassmorphism effect) */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(15, 23, 42, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(4px);
-}
-
-.modal {
-  background: var(--surface);
-  padding: 40px 32px;
-  border-radius: var(--radius-xl);
-  width: 90%;
-  max-width: 450px;
-  text-align: center;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-@keyframes popIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.modal h3 {
-  margin-top: 0;
-  margin-bottom: 12px;
-  color: var(--text-main);
-  font-size: 1.5rem;
-}
-
-.modal p {
-  color: var(--text-muted);
-  margin-bottom: 32px;
-  font-size: 15px;
-  line-height: 1.6;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-}
-
-.modal-actions .btn-outline,
-.modal-actions .btn-primary {
-  margin: 0;
-}
-
-/* RESPONSIVE DESIGN*/
-@media (max-width: 768px) {
-  .exam-row { grid-template-columns: 1fr; gap: 24px; }
-  .card-header-flex { flex-direction: column; align-items: flex-start; gap: 16px; }
-}
-
-/* Stile per il caricamento file custom cliccabile */
-.custom-file-upload {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background-color: var(--surface);
-  cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.custom-file-upload:hover {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-light);
-}
-
-.file-fake-btn {
-  background-color: #f1f3f4;
-  color: var(--text-main);
-  border: 1px solid var(--border);
-  padding: 6px 14px;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  pointer-events: none;
-}
-
-.file-chosen-name {
-  font-size: 14px;
-  color: var(--text-muted);
-}
-
-/* UPLOAD SECTION (Drag & Drop) */
+/* UPLOAD SECTION (Drag & Drop Modifica) */
 .drag-drop-zone {
   margin-top: 12px;
   padding: 32px 20px;
@@ -399,139 +370,32 @@ input[type="number"]:focus {
 .drag-drop-zone.active-glow .upload-circle {
   transform: translateY(-5px);
 }
-.cancellation-box {
-  background-color: var(--danger-light);
-  border: 1px solid var(--danger);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  margin-bottom: 20px;
-}
 
-.cancellation-title {
-  font-weight: 700;
-  color: var(--danger);
-  margin-bottom: 6px;
-  font-size: 14px;
-}
-
-.cancellation-reason {
-  margin: 0;
-  font-size: 14px;
-  color: var(--danger);
-  font-style: italic;
-}
-.exam-score-box {
-  background: var(--surface);
-  border: 1px solid var(--success);
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
-  text-align: center;
-  min-width: 90px;
-  margin-top: 16px;
-}
-
-.score-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--success);
-  display: block;
-  text-transform: uppercase;
-}
-
-.score-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--success);
-}
-
-/* WIDGET CALENDARIO DATE DI SOGGIORNO*/
-.dates-calendar-grid {
+/* -----------------------------------------------------------
+   AZIONI FINALI IN MODIFICA (Annulla / Salva)
+   ----------------------------------------------------------- */
+.edit-actions {
   display: flex;
-  gap: 24px;
+  gap: 16px;
+  margin-top: 32px;
+  justify-content: flex-end;
+  padding-top: 24px;
+  border-top: 1px dashed var(--border);
 }
 
-.calendar-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: var(--bg-color);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  min-width: 140px;
-  transition: all 0.2s ease;
-}
-
-.calendar-box:hover {
-  border-color: var(--primary-light);
-  box-shadow: var(--shadow-sm);
-}
-
-.calendar-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 16px;
-}
-
-.calendar-widget {
-  background: var(--surface);
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  width: 90px;
-  text-align: center;
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-  display: flex;
-  flex-direction: column;
-}
-
-.cal-month {
-  background: var(--danger); /* Linguetta rossa del calendario */
-  color: white;
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 6px 0;
-  letter-spacing: 1px;
-}
-
-.cal-day {
-  font-size: 36px;
-  font-weight: 800;
-  color: var(--text-main);
-  padding: 8px 0 0 0;
-  line-height: 1;
-}
-
-.cal-year {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-  padding: 4px 0 12px 0;
-}
-
-/* Stile per data mancante */
-.calendar-widget.empty {
-  border: 2px dashed var(--border);
-  box-shadow: none;
-  opacity: 0.7;
-}
-
-.calendar-widget.empty .cal-month {
-  background: var(--text-muted);
-}
-
-.empty-text {
-  margin-top: 12px;
-  font-size: 13px;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
+/* -----------------------------------------------------------
+   RESPONSIVE DESIGN
+   ----------------------------------------------------------- */
 @media (max-width: 768px) {
+  .exam-row {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .card-header-flex {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
   .dates-calendar-grid {
     flex-direction: column;
     gap: 16px;

@@ -74,7 +74,15 @@
           <div class="request-info">
             <div class="student-name">🧑‍🎓 {{ app.name }} (Mat. {{ app.matricola }})</div>
             <div class="details">🌍 Destinazione: {{ app.institution }} | ✉️ Docente: {{ app.teacher }}</div>
-            <div class="status-badge badge-warning">{{ 'STAFF.AWAITING_VERIFICATION' | translate }}</div>
+            <div class="status-badge" [ngClass]="{
+              'status-created': app.status === 'CREATED',
+              'status-awaiting-la': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
+              'status-pre-departure': app.status === 'PRE_DEPARTURE_COMPLETED',
+              'status-in-progress': app.status === 'MOBILITY_IN_PROGRESS',
+              'status-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+              'status-closed': app.status === 'CLOSED',
+              'status-canceled': app.status === 'CANCELED'
+            }">{{ app.status }}</div>
           </div>
           <div class="actions">
             <button class="btn-primary" (click)="startReview(app, 'pre-departure', 'Learning Agreement')">{{ 'STAFF.BTN_OPEN' | translate }}</button>
@@ -99,7 +107,15 @@
           <div class="request-info">
             <div class="student-name">🧑‍🎓 {{ app.name }} (Mat. {{ app.matricola }})</div>
             <div class="details">🌍 Destinazione: {{ app.institution }} | ✉️ Docente: {{ app.teacher }}</div>
-            <div class="status-badge badge-success">{{ 'STAFF.VOTES_APPROVED' | translate }}</div>
+            <div class="status-badge" [ngClass]="{
+              'status-created': app.status === 'CREATED',
+              'status-awaiting-la': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
+              'status-pre-departure': app.status === 'PRE_DEPARTURE_COMPLETED',
+              'status-in-progress': app.status === 'MOBILITY_IN_PROGRESS',
+              'status-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+              'status-closed': app.status === 'CLOSED',
+              'status-canceled': app.status === 'CANCELED'
+            }">{{ app.status }}</div>
           </div>
           <div class="actions">
             <button class="btn-primary" (click)="startReview(app, 'closure', 'Transcript of Records')">{{ 'STAFF.BTN_OPEN' | translate }}</button>
@@ -167,7 +183,15 @@
             <div class="request-info">
               <div class="student-name">🧑‍🎓 {{ app.name }} (Mat. {{ app.matricola }})</div>
               <div class="details">🌍 Destinazione: {{ app.institution }} ({{ app.country }}) | ✉️ Docente: {{ app.teacher }}</div>
-              <div class="status-badge" [ngClass]="app.enumColor">{{ app.status.replace('_', ' ') }}</div>
+              <div class="status-badge" [ngClass]="{
+                'status-created': app.status === 'CREATED',
+                'status-awaiting-la': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
+                'status-pre-departure': app.status === 'PRE_DEPARTURE_COMPLETED',
+                'status-in-progress': app.status === 'MOBILITY_IN_PROGRESS',
+                'status-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+                'status-closed': app.status === 'CLOSED',
+                'status-canceled': app.status === 'CANCELED'
+              }">{{ app.status.replace('_', ' ') }}</div>
             </div>
             <button class="btn-outline" (click)="apriDettagli(app.id)">{{ 'STAFF.BTN_DETAILS' | translate }}</button>
           </div>
@@ -260,7 +284,15 @@
       <h3 style="margin-bottom: 4px; margin-top: 0;">🧑‍🎓 {{ appSelezionata.name }}</h3>
       <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px; margin-top: 0;">{{ 'STAFF.MATRICULA' | translate }} {{ appSelezionata.matricola }}</p>
 
-      <div class="status-badge" [ngClass]="appSelezionata.enumColor" style="margin-bottom: 24px;">{{ appSelezionata.status }}</div>
+      <div class="status-badge" [ngClass]="{
+        'status-created': appSelezionata.status === 'CREATED',
+        'status-awaiting-la': appSelezionata.status === 'AWAITING_FOR_APPROVAL' || appSelezionata.status === 'AWAITING_MODIFICATION_APPROVAL',
+        'status-pre-departure': appSelezionata.status === 'PRE_DEPARTURE_COMPLETED',
+        'status-in-progress': appSelezionata.status === 'MOBILITY_IN_PROGRESS',
+        'status-waiting-score': appSelezionata.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+        'status-closed': appSelezionata.status === 'CLOSED',
+        'status-canceled': appSelezionata.status === 'CANCELED'
+      }" style="margin-bottom: 24px;">{{ appSelezionata.status }}</div>
 
       <div style="background: var(--bg-color); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px;">
         <p style="margin: 0; font-size: 14px; color: var(--text-main);"><strong>🌍 {{ 'STAFF.DESTINATION' | translate }}</strong> {{ appSelezionata.institution }} ({{ appSelezionata.country }})</p>

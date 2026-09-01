@@ -1,8 +1,16 @@
-/* HOST & WRAPPER (Full Screen Layout)*/
+/* ==========================================================
+   LOGIN COMPONENT STYLES (app.component)
+   Tutti gli stili globali (Header, Bottoni Base, Dropdown,
+   Theme, Dark Mode, Classi generiche) sono in styles.css
+   ========================================================== */
+
 :host {
   display: block;
 }
 
+/* -----------------------------------------------------------
+   LAYOUT PRINCIPALE LOGIN
+   ----------------------------------------------------------- */
 .login-wrapper {
   min-height: 100vh;
   display: flex;
@@ -14,7 +22,9 @@
   padding: 20px;
 }
 
-/* DECORATIVE BACKGROUND SHAPES*/
+/* -----------------------------------------------------------
+   FORME DECORATIVE SULLO SFONDO (Glassmorphism effect)
+   ----------------------------------------------------------- */
 .bg-shape {
   position: absolute;
   border-radius: 50%;
@@ -39,7 +49,14 @@
   right: -50px;
 }
 
-/* LOGIN CARD MAIN*/
+/* Fix per i cerchi in Dark Mode (se necessario) */
+:host-context(.dark-mode) .shape-2 {
+  background-color: rgba(37, 99, 235, 0.15); /* Rende la shape-2 più scura */
+}
+
+/* -----------------------------------------------------------
+   CARD PRINCIPALI (Login / Registration)
+   ----------------------------------------------------------- */
 .login-card {
   background: var(--surface);
   width: 100%;
@@ -62,7 +79,9 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* HEADER & TYPOGRAPHY*/
+/* -----------------------------------------------------------
+   HEADER E TESTI DEL LOGIN
+   ----------------------------------------------------------- */
 .login-header {
   text-align: center;
   margin-bottom: 32px;
@@ -90,7 +109,9 @@
   margin: 0;
 }
 
-/* FORM GROUPS & INPUTS*/
+/* -----------------------------------------------------------
+   FORM E INPUTS SPECIFICI PER LOGIN
+   ----------------------------------------------------------- */
 .login-form {
   display: flex;
   flex-direction: column;
@@ -109,26 +130,7 @@ label {
   color: var(--text-main);
 }
 
-input[type="email"],
-input[type="password"],
-input[type="text"] {
-  padding: 12px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-family: inherit;
-  background-color: var(--bg-color);
-  color: var(--text-main);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-  outline: none;
-}
-
-input:focus {
-  border-color: var(--primary);
-  background-color: var(--surface);
-  box-shadow: 0 0 0 3px var(--primary-light);
-}
-
+/* Highlight specifico per la conferma password in registrazione */
 .highlight-input {
   background-color: var(--warning-light) !important;
   border-color: #fcd34d !important;
@@ -138,7 +140,9 @@ input:focus {
   box-shadow: 0 0 0 3px var(--warning-light) !important;
 }
 
-/* INFO BOX (Registration)*/
+/* -----------------------------------------------------------
+   INFO BOX (Vista Registration)
+   ----------------------------------------------------------- */
 .info-box {
   background-color: var(--bg-color);
   padding: 16px;
@@ -153,10 +157,18 @@ input:focus {
   font-size: 14px;
 }
 
-.info-box p:last-child { margin-bottom: 0; }
-.info-box strong { color: var(--text-muted); font-weight: 600; }
+.info-box p:last-child {
+  margin-bottom: 0;
+}
 
-/* UTILITIES (Divider, Errors, Google)*/
+.info-box strong {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* -----------------------------------------------------------
+   UTILITIES (Errori, Divider, Wrapper Google)
+   ----------------------------------------------------------- */
 .error-message {
   color: var(--danger);
   font-size: 13px;
@@ -191,7 +203,9 @@ input:focus {
   width: 100%;
 }
 
-/* BUTTONS*/
+/* -----------------------------------------------------------
+   PULSANTI "BLOCK" (LARGHEZZA 100% SPECIFICA PER IL FORM)
+   ----------------------------------------------------------- */
 .btn-block {
   width: 100%;
   padding: 12px;
@@ -203,18 +217,7 @@ input:focus {
   transition: all 0.2s ease;
 }
 
-.btn-primary {
-  background-color: var(--primary);
-  color: white;
-  box-shadow: var(--shadow-sm);
-}
-
-.btn-primary:hover {
-  background-color: var(--primary-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
+/* Tasto Warning specifico per la card di registrazione */
 .btn-warning {
   background-color: var(--warning);
   color: white;
@@ -227,25 +230,7 @@ input:focus {
   box-shadow: var(--shadow-md);
 }
 
-.btn-outline {
-  background-color: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-}
-
-.btn-outline:hover {
-  background-color: var(--bg-color);
-  color: var(--text-main);
-}
-
-/* RESPONSIVE DESIGN*/
-@media (max-width: 480px) {
-  .login-card {
-    padding: 32px 24px;
-  }
-}
-
-/* PULSANTE CAMBIO LINGUA (I18N) */
+/* Posizionamento del pulsante lingua sopra il form */
 .lang-switch-container {
   position: absolute;
   top: 24px;
@@ -253,23 +238,11 @@ input:focus {
   z-index: 10;
 }
 
-.lang-btn {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-weight: 600;
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--text-main);
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
-}
-
-.lang-btn:hover {
-  background: var(--bg-color);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary);
-  color: var(--primary);
+/* -----------------------------------------------------------
+   RESPONSIVE DESIGN
+   ----------------------------------------------------------- */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 32px 24px;
+  }
 }
