@@ -5,6 +5,10 @@ import { StudentHomeComponent } from './student-home/student-home.component';
 import { LecturerDashboardComponent } from './lecturer-dashboard/lecturer-dashboard.component';
 import { StaffDashboardComponent } from './staff-dashboard/staff-dashboard.component';
 
+// --- i18n Imports ---
+import { TranslatePipe } from './translate.pipe';
+import { TranslationService } from './services/translation.service';
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -14,6 +18,7 @@ import { StaffDashboardComponent } from './staff-dashboard/staff-dashboard.compo
     StudentHomeComponent,
     LecturerDashboardComponent,
     StaffDashboardComponent,
+    TranslatePipe,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
@@ -30,7 +35,10 @@ export class AppComponent implements OnInit {
   datiRegistrazione: any = null;
   passwordConferma: string = '';
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    public translationService: TranslationService,
+  ) {}
 
   ngOnInit() {
     const utenteSalvato = localStorage.getItem('utenteLoggato');
@@ -41,7 +49,7 @@ export class AppComponent implements OnInit {
     }
   }
 
-  // Classic Login
+  // --- STANDARD LOGIN ---
   eseguiLogin() {
     fetch('http://localhost:3000/api/login', {
       method: 'POST',
@@ -51,6 +59,9 @@ export class AppComponent implements OnInit {
       .then(async (response) => {
         if (!response.ok) {
           const errorMsg = await response.text();
+          // Mappa i messaggi del server sulle chiavi di traduzione
+          if (errorMsg.includes('Password errata')) throw new Error('ERRORS.WRONG_PASSWORD');
+          if (errorMsg.includes('Email non trovata')) throw new Error('ERRORS.EMAIL_NOT_FOUND');
           throw new Error(errorMsg);
         }
         return response.json();
@@ -59,11 +70,9 @@ export class AppComponent implements OnInit {
         this.messaggioErrore = '';
 
         if (data.action === 'LOGIN') {
-          // Login standard
           this.utenteLoggato = data.user;
           localStorage.setItem('utenteLoggato', JSON.stringify(data.user));
         } else if (data.action === 'REQUIRES_REGISTRATION') {
-          //Registration check
           this.inRegistrazione = true;
           this.registrazioneDaGoogle = false;
           this.datiRegistrazione = data.prefill;
@@ -79,22 +88,21 @@ export class AppComponent implements OnInit {
       });
   }
 
-  // Registration of new users
+  // --- REGISTRATION ---
   confermaRegistrazione() {
     if (!this.datiRegistrazione.first_name || !this.datiRegistrazione.last_name) {
-      this.messaggioErrore = 'Per favore, compila Nome e Cognome.';
+      this.messaggioErrore = 'ERRORS.MISSING_NAMES';
       return;
     }
 
     let passwordDaSalvare = '';
 
     if (this.registrazioneDaGoogle) {
-      // Randomly generated pw for google user
       passwordDaSalvare =
         Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     } else {
       if (this.passwordConferma !== this.passwordInput) {
-        this.messaggioErrore = 'Le password non coincidono!';
+        this.messaggioErrore = 'ERRORS.PASSWORD_MISMATCH';
         return;
       }
       passwordDaSalvare = this.passwordConferma;
@@ -113,14 +121,13 @@ export class AppComponent implements OnInit {
       }),
     })
       .then(async (res) => {
-        if (!res.ok) throw new Error('Errore durante la registrazione.');
+        if (!res.ok) throw new Error('ERRORS.REGISTRATION_ERROR');
         return res.json();
       })
       .then(() => {
         this.inRegistrazione = false;
 
         if (this.registrazioneDaGoogle) {
-          // Instant Login with Google
           this.utenteLoggato = {
             first_name: this.datiRegistrazione.first_name,
             last_name: this.datiRegistrazione.last_name,
@@ -131,7 +138,6 @@ export class AppComponent implements OnInit {
           localStorage.setItem('utenteLoggato', JSON.stringify(this.utenteLoggato));
           this.cdr.detectChanges();
         } else {
-          // Manual Login
           this.eseguiLogin();
         }
       })
@@ -148,43 +154,35 @@ export class AppComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // Google Auth Login
+  // --- GOOGLE AUTH ---
   gestisciRispostaGoogle(response: any) {
     const token = response.credential;
     const payloadBase64 = token.split('.')[1];
     const decodedPayload = JSON.parse(atob(payloadBase64));
 
-    const googleEmail = decodedPayload.email;
-
     fetch('http://localhost:3000/api/google-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      // Send info
       body: JSON.stringify({
-        email: googleEmail,
+        email: decodedPayload.email,
         given_name: decodedPayload.given_name,
         family_name: decodedPayload.family_name,
       }),
     })
       .then(async (res) => {
-        if (!res.ok) {
-          const errorMsg = await res.text();
-          throw new Error(errorMsg);
-        }
+        if (!res.ok) throw new Error('ERRORS.NOT_AUTHORIZED');
         return res.json();
       })
       .then((data) => {
         this.messaggioErrore = '';
 
         if (data.action === 'REQUIRES_REGISTRATION') {
-          // Registration Screen
           this.inRegistrazione = true;
           this.registrazioneDaGoogle = true;
           this.datiRegistrazione = data.prefill;
           this.passwordInput = '';
           this.passwordConferma = '';
         } else if (data.action === 'LOGIN') {
-          // Regular Login
           this.utenteLoggato = data.user;
           localStorage.setItem('utenteLoggato', JSON.stringify(data.user));
         }
@@ -194,9 +192,7 @@ export class AppComponent implements OnInit {
       .catch((error) => {
         this.messaggioErrore = error.message;
         this.utenteLoggato = null;
-        if ((window as any).google) {
-          (window as any).google.accounts.id.disableAutoSelect();
-        }
+        if ((window as any).google) (window as any).google.accounts.id.disableAutoSelect();
         this.cdr.detectChanges();
       });
   }
@@ -236,7 +232,6 @@ export class AppComponent implements OnInit {
     }
 
     this.cdr.detectChanges();
-
     this.inizializzaBottoneGoogle();
   }
 }

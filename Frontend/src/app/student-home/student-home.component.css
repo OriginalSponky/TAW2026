@@ -5,7 +5,6 @@
   width: 100%;
 }
 
-
 /* HEADER & PROFILE */
 header {
   background-color: var(--surface);
@@ -26,6 +25,56 @@ header {
   color: var(--primary);
   margin: 0;
   letter-spacing: -0.5px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* BOTTONI HEADER */
+.theme-toggle-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+  color: var(--text-main);
+}
+
+.theme-toggle-btn:hover {
+  transform: rotate(15deg) scale(1.05);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+}
+
+.lang-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-main);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.lang-btn:hover {
+  background: var(--bg-color);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .profile-container { position: relative; }
@@ -53,7 +102,28 @@ header {
   box-shadow: var(--shadow-md);
 }
 
-/* LAYOUT & MAIN TEXT */
+.dropdown {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  background: var(--surface);
+  width: 220px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 101;
+  border: 1px solid var(--border);
+}
+
+.dropdown.active { display: flex; }
+.dropdown a { text-decoration: none; color: var(--text-main); padding: 12px 20px; font-size: 14px; transition: background 0.2s; }
+.dropdown a:hover { background-color: var(--bg-color); }
+.dropdown .divider { height: 1px; background-color: var(--border); margin: 4px 0; }
+.dropdown .logout { color: var(--danger); font-weight: 600; }
+
+/* LAYOUT & CARDS */
 main {
   max-width: 1100px;
   margin: 0 auto;
@@ -70,11 +140,16 @@ main {
   font-weight: 700;
   color: var(--text-main);
   margin: 0;
-  letter-spacing: -1px; /* Stringe leggermente i titoli grandi (effetto premium) */
+  letter-spacing: -1px;
 }
 
+.page-subtitle {
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 12px 0 0 0;
+}
 
-/* CARDS (Soft Shadows & Hover Effects) */
 .cards-layout {
   display: flex;
   flex-direction: column;
@@ -96,18 +171,16 @@ main {
   width: 360px;
   padding: 40px 30px;
   text-align: center;
-  /* Soft Shadows */
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Mouse Hovering */
 .card:hover {
-  box-shadow: var(--shadow-lg); /* L'ombra si espande */
+  box-shadow: var(--shadow-lg);
   border-color: var(--primary-light);
-  transform: translateY(-5px); /* La card si solleva di 5 pixel */
+  transform: translateY(-5px);
 }
 
 .card h2 {
@@ -124,8 +197,6 @@ main {
   margin: 0;
 }
 
-
-/* IN ERASMUS */
 .card-highlight {
   border: 2px solid var(--primary);
   background-color: var(--primary-light);

@@ -30,6 +30,7 @@ header {
   gap: 16px;
 }
 
+/* BOTTONI HEADER */
 .theme-toggle-btn {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -49,6 +50,26 @@ header {
   transform: rotate(15deg) scale(1.05);
   box-shadow: var(--shadow-md);
   border-color: var(--primary);
+}
+
+.lang-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-main);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+.lang-btn:hover {
+  background: var(--bg-color);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .profile-container { position: relative; }
@@ -119,7 +140,7 @@ main {
 }
 .back-header-btn:hover { color: var(--primary); border-color: var(--primary); background-color: var(--primary-light); }
 
-/* CASELLE HOME (BOXES) ALLINEATE! */
+/* CASELLE HOME */
 .boxes-container { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; margin-bottom: 40px; }
 .home-box {
   background: var(--surface);
@@ -139,7 +160,7 @@ main {
 .home-box p { color: var(--text-muted); font-size: 15px; margin: 0; line-height: 1.5; }
 .badge-count { background: var(--danger); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-block; margin-top: 16px; }
 
-/* LISTE RICHIESTE ALLINEATE! */
+/* LISTE RICHIESTE */
 .requests-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 40px; }
 .request-card {
   background: var(--surface);

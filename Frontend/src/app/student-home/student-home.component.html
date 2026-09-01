@@ -1,83 +1,83 @@
-<!-- Show Homepage -->
 @if (vistaAttiva === 'dashboard') {
   <header>
     <div class="header-logo">Overseas Program</div>
 
     <div class="header-actions">
-      <!-- BOTTONE TEMA -->
+      <button class="lang-btn" (click)="translationService.toggleLanguage()" title="Cambia lingua">
+        {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
+      </button>
+
       <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
         {{ themeService.isDark ? '☀️' : '🌙' }}
       </button>
 
-    <div class="profile-container">
-      <button class="profile-btn" (click)="toggleMenu($event)" aria-label="Menu profilo">
-        {{ iniziali }}
-      </button>
-      <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
-        <a href="#">Gestisci il tuo Account</a>
-        <a href="#">Impostazioni</a>
-        <a href="#">Aiuto e feedback</a>
-        <div class="divider"></div>
-        <a href="#" class="logout" (click)="logout($event)">🚪 Log out</a>
+      <div class="profile-container">
+        <button class="profile-btn" (click)="toggleMenu($event)" aria-label="Menu profilo">
+          {{ iniziali }}
+        </button>
+        <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
+          <a href="#">{{ 'HEADER.MANAGE_ACCOUNT' | translate }}</a>
+          <a href="#">{{ 'HEADER.SETTINGS' | translate }}</a>
+          <a href="#">{{ 'HEADER.HELP' | translate }}</a>
+          <div class="divider"></div>
+          <a href="#" class="logout" (click)="logout($event)">{{ 'HEADER.LOGOUT' | translate }}</a>
+        </div>
       </div>
-    </div>
     </div>
   </header>
 
   <main>
     <div class="hero">
-      <h1>Ciao {{ utente.first_name }} {{ utente.last_name }}</h1>
-      <p class="page-subtitle">Benvenuto nell'Area Studenti. Gestisci qui le tue Applications per l'Overseas Program di UniVe.</p>
+      <h1>{{ 'STUDENT_HOME.GREETING' | translate }} {{ utente.first_name }} {{ utente.last_name }}</h1>
+      <p class="page-subtitle">{{ 'STUDENT_HOME.SUBTITLE' | translate }}</p>
     </div>
 
     <div class="cards-layout">
-      <!-- TOP ROW: Always visible -->
       <div class="cards-row top-row">
         <div class="card" (click)="apriNuovaRichiesta()">
-          <h2>➕ Nuova richiesta</h2>
-          <p>Avvia la compilazione di una nuova pratica, un modulo o una segnalazione.</p>
+          <h2>{{ 'STUDENT_HOME.NEW_REQ_TITLE' | translate }}</h2>
+          <p>{{ 'STUDENT_HOME.NEW_REQ_DESC' | translate }}</p>
         </div>
 
         <div class="card" (click)="apriLeMieRichieste()">
-          <h2>📁 Le mie richieste</h2>
-          <p>Controlla lo stato delle tue pratiche in corso e visualizza lo storico.</p>
+          <h2>{{ 'STUDENT_HOME.MY_REQ_TITLE' | translate }}</h2>
+          <p>{{ 'STUDENT_HOME.MY_REQ_DESC' | translate }}</p>
         </div>
       </div>
 
-      <!-- BOTTOM ROW: Visible only if there is an active Application -->
       @if (praticaAttiva) {
         <div class="cards-row bottom-row">
           <div class="card card-highlight" (click)="apriGestioneErasmus()">
-            <h2>✈️ In Erasmus</h2>
-            <p>Gestisci la tua mobilità in corso, aggiorna il L.A. o carica il Transcript of Records.</p>
+            <h2>{{ 'STUDENT_HOME.IN_ERASMUS_TITLE' | translate }}</h2>
+            <p>{{ 'STUDENT_HOME.IN_ERASMUS_DESC' | translate }}</p>
           </div>
         </div>
       }
     </div>
   </main>
 }
+
 @else if (vistaAttiva === 'nuovaRichiesta') {
-  <!-- Show Request Maker -->
   <app-new-request
-  [utente]="utente"
-  [editRequestId]="idRichiestaDaModificare"
-  (onBack)="gestisciRitornoDaRichiesta()"
-  (onSuccess)="vaiAlleMieRichiesteDopoSuccesso()"
-  (onLogout)="eseguiLogoutDalFiglio()">
+    [utente]="utente"
+    [editRequestId]="idRichiestaDaModificare"
+    (onBack)="gestisciRitornoDaRichiesta()"
+    (onSuccess)="vaiAlleMieRichiesteDopoSuccesso()"
+    (onLogout)="eseguiLogoutDalFiglio()">
   </app-new-request>
 }
+
 @else if (vistaAttiva === 'leMieRichieste') {
-  <!-- Show My Requests -->
   <app-my-requests
-  [utente]="utente"
-  (onBack)="tornaAllaDashboard()"
-  (onNewRequest)="apriNuovaRichiesta()"
-  (onEditRequest)="apriNuovaRichiesta($event)"
-  (onLogout)="eseguiLogoutDalFiglio()">
+    [utente]="utente"
+    (onBack)="tornaAllaDashboard()"
+    (onNewRequest)="apriNuovaRichiesta()"
+    (onEditRequest)="apriNuovaRichiesta($event)"
+    (onLogout)="eseguiLogoutDalFiglio()">
   </app-my-requests>
 }
+
 @else if (vistaAttiva === 'gestioneErasmus') {
-  <!-- Inject the Active Mobility component -->
   <app-active-mobility
     [utente]="utente"
     [pratica]="praticaAttiva"

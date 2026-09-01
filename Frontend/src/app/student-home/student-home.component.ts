@@ -5,21 +5,32 @@ import {
   EventEmitter,
   HostListener,
   OnInit,
-  ChangeDetectorRef, } from '@angular/core';
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NewRequestComponent } from '../new-request/new-request.component';
 import { MyRequestsComponent } from '../my-requests/my-requests.component';
 import { ActiveMobilityComponent } from '../active-mobility/active-mobility.component';
+
+// Servizi e i18n
 import { ThemeService } from '../services/theme.service';
+import { TranslationService } from '../services/translation.service';
+import { TranslatePipe } from '../translate.pipe';
 
 @Component({
   selector: 'app-student-home',
   standalone: true,
-  imports: [CommonModule, NewRequestComponent, MyRequestsComponent, ActiveMobilityComponent],
+  imports: [
+    CommonModule,
+    NewRequestComponent,
+    MyRequestsComponent,
+    ActiveMobilityComponent,
+    TranslatePipe,
+  ],
   templateUrl: './student-home.component.html',
   styleUrls: ['./student-home.component.css'],
 })
-export class StudentHomeComponent {
+export class StudentHomeComponent implements OnInit {
   @Input() utente: any;
   @Output() onLogout = new EventEmitter<void>();
 
@@ -31,10 +42,10 @@ export class StudentHomeComponent {
   constructor(
     private cdr: ChangeDetectorRef,
     public themeService: ThemeService,
+    public translationService: TranslationService,
   ) {}
 
   ngOnInit() {
-    // Check if the user has an active mobility when the dashboard loads
     if (this.utente && this.utente.email) {
       const emailSicura = encodeURIComponent(this.utente.email);
       fetch(`http://localhost:3000/api/applications?email=${emailSicura}`)
@@ -48,7 +59,7 @@ export class StudentHomeComponent {
           this.praticaAttiva = data.find((req: any) => activeStatuses.includes(req.status));
           this.cdr.detectChanges();
         })
-        .catch((err) => console.error('Error fetching active mobility:', err));
+        .catch((err) => console.error('Errore recupero mobilità attiva:', err));
     }
   }
 

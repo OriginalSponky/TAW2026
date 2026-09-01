@@ -1,41 +1,46 @@
-<!-- LOGIN PAGE-->
 @if (!utenteLoggato && !inRegistrazione) {
   <div class="login-wrapper">
-    <!-- Decorative background elements -->
+    <div class="lang-switch-container">
+      <button class="lang-btn" (click)="translationService.toggleLanguage()">
+        {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
+      </button>
+    </div>
+
     <div class="bg-shape shape-1"></div>
     <div class="bg-shape shape-2"></div>
 
     <div class="login-card">
       <div class="login-header">
         <div class="logo-placeholder">🏛️ Ca' Foscari</div>
-        <h2>Overseas Program</h2>
-        <p>Portale ufficiale per gli Erasmus</p>
+        <h2>{{ 'LOGIN.TITLE' | translate }}</h2>
+        <p>{{ 'LOGIN.SUBTITLE' | translate }}</p>
       </div>
 
       <form class="login-form">
         <div class="form-group">
-          <label for="email">Email Istituzionale</label>
-          <input type="email" id="email" name="email" [(ngModel)]="emailInput" placeholder="Inserisci la tua email" required>
+          <label for="email">{{ 'LOGIN.EMAIL_LABEL' | translate }}</label>
+          <input type="email" id="email" [(ngModel)]="emailInput" [placeholder]="'LOGIN.EMAIL_PLACE' | translate" name="email" required>
         </div>
 
         <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" [(ngModel)]="passwordInput" placeholder="Inserisci la tua password" (keyup.enter)="eseguiLogin()" required>
+          <label for="password">{{ 'LOGIN.PWD_LABEL' | translate }}</label>
+          <input type="password" id="password" [(ngModel)]="passwordInput" [placeholder]="'LOGIN.PWD_PLACE' | translate" name="password" (keyup.enter)="eseguiLogin()" required>
         </div>
 
         <button type="button" class="btn-primary btn-block" (click)="eseguiLogin()">
-          Accedi
+          {{ 'LOGIN.BTN_LOGIN' | translate }}
         </button>
 
-        <p class="error-message">{{ messaggioErrore }}</p>
+        @if (messaggioErrore) {
+          <p class="error-message">{{ messaggioErrore | translate }}</p>
+        }
 
         <div class="divider-container">
           <div class="divider-line"></div>
-          <span>oppure</span>
+          <span>{{ 'LOGIN.OR' | translate }}</span>
           <div class="divider-line"></div>
         </div>
 
-        <!-- Google Login Container -->
         <div id="google-btn-container" class="google-btn-wrapper"></div>
       </form>
     </div>
@@ -43,79 +48,71 @@
 }
 
 @else if (inRegistrazione) {
-  <!-- REGISTRATION PAGE-->
   <div class="login-wrapper">
-    <!-- Decorative background elements -->
+    <div class="lang-switch-container">
+      <button class="lang-btn" (click)="translationService.toggleLanguage()">
+        {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
+      </button>
+    </div>
+
     <div class="bg-shape shape-1"></div>
     <div class="bg-shape shape-2"></div>
 
     <div class="login-card registration-card">
       <div class="login-header">
-        <h2>Nuovo Utente</h2>
-        <p>La tua email non è nel sistema. Conferma i tuoi dati per registrarti.</p>
+        <h2>{{ 'REGISTER.TITLE' | translate }}</h2>
+        <p>{{ 'REGISTER.SUBTITLE' | translate }}</p>
       </div>
 
       <div class="info-box">
-        <p><strong>Email:</strong> {{ datiRegistrazione.email }}</p>
-        <p><strong>Ruolo Assegnato:</strong> {{ datiRegistrazione.role }}</p>
+        <p><strong>{{ 'REGISTER.EMAIL' | translate }}</strong> {{ datiRegistrazione.email }}</p>
+        <p><strong>{{ 'REGISTER.ROLE' | translate }}</strong> {{ datiRegistrazione.role }}</p>
         @if (datiRegistrazione.role === 'STUDENT') {
-          <p><strong>Matricola:</strong> {{ datiRegistrazione.matriculation_number }}</p>
+          <p><strong>{{ 'REGISTER.MATRICULA' | translate }}</strong> {{ datiRegistrazione.matriculation_number }}</p>
         }
       </div>
 
       <form class="login-form">
         <div class="form-group">
-          <label>Nome *</label>
-          <input type="text" name="firstName" [(ngModel)]="datiRegistrazione.first_name" placeholder="Il tuo nome" required>
+          <label>{{ 'REGISTER.NAME_LABEL' | translate }}</label>
+          <input type="text" name="firstName" [(ngModel)]="datiRegistrazione.first_name" [placeholder]="'REGISTER.NAME_PLACE' | translate" required>
         </div>
 
         <div class="form-group">
-          <label>Cognome *</label>
-          <input type="text" name="lastName" [(ngModel)]="datiRegistrazione.last_name" placeholder="Il tuo cognome" required>
+          <label>{{ 'REGISTER.LASTNAME_LABEL' | translate }}</label>
+          <input type="text" name="lastName" [(ngModel)]="datiRegistrazione.last_name" [placeholder]="'REGISTER.LASTNAME_PLACE' | translate" required>
         </div>
 
         @if (!registrazioneDaGoogle) {
           <div class="form-group">
-            <label>Conferma la password digitata *</label>
-            <input type="text" name="passwordConfirm" [(ngModel)]="passwordConferma" placeholder="Riscrivi la password (visibile per sicurezza)" (keyup.enter)="confermaRegistrazione()" class="highlight-input" required>
+            <label>{{ 'REGISTER.PWD_CONFIRM_LABEL' | translate }}</label>
+            <input type="text" name="passwordConfirm" [(ngModel)]="passwordConferma" [placeholder]="'REGISTER.PWD_CONFIRM_PLACE' | translate" (keyup.enter)="confermaRegistrazione()" class="highlight-input" required>
           </div>
         }
 
-        <p class="error-message">{{ messaggioErrore }}</p>
+        @if (messaggioErrore) {
+          <p class="error-message">{{ messaggioErrore | translate }}</p>
+        }
 
         <button type="button" class="btn-warning btn-block" (click)="confermaRegistrazione()">
-          Conferma Registrazione
+          {{ 'REGISTER.BTN_CONFIRM' | translate }}
         </button>
         <button type="button" class="btn-outline btn-block" (click)="annullaRegistrazione()" style="margin-top: 8px;">
-          Annulla
+          {{ 'REGISTER.BTN_CANCEL' | translate }}
         </button>
       </form>
     </div>
   </div>
 }
+
 @else {
-  <!-- GESTIONE RUOLI (DASHBOARD) -->
   @if (utenteLoggato.role === 'LECTURER') {
-    <!-- Area Professori -->
-    <app-lecturer-dashboard
-      [utente]="utenteLoggato"
-      (onLogout)="eseguiLogout()">
-    </app-lecturer-dashboard>
+    <app-lecturer-dashboard [utente]="utenteLoggato" (onLogout)="eseguiLogout()"></app-lecturer-dashboard>
   }
-
   @else if (utenteLoggato.role === 'STUDENT') {
-    <!-- Area Studenti -->
-    <app-student-home
-      [utente]="utenteLoggato"
-      (onLogout)="eseguiLogout()">
-    </app-student-home>
+    <app-student-home [utente]="utenteLoggato" (onLogout)="eseguiLogout()"></app-student-home>
   }
-
   @else if (utenteLoggato.role === 'STAFF') {
-    <!-- Area STAFF -->
-    <app-staff-dashboard
-      [utente]="utenteLoggato"
-      (onLogout)="eseguiLogout()">
-    </app-staff-dashboard>
+    <app-staff-dashboard [utente]="utenteLoggato" (onLogout)="eseguiLogout()"></app-staff-dashboard>
   }
 }

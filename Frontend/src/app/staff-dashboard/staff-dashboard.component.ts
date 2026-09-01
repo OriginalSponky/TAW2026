@@ -1,12 +1,16 @@
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+// Servizi e i18n
 import { ThemeService } from '../services/theme.service';
+import { TranslationService } from '../services/translation.service';
+import { TranslatePipe } from '../translate.pipe';
 
 @Component({
   selector: 'app-staff-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './staff-dashboard.component.html',
   styleUrls: ['./staff-dashboard.component.css'],
 })
@@ -17,17 +21,14 @@ export class StaffDashboardComponent implements OnInit {
   menuAperto: boolean = false;
   activeView: 'homeView' | 'preDepartureView' | 'closureView' | 'allAppsView' = 'homeView';
 
-  // ARRAY DATI DAL DB
   allApps: any[] = [];
   preDepartureApps: any[] = [];
   closureApps: any[] = [];
   praticheFiltrate: any[] = [];
 
-  // ARRAY DINAMICI PER I FILTRI
   uniqueNazioni: string[] = [];
   uniqueIstituzioni: string[] = [];
 
-  // FILTRI ARCHIVIO
   filtri = {
     studente: '',
     docente: '',
@@ -36,19 +37,18 @@ export class StaffDashboardComponent implements OnInit {
     istituzione: '',
   };
 
-  // MODALE REVIEW
   mostraModaleReview: boolean = false;
   modalStep: 'read' | 'reject-reason' | 'confirm' | 'success' = 'read';
   reviewData: any = {};
   pendingAction: 'approve' | 'reject' | null = null;
   motivoRifiuto: string = '';
 
-  // MODALE DETTAGLI ARCHIVIO
   mostraModaleDettagli: boolean = false;
   appSelezionata: any = null;
 
   constructor(
     public themeService: ThemeService,
+    public translationService: TranslationService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -140,7 +140,6 @@ export class StaffDashboardComponent implements OnInit {
   apriDettagli(id: number) {
     const basicApp = this.allApps.find((a) => a.id === id);
 
-    // Fetch per recuperare tutti i documenti della pratica!
     fetch(`http://localhost:3000/api/applications/${id}`)
       .then((res) => res.json())
       .then((details) => {
@@ -154,7 +153,6 @@ export class StaffDashboardComponent implements OnInit {
   }
 
   startReview(app: any, actionType: 'pre-departure' | 'closure', docType: string) {
-    // Fetch per recuperare il link del documento pending da visualizzare
     fetch(`http://localhost:3000/api/applications/${app.id}`)
       .then((res) => res.json())
       .then((details) => {
@@ -170,7 +168,7 @@ export class StaffDashboardComponent implements OnInit {
           actionType: actionType,
           docName: pendingDoc ? pendingDoc.file_name : 'Nessun documento trovato',
           docUrl: pendingDoc ? `http://localhost:3000${pendingDoc.file_path}` : '#',
-          profName: app.teacher, // Email/Nome del docente referente
+          profName: app.teacher,
         };
 
         this.modalStep = 'read';
