@@ -251,10 +251,10 @@
 
       <div class="status-badge" [ngClass]="appSelezionata.enumColor" style="margin-bottom: 24px;">{{ appSelezionata.status }}</div>
 
-      <div style="background: var(--bg-color); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 24px;">
-        <p style="margin-bottom: 8px; font-size: 14px; color: var(--text-main);"><strong>🌍 Destinazione:</strong> {{ appSelezionata.institution }} ({{ appSelezionata.country }})</p>
-        <p style="margin-bottom: 8px; font-size: 14px; color: var(--text-main);"><strong>📅 Periodo:</strong> A.A. {{ appSelezionata.academic_year }}</p>
-        <p style="font-size: 14px; color: var(--text-main); margin: 0;"><strong>✉️ Docente Ref:</strong> {{ appSelezionata.teacher }}</p>
+      <div style="background: var(--bg-color); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px;">
+        <p style="margin: 0; font-size: 14px; color: var(--text-main);"><strong>🌍 Destinazione:</strong> {{ appSelezionata.institution }} ({{ appSelezionata.country }})</p>
+        <p style="margin: 0; font-size: 14px; color: var(--text-main);"><strong>📅 Periodo:</strong> A.A. {{ appSelezionata.academic_year }}</p>
+        <p style="margin: 0; font-size: 14px; color: var(--text-main);"><strong>✉️ Docente Ref:</strong> {{ appSelezionata.teacher }}</p>
       </div>
 
       <h4 style="color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0;">📄 Documenti Caricati</h4>
@@ -273,7 +273,7 @@
             </div>
           }
         } @else {
-          <p style="font-size: 14px; color: var(--text-muted);">Nessun documento caricato nel sistema.</p>
+          <p style="font-size: 14px; color: var(--text-muted); margin: 0;">Nessun documento caricato nel sistema.</p>
         }
       </div>
 
