@@ -90,6 +90,35 @@ body.dark-mode .home-box:hover {
   background-color: #334155;
 }
 
+/* ==========================================================
+   BOTTONE GLOBALE "TORNA ALLA HOME" (.back-header-btn)
+   ========================================================== */
+.back-header-btn {
+  margin-bottom: 24px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 10px 20px;
+  border-radius: 50px; /* Stile pillola super moderno */
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.back-header-btn:hover {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: translateX(-4px); /* Leggero movimento a sinistra per indicare l'azione "indietro" */
+  box-shadow: var(--shadow-md);
+}
+
 /* --------------------------------------------------------------------------
    3. BASE E RESET
    -------------------------------------------------------------------------- */
@@ -440,6 +469,15 @@ header {
 .card.border-closed, .request-card.border-closed { border-left: 6px solid #10b981 !important; }
 .card.border-canceled, .request-card.border-canceled { border-left: 6px solid #ef4444 !important; }
 .card.border-waiting-score, .request-card.border-waiting-score { border-left: 6px solid #a855f7 !important; }
+
+/* Stile unificato per i titoli dei documenti e delle card in tutte le dashboard (Student, Lecturer, Staff) */
+.document-title,
+.request-card .student-name,
+.modal .doc-link {
+  font-size: 14px; /* Dimensione standard unificata */
+  font-weight: 600;
+  color: var(--text-main);
+}
 
 
 /* --------------------------------------------------------------------------

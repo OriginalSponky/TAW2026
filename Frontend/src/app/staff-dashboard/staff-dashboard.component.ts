@@ -158,11 +158,9 @@ export class StaffDashboardComponent implements OnInit {
       .then((details) => {
         const dbDocType =
           actionType === 'pre-departure' ? 'LEARNING_AGREEMENT' : 'TRANSCRIPT_OF_RECORDS';
-        const pendingDoc = details.documents.find(
-          (d: any) => d.document_type === dbDocType && d.status === 'PENDING',
-        );
 
-        // Traduzione dinamica della mancanza del documento
+        const pendingDoc = details.documents.find((d: any) => d.document_type === dbDocType);
+
         const fallbackText = this.translationService.translate('STAFF.NO_DOC_FOUND');
 
         this.reviewData = {
@@ -179,6 +177,9 @@ export class StaffDashboardComponent implements OnInit {
         this.pendingAction = null;
         this.mostraModaleReview = true;
         this.cdr.detectChanges();
+      })
+      .catch((err) => {
+        console.error("Errore nel caricamento del documento dell'application:", err);
       });
   }
 
