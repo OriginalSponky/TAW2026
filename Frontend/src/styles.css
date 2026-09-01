@@ -326,3 +326,77 @@ input[type="file"]::file-selector-button:hover {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+/* --- INIZIALI PIÙ FIGHE --- */
+.profile-btn {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border: 2px solid transparent;
+  border-radius: 50%;
+  width: 46px;
+  height: 46px;
+  font-size: 17px;
+  font-weight: 800; /* Font molto più spesso */
+  font-family: 'Montserrat', 'Inter', sans-serif; /* Fallback su un font moderno */
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-btn:hover {
+  background-color: var(--primary);
+  color: white;
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 4px 12px var(--primary-light);
+}
+
+/* --- MENU SCELTA COLORI --- */
+.color-picker-menu {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.color-picker-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.color-swatches {
+  display: flex;
+  gap: 12px;
+}
+
+.swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  padding: 0;
+}
+
+.swatch:hover {
+  transform: scale(1.15);
+}
+
+/* Evidenzia il colore attualmente selezionato */
+.swatch.active {
+  border-color: var(--text-main);
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text-main);
+  transform: scale(1.1);
+}
+
+/* Colori dei bottoni swatch */
+.bg-blue { background-color: #2563eb; }
+.bg-purple { background-color: #9333ea; }
+.bg-emerald { background-color: #10b981; }
+.bg-rose { background-color: #e11d48; }

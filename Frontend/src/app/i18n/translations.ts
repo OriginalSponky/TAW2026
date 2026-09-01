@@ -38,6 +38,7 @@ export const translations: any = {
       SETTINGS: 'Impostazioni',
       HELP: 'Aiuto e feedback',
       LOGOUT: '🚪 Log out',
+      CHOOSE_COLOR: 'Tema Colore',
     },
     STUDENT_HOME: {
       GREETING: 'Ciao',
@@ -434,6 +435,7 @@ export const translations: any = {
       SETTINGS: 'Settings',
       HELP: 'Help and feedback',
       LOGOUT: '🚪 Log out',
+      CHOOSE_COLOR: 'Theme Color',
     },
     STUDENT_HOME: {
       GREETING: 'Hello',

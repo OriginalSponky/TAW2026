@@ -14,9 +14,16 @@
     <div class="profile-container">
       <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
       <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
-        <a href="#">{{ 'HEADER.MANAGE_ACCOUNT' | translate }}</a>
-        <a href="#">{{ 'HEADER.SETTINGS' | translate }}</a>
-        <a href="#">{{ 'HEADER.HELP' | translate }}</a>
+        <div class="color-picker-menu">
+          <span class="color-picker-title">{{ 'HEADER.CHOOSE_COLOR' | translate }}</span>
+          <div class="color-swatches">
+            <button class="swatch bg-blue" (click)="themeService.setThemeColor('blue')" [class.active]="themeService.currentColor === 'blue'"></button>
+            <button class="swatch bg-purple" (click)="themeService.setThemeColor('purple')" [class.active]="themeService.currentColor === 'purple'"></button>
+            <button class="swatch bg-emerald" (click)="themeService.setThemeColor('emerald')" [class.active]="themeService.currentColor === 'emerald'"></button>
+            <button class="swatch bg-rose" (click)="themeService.setThemeColor('rose')" [class.active]="themeService.currentColor === 'rose'"></button>
+          </div>
+        </div>
+
         <div class="divider"></div>
         <a href="#" class="logout" (click)="effettuaLogout($event)">{{ 'HEADER.LOGOUT' | translate }}</a>
       </div>
