@@ -71,7 +71,6 @@ export class StaffDashboardComponent implements OnInit {
           enumColor: this.getBadgeColor(a.status),
         }));
 
-        // ESTRAE OPZIONI UNICHE PER I MENU A TENDINA DAI DATI DEL DB!
         this.uniqueNazioni = [...new Set(this.allApps.map((a) => a.country))]
           .filter(Boolean)
           .sort() as string[];
@@ -79,7 +78,6 @@ export class StaffDashboardComponent implements OnInit {
           .filter(Boolean)
           .sort() as string[];
 
-        // Smista nelle code (solo pratiche attive)
         this.preDepartureApps = this.allApps.filter((a) => a.status === 'PRE_DEPARTURE_COMPLETED');
         this.closureApps = this.allApps.filter(
           (a) => a.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' && a.pending_docs === 0,
@@ -114,7 +112,6 @@ export class StaffDashboardComponent implements OnInit {
     }
   }
 
-  // LOGICA FILTRI ARCHIVIO IN TEMPO REALE
   applicaFiltri() {
     this.praticheFiltrate = this.allApps.filter((app) => {
       const matchStudente =
@@ -141,23 +138,47 @@ export class StaffDashboardComponent implements OnInit {
   }
 
   apriDettagli(id: number) {
-    this.appSelezionata = this.allApps.find((a) => a.id === id);
-    this.mostraModaleDettagli = true;
+    const basicApp = this.allApps.find((a) => a.id === id);
+
+    // Fetch per recuperare tutti i documenti della pratica!
+    fetch(`http://localhost:3000/api/applications/${id}`)
+      .then((res) => res.json())
+      .then((details) => {
+        this.appSelezionata = {
+          ...basicApp,
+          documents: details.documents,
+        };
+        this.mostraModaleDettagli = true;
+        this.cdr.detectChanges();
+      });
   }
 
-  startReview(app: any, actionType: 'pre-departure' | 'closure', docName: string) {
-    this.reviewData = {
-      appId: app.id,
-      studentName: `🧑‍🎓 Studente: ${app.name} (Mat. ${app.matricola})`,
-      actionType: actionType,
-      docName: docName,
-    };
+  startReview(app: any, actionType: 'pre-departure' | 'closure', docType: string) {
+    // Fetch per recuperare il link del documento pending da visualizzare
+    fetch(`http://localhost:3000/api/applications/${app.id}`)
+      .then((res) => res.json())
+      .then((details) => {
+        const dbDocType =
+          actionType === 'pre-departure' ? 'LEARNING_AGREEMENT' : 'TRANSCRIPT_OF_RECORDS';
+        const pendingDoc = details.documents.find(
+          (d: any) => d.document_type === dbDocType && d.status === 'PENDING',
+        );
 
-    this.modalStep = 'read';
-    this.motivoRifiuto = '';
-    this.pendingAction = null;
-    this.mostraModaleReview = true;
-    this.cdr.detectChanges();
+        this.reviewData = {
+          appId: app.id,
+          studentName: `🧑‍🎓 Studente: ${app.name} (Mat. ${app.matricola})`,
+          actionType: actionType,
+          docName: pendingDoc ? pendingDoc.file_name : 'Nessun documento trovato',
+          docUrl: pendingDoc ? `http://localhost:3000${pendingDoc.file_path}` : '#',
+          profName: app.teacher, // Email/Nome del docente referente
+        };
+
+        this.modalStep = 'read';
+        this.motivoRifiuto = '';
+        this.pendingAction = null;
+        this.mostraModaleReview = true;
+        this.cdr.detectChanges();
+      });
   }
 
   impostaStep(step: 'read' | 'reject-reason' | 'confirm') {
@@ -170,7 +191,6 @@ export class StaffDashboardComponent implements OnInit {
   }
 
   eseguiAzione() {
-    // CHIAMATA AL BACKEND CHE CAMBIA LO STATO
     fetch(`http://localhost:3000/api/staff/applications/${this.reviewData.appId}/review`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -183,7 +203,7 @@ export class StaffDashboardComponent implements OnInit {
       .then((res) => {
         if (!res.ok) throw new Error('Errore server');
         this.modalStep = 'success';
-        this.caricaPratiche(); // Ricarica i dati per farla sparire dalla coda!
+        this.caricaPratiche();
         this.cdr.detectChanges();
       })
       .catch((err) => console.error(err));
@@ -196,7 +216,6 @@ export class StaffDashboardComponent implements OnInit {
 
   chiudiSuccesso() {
     this.chiudiReviewModal();
-    this.switchView('homeView');
   }
 
   toggleMenu(event: Event) {

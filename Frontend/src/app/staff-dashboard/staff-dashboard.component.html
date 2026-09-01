@@ -18,7 +18,6 @@
 
 <main (click)="menuAperto = false">
 
-  <!-- VISTA 1: HOME DASHBOARD -->
   @if (activeView === 'homeView') {
     <div class="hero">
       <h1 class="page-title">Ciao Staff, {{ utente.first_name }} {{ utente.last_name }}</h1>
@@ -49,7 +48,6 @@
   }
 
   @else if (activeView === 'preDepartureView') {
-    <!-- VISTA 2: VERIFICHE PRE-PARTENZA -->
     <button class="back-header-btn" (click)="switchView('homeView')">← Torna al menù</button>
     <h1 class="page-title" style="text-align: left;">🛫 Verifiche Pre-Partenza</h1>
     <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">Studenti pronti a partire.</p>
@@ -75,7 +73,6 @@
   }
 
   @else if (activeView === 'closureView') {
-    <!-- VISTA 3: CHIUSURA PRATICHE -->
     <button class="back-header-btn" (click)="switchView('homeView')">← Torna al menù</button>
     <h1 class="page-title" style="text-align: left;">🏁 Pratiche pronte per la Chiusura</h1>
     <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">Archiviazione definitiva delle mobilità concluse.</p>
@@ -101,7 +98,6 @@
   }
 
   @else if (activeView === 'allAppsView') {
-    <!-- VISTA 4: ARCHIVIO E FILTRI -->
     <button class="back-header-btn" (click)="switchView('homeView')">← Torna al menù</button>
     <h1 class="page-title" style="text-align: left;">🗂️ Archivio Generale Pratiche</h1>
 
@@ -122,7 +118,6 @@
           <option value="CANCELED">CANCELED</option>
         </select>
 
-        <!-- ISTRUZIONI DINAMICHE PER NAZIONE E ISTITUTO -->
         <select [(ngModel)]="filtri.nazione" (change)="applicaFiltri()">
           <option value="">Tutti i Paesi</option>
           @for (nazione of uniqueNazioni; track nazione) {
@@ -141,7 +136,6 @@
       </div>
     </div>
 
-    <!-- Lista Filtrata -->
     <div class="requests-list">
       @if (praticheFiltrate.length === 0) {
         <p style="color: var(--text-muted); padding: 20px; text-align: center; background: var(--surface); border-radius: 8px;">
@@ -149,7 +143,6 @@
         </p>
       } @else {
         @for (app of praticheFiltrate; track app.id) {
-          <!-- Bordo "Aura" Dinamico in base allo stato! -->
           <div class="request-card" [ngClass]="{
             'border-created': app.status === 'CREATED',
             'border-awaiting': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
@@ -172,10 +165,9 @@
   }
 </main>
 
-<!-- MODALE DI REVISIONE (STAFF) -->
 @if (mostraModaleReview) {
-  <div class="modal-overlay">
-    <div class="modal">
+  <div class="modal-overlay" (click)="chiudiReviewModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
 
       @if (modalStep === 'read' || modalStep === 'reject-reason') {
         <h3 style="margin-bottom: 8px;">{{ reviewData.studentName }}</h3>
@@ -183,8 +175,8 @@
       }
 
       @if (modalStep === 'read') {
-        <a href="#" class="doc-link" target="_blank" download>
-          📄 Controlla {{ reviewData.docName }}
+        <a [href]="reviewData.docUrl" class="doc-link" target="_blank">
+          📄 Visualizza / Scarica {{ reviewData.docName }}
         </a>
 
         <div class="checklist" style="text-align: left;">
@@ -193,10 +185,10 @@
             @if (reviewData.actionType === 'pre-departure') {
               <li>Dati essenziali della mobilità inseriti</li>
               <li>Learning Agreement caricato e firmato</li>
-              <li>Learning Agreement <strong style="color: var(--success);">approvato</strong> dal docente referente</li>
+              <li>Learning Agreement <strong style="color: var(--success);">accettato dal Prof. {{ reviewData.profName }}</strong></li>
             } @else {
               <li>Transcript of Records finale caricato</li>
-              <li>Tutti i voti <strong style="color: var(--success);">approvati</strong> dal docente referente</li>
+              <li>Voti <strong style="color: var(--success);">approvati nel ToR dal Prof. {{ reviewData.profName }}</strong></li>
             }
           </ul>
         </div>
@@ -244,29 +236,48 @@
           </p>
         </div>
         <div class="modal-actions center">
-          <button class="btn-primary" (click)="chiudiSuccesso()">Torna in Dashboard</button>
+          <button class="btn-primary" (click)="chiudiSuccesso()">Continua il Lavoro</button>
         </div>
       }
     </div>
   </div>
 }
 
-<!-- MODALE DETTAGLI ARCHIVIO -->
 @if (mostraModaleDettagli && appSelezionata) {
-  <div class="modal-overlay">
-    <div class="modal" style="text-align: left; max-width: 500px;">
+  <div class="modal-overlay" (click)="mostraModaleDettagli = false">
+    <div class="modal" style="text-align: left; max-width: 600px;" (click)="$event.stopPropagation()">
       <h3 style="margin-bottom: 4px; margin-top: 0;">🧑‍🎓 {{ appSelezionata.name }}</h3>
       <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px; margin-top: 0;">Matricola: {{ appSelezionata.matricola }}</p>
 
       <div class="status-badge" [ngClass]="appSelezionata.enumColor" style="margin-bottom: 24px;">{{ appSelezionata.status }}</div>
 
-      <div style="background: var(--bg-color); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+      <div style="background: var(--bg-color); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 24px;">
         <p style="margin-bottom: 8px; font-size: 14px; color: var(--text-main);"><strong>🌍 Destinazione:</strong> {{ appSelezionata.institution }} ({{ appSelezionata.country }})</p>
         <p style="margin-bottom: 8px; font-size: 14px; color: var(--text-main);"><strong>📅 Periodo:</strong> A.A. {{ appSelezionata.academic_year }}</p>
         <p style="font-size: 14px; color: var(--text-main); margin: 0;"><strong>✉️ Docente Ref:</strong> {{ appSelezionata.teacher }}</p>
       </div>
 
-      <div class="modal-actions" style="margin-top: 32px; justify-content: center;">
+      <h4 style="color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0;">📄 Documenti Caricati</h4>
+      <div style="max-height: 250px; overflow-y: auto; margin-bottom: 24px;">
+        @if (appSelezionata.documents && appSelezionata.documents.length > 0) {
+          @for (doc of appSelezionata.documents; track doc.id) {
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px; background: var(--bg-color);">
+              <div>
+                <div style="font-size: 14px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">{{ doc.document_type === 'LEARNING_AGREEMENT' ? 'Learning Agreement' : 'Transcript of Records' }}</div>
+                <a [href]="'http://localhost:3000' + doc.file_path" target="_blank" style="font-size: 13px; color: var(--primary); font-weight: 500; text-decoration: none;">📄 {{ doc.file_name }}</a>
+              </div>
+              <div class="status-badge" style="margin-top: 0; padding: 4px 10px; font-size: 10px;"
+                   [ngClass]="{'badge-warning': doc.status === 'PENDING', 'badge-danger': doc.status === 'REJECTED', 'status-closed': doc.status === 'APPROVED'}">
+                {{ doc.status }}
+              </div>
+            </div>
+          }
+        } @else {
+          <p style="font-size: 14px; color: var(--text-muted);">Nessun documento caricato nel sistema.</p>
+        }
+      </div>
+
+      <div class="modal-actions" style="justify-content: center;">
         <button class="btn-primary" (click)="mostraModaleDettagli = false">Chiudi</button>
       </div>
     </div>
