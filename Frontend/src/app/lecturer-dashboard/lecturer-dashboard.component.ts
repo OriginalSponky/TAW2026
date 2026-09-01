@@ -1,12 +1,16 @@
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+// Servizi e i18n
 import { ThemeService } from '../services/theme.service';
+import { TranslationService } from '../services/translation.service';
+import { TranslatePipe } from '../translate.pipe';
 
 @Component({
   selector: 'app-lecturer-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './lecturer-dashboard.component.html',
   styleUrls: ['./lecturer-dashboard.component.css'],
 })
@@ -43,6 +47,7 @@ export class LecturerDashboardComponent implements OnInit {
 
   constructor(
     public themeService: ThemeService,
+    public translationService: TranslationService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -84,7 +89,6 @@ export class LecturerDashboardComponent implements OnInit {
           .sort() as string[];
 
         this.praticheFiltrate = [...this.handledApps];
-
         this.cdr.detectChanges();
       })
       .catch((err) => console.error('Errore recupero pratiche:', err));
@@ -137,12 +141,12 @@ export class LecturerDashboardComponent implements OnInit {
   }
 
   startReview(app: any, docType: 'LEARNING_AGREEMENT' | 'TRANSCRIPT_OF_RECORDS') {
-    const actionType =
+    const actionTypeKey =
       docType === 'LEARNING_AGREEMENT'
         ? app.status === 'AWAITING_MODIFICATION_APPROVAL'
-          ? 'L.A. Modification Evaluation'
-          : 'Initial L.A. Evaluation'
-        : 'ToR Grades Evaluation';
+          ? 'LECTURER.ACTION_MOD_LA'
+          : 'LECTURER.ACTION_INIT_LA'
+        : 'LECTURER.ACTION_TOR';
 
     fetch(`http://localhost:3000/api/applications/${app.id}`)
       .then((res) => res.json())
@@ -151,8 +155,8 @@ export class LecturerDashboardComponent implements OnInit {
           (d: any) => d.document_type === docType && d.status === 'PENDING',
         );
 
-        // CREAZIONE LISTA ESAMI FORMATTATA A PUNTI E TRATTEGGI
         let examsHtml = '<ul style="list-style-type: none; padding: 0; margin: 0;">';
+        const transVoto = this.translationService.translate('LECTURER.SCORE');
 
         if (docType === 'LEARNING_AGREEMENT') {
           const examsToShow = details.exams.filter(
@@ -177,7 +181,7 @@ export class LecturerDashboardComponent implements OnInit {
               <li style="border-bottom: 1px dashed var(--border); padding-bottom: 12px; margin-bottom: 12px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                   <strong style="color: var(--text-main); font-size: 14px;">✈️ ${e.foreign_course_name} [${e.foreign_course_code}]</strong>
-                  <span style="background: var(--surface); border: 1px solid var(--success); color: var(--success); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px;">Voto: ${e.score_obtained}</span>
+                  <span style="background: var(--surface); border: 1px solid var(--success); color: var(--success); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px;">${transVoto}: ${e.score_obtained}</span>
                 </div>
                 <div style="color: var(--text-muted); font-size: 13px;">
                   🏛️ ${e.unive_course_title} [${e.unive_course_code}]
@@ -190,10 +194,10 @@ export class LecturerDashboardComponent implements OnInit {
         this.reviewData = {
           appId: app.id,
           docType: docType,
-          studentName: `🧑‍🎓 Studente: ${app.student_first_name} ${app.student_last_name} (${app.matricola || 'N/A'})`,
-          actionType: actionType,
+          studentName: `${app.student_first_name} ${app.student_last_name} (${app.matricola || 'N/A'})`,
+          actionTypeKey: actionTypeKey,
           studentNote: pendingDoc ? pendingDoc.modification_description : null,
-          docName: pendingDoc ? pendingDoc.file_name : 'Documento non trovato',
+          docName: pendingDoc ? pendingDoc.file_name : 'N/A',
           docUrl: pendingDoc ? `http://localhost:3000${pendingDoc.file_path}` : '#',
           examsHtml: examsHtml,
         };
@@ -231,7 +235,7 @@ export class LecturerDashboardComponent implements OnInit {
       }),
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Errore durante l'azione server");
+        if (!res.ok) throw new Error('Errore server');
         this.modalStep = 'success';
         this.caricaPratiche();
         this.cdr.detectChanges();
@@ -263,9 +267,5 @@ export class LecturerDashboardComponent implements OnInit {
     this.mostraModaleStorico = false;
     this.historicalDetails = null;
     this.cdr.detectChanges();
-  }
-
-  formattaStato(status: string): string {
-    return status.replace(/_/g, ' ');
   }
 }

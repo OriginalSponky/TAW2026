@@ -1,9 +1,10 @@
-import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StudentHomeComponent } from './student-home/student-home.component';
 import { LecturerDashboardComponent } from './lecturer-dashboard/lecturer-dashboard.component';
 import { StaffDashboardComponent } from './staff-dashboard/staff-dashboard.component';
+import { Subscription } from 'rxjs';
 
 // --- i18n Imports ---
 import { TranslatePipe } from './translate.pipe';
@@ -23,7 +24,7 @@ import { TranslationService } from './services/translation.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   emailInput: string = '';
   passwordInput: string = '';
 
@@ -35,6 +36,8 @@ export class AppComponent implements OnInit {
   datiRegistrazione: any = null;
   passwordConferma: string = '';
 
+  private langSub!: Subscription;
+
   constructor(
     private cdr: ChangeDetectorRef,
     public translationService: TranslationService,
@@ -45,8 +48,17 @@ export class AppComponent implements OnInit {
     if (utenteSalvato) {
       this.utenteLoggato = JSON.parse(utenteSalvato);
     } else {
-      this.inizializzaBottoneGoogle();
+      // Quando la lingua cambia, ricarica il bottone Google col testo corretto
+      this.langSub = this.translationService.currentLang$.subscribe(() => {
+        if (!this.utenteLoggato && !this.inRegistrazione) {
+          this.inizializzaBottoneGoogle();
+        }
+      });
     }
+  }
+
+  ngOnDestroy() {
+    if (this.langSub) this.langSub.unsubscribe();
   }
 
   // --- STANDARD LOGIN ---
@@ -59,7 +71,6 @@ export class AppComponent implements OnInit {
       .then(async (response) => {
         if (!response.ok) {
           const errorMsg = await response.text();
-          // Mappa i messaggi del server sulle chiavi di traduzione
           if (errorMsg.includes('Password errata')) throw new Error('ERRORS.WRONG_PASSWORD');
           if (errorMsg.includes('Email non trovata')) throw new Error('ERRORS.EMAIL_NOT_FOUND');
           throw new Error(errorMsg);
@@ -200,9 +211,16 @@ export class AppComponent implements OnInit {
   inizializzaBottoneGoogle() {
     setTimeout(() => {
       if ((window as any).google) {
+        const container = document.getElementById('google-btn-container');
+        if (container) container.innerHTML = ''; // Pulisce il vecchio iframe di google per renderizzarne uno nuovo!
+
+        // Prende la lingua corrente e la mappa sul formato atteso da Google (es. "it-IT")
+        const currentLanguage = this.translationService.getLanguage() === 'it' ? 'it-IT' : 'en-US';
+
         (window as any).google.accounts.id.initialize({
           client_id: '815258409239-ud52hl573eknubjouh7j6v0id12bh55j.apps.googleusercontent.com',
           callback: this.gestisciRispostaGoogle.bind(this),
+          locale: currentLanguage, // FORZA LA LINGUA NEL BOTTONE DI GOOGLE
         });
 
         (window as any).google.accounts.id.renderButton(

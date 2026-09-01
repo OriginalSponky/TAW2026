@@ -2,6 +2,9 @@
   <div class="header-logo">Area Docente Referente</div>
 
   <div class="header-actions">
+    <button class="lang-btn" (click)="translationService.toggleLanguage()">
+      {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
+    </button>
     <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
       {{ themeService.isDark ? '☀️' : '🌙' }}
     </button>
@@ -9,10 +12,11 @@
     <div class="profile-container">
       <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
       <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
-        <a href="#">Il mio profilo</a>
-        <a href="#">Impostazioni</a>
+        <a href="#">{{ 'HEADER.MANAGE_ACCOUNT' | translate }}</a>
+        <a href="#">{{ 'HEADER.SETTINGS' | translate }}</a>
+        <a href="#">{{ 'HEADER.HELP' | translate }}</a>
         <div class="divider"></div>
-        <a href="#" class="logout" (click)="effettuaLogout($event)">🚪 Log out</a>
+        <a href="#" class="logout" (click)="effettuaLogout($event)">{{ 'HEADER.LOGOUT' | translate }}</a>
       </div>
     </div>
   </div>
@@ -22,54 +26,54 @@
 
   @if (activeView === 'homeView') {
     <div class="hero">
-      <h1 class="page-title">Ciao Prof. {{ utente?.first_name }} {{ utente?.last_name }}. </h1>
-      <p class="page-subtitle">Benvenuto nell'Area Docenti. Scegli un'area di competenza per gestire le richieste degli studenti UniVe.</p>
+      <h1 class="page-title">{{ 'LECTURER.GREETING' | translate }} {{ utente?.first_name }} {{ utente?.last_name }}</h1>
+      <p class="page-subtitle">{{ 'LECTURER.SUBTITLE' | translate }}</p>
     </div>
 
     <div class="boxes-container">
       <div class="home-box" (click)="switchView('laView')">
         <div class="box-icon">📝</div>
-        <h2>Approvazioni L.A.</h2>
-        <p>Valuta i Learning Agreement pre-partenza o le modifiche in itinere.</p>
-        @if (pendingLAs.length > 0) { <div class="badge-count">{{ pendingLAs.length }} in attesa</div> }
+        <h2>{{ 'LECTURER.BOX_LA_TITLE' | translate }}</h2>
+        <p>{{ 'LECTURER.BOX_LA_DESC' | translate }}</p>
+        @if (pendingLAs.length > 0) { <div class="badge-count">{{ pendingLAs.length }} {{ 'LECTURER.IN_WAITING' | translate }}</div> }
       </div>
 
       <div class="home-box" (click)="switchView('torView')">
         <div class="box-icon">🎓</div>
-        <h2>Valutazione Voti</h2>
-        <p>Controlla e approva i Transcript of Records al rientro.</p>
-        @if (pendingToRs.length > 0) { <div class="badge-count badge-count-purple">{{ pendingToRs.length }} in attesa</div> }
+        <h2>{{ 'LECTURER.BOX_TOR_TITLE' | translate }}</h2>
+        <p>{{ 'LECTURER.BOX_TOR_DESC' | translate }}</p>
+        @if (pendingToRs.length > 0) { <div class="badge-count badge-count-purple">{{ pendingToRs.length }} {{ 'LECTURER.IN_WAITING' | translate }}</div> }
       </div>
 
       <div class="home-box" (click)="switchView('handledView')">
         <div class="box-icon">🗂️</div>
-        <h2>Storico Pratiche</h2>
-        <p>Consulta tutte le pratiche gestite, già approvate o archiviate.</p>
+        <h2>{{ 'LECTURER.BOX_HISTORY_TITLE' | translate }}</h2>
+        <p>{{ 'LECTURER.BOX_HISTORY_DESC' | translate }}</p>
       </div>
     </div>
   }
 
   @else if (activeView === 'laView') {
-    <button class="back-header-btn" (click)="switchView('homeView')">← Torna alla Dashboard</button>
-    <h1 class="page-title" style="text-align: left;">📝 Valutazione Learning Agreement</h1>
-    <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">Richieste di approvazione dei piani di studio esteri.</p>
+    <button class="back-header-btn" (click)="switchView('homeView')">{{ 'LECTURER.BTN_BACK' | translate }}</button>
+    <h1 class="page-title" style="text-align: left;">{{ 'LECTURER.PAGE_LA_TITLE' | translate }}</h1>
+    <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">{{ 'LECTURER.PAGE_LA_DESC' | translate }}</p>
 
     <div class="requests-list">
       @if (pendingLAs.length === 0) {
-        <p style="color: var(--text-muted);">📭 Nessuna pratica in attesa di revisione.</p>
+        <p style="color: var(--text-muted);">{{ 'LECTURER.NO_LA' | translate }}</p>
       }
 
       @for (app of pendingLAs; track app.id) {
         <div class="request-card" [ngClass]="app.status === 'AWAITING_FOR_APPROVAL' ? 'border-warning' : 'border-info'">
           <div class="request-info">
-            <div class="student-name">🧑‍🎓 Studente: {{ app.student_first_name }} {{ app.student_last_name }} ({{app.matricola}})</div>
-            <div class="details">🌍 Destinazione: {{ app.institution_name }} ({{ app.country }}) | 📅 A.A. {{ app.academic_year }}</div>
+            <div class="student-name">🧑‍🎓 {{ 'LECTURER.STUDENT' | translate }} {{ app.student_first_name }} {{ app.student_last_name }} ({{app.matricola}})</div>
+            <div class="details">🌍 {{ 'LECTURER.DESTINATION' | translate }} {{ app.institution_name }} ({{ app.country }}) | 📅 {{ 'LECTURER.ACADEMIC_YEAR' | translate }} {{ app.academic_year }}</div>
             <div class="status-badge" [ngClass]="app.status === 'AWAITING_FOR_APPROVAL' ? 'badge-warning' : 'badge-info'">
               {{ app.status }}
             </div>
           </div>
           <div class="actions">
-            <button class="btn-primary" (click)="startReview(app, 'LEARNING_AGREEMENT')">Valuta L.A.</button>
+            <button class="btn-primary" (click)="startReview(app, 'LEARNING_AGREEMENT')">{{ 'LECTURER.BTN_EVAL_LA' | translate }}</button>
           </div>
         </div>
       }
@@ -77,26 +81,26 @@
   }
 
   @else if (activeView === 'torView') {
-    <button class="back-header-btn" (click)="switchView('homeView')">← Torna alla Dashboard</button>
-    <h1 class="page-title" style="text-align: left;">🎓 Approvazione Voti (ToR)</h1>
-    <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">Studenti rientrati in attesa della conversione voti.</p>
+    <button class="back-header-btn" (click)="switchView('homeView')">{{ 'LECTURER.BTN_BACK' | translate }}</button>
+    <h1 class="page-title" style="text-align: left;">{{ 'LECTURER.PAGE_TOR_TITLE' | translate }}</h1>
+    <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">{{ 'LECTURER.PAGE_TOR_DESC' | translate }}</p>
 
     <div class="requests-list">
       @if (pendingToRs.length === 0) {
-        <p style="color: var(--text-muted);">📭 Nessun libretto voti in attesa.</p>
+        <p style="color: var(--text-muted);">{{ 'LECTURER.NO_TOR' | translate }}</p>
       }
 
       @for (app of pendingToRs; track app.id) {
         <div class="request-card border-purple">
           <div class="request-info">
-            <div class="student-name">🧑‍🎓 Studente: {{ app.student_first_name }} {{ app.student_last_name }} ({{app.matricola}})</div>
-            <div class="details">🌍 Destinazione: {{ app.institution_name }} ({{ app.country }}) | 📅 A.A. {{ app.academic_year }}</div>
+            <div class="student-name">🧑‍🎓 {{ 'LECTURER.STUDENT' | translate }} {{ app.student_first_name }} {{ app.student_last_name }} ({{app.matricola}})</div>
+            <div class="details">🌍 {{ 'LECTURER.DESTINATION' | translate }} {{ app.institution_name }} ({{ app.country }}) | 📅 {{ 'LECTURER.ACADEMIC_YEAR' | translate }} {{ app.academic_year }}</div>
             <div class="status-badge badge-purple">
               {{ app.status }}
             </div>
           </div>
           <div class="actions">
-            <button class="btn-purple" (click)="startReview(app, 'TRANSCRIPT_OF_RECORDS')">Valuta Voti</button>
+            <button class="btn-purple" (click)="startReview(app, 'TRANSCRIPT_OF_RECORDS')">{{ 'LECTURER.BTN_EVAL_TOR' | translate }}</button>
           </div>
         </div>
       }
@@ -104,17 +108,17 @@
   }
 
   @else if (activeView === 'handledView') {
-    <button class="back-header-btn" (click)="switchView('homeView')">← Torna alla Dashboard</button>
-    <h1 class="page-title" style="text-align: left;">🗂️ Pratiche Gestite</h1>
-    <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">📚 Storico delle tue approvazioni passate e pratiche concluse.</p>
+    <button class="back-header-btn" (click)="switchView('homeView')">{{ 'LECTURER.BTN_BACK' | translate }}</button>
+    <h1 class="page-title" style="text-align: left;">{{ 'LECTURER.PAGE_HISTORY_TITLE' | translate }}</h1>
+    <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">{{ 'LECTURER.PAGE_HISTORY_DESC' | translate }}</p>
 
     <div class="filter-container">
-      <div class="filter-title">🔎 Cerca e Filtra Nello Storico</div>
+      <div class="filter-title">{{ 'LECTURER.SEARCH_TITLE' | translate }}</div>
       <div class="filter-grid">
-        <input type="text" [(ngModel)]="filtri.studente" placeholder="Nome, Cognome o Matricola..." (input)="applicaFiltri()">
+        <input type="text" [(ngModel)]="filtri.studente" [placeholder]="'LECTURER.PLACE_STUDENT' | translate" (input)="applicaFiltri()">
 
         <select [(ngModel)]="filtri.stato" (change)="applicaFiltri()">
-          <option value="">Tutti gli Stati</option>
+          <option value="">{{ 'LECTURER.ALL_STATUSES' | translate }}</option>
           <option value="PRE_DEPARTURE_COMPLETED">PRE_DEPARTURE_COMPLETED</option>
           <option value="MOBILITY_IN_PROGRESS">MOBILITY_IN_PROGRESS</option>
           <option value="WAITING_FOR_EXAM_SCORE_APPROVAL">WAITING_FOR_EXAM_SCORE_APPROVAL</option>
@@ -123,27 +127,27 @@
         </select>
 
         <select [(ngModel)]="filtri.anno" (change)="applicaFiltri()">
-          <option value="">Tutti gli Anni</option>
+          <option value="">{{ 'LECTURER.ALL_YEARS' | translate }}</option>
           @for (anno of uniqueAnni; track anno) {
             <option [value]="anno">{{ anno }}</option>
           }
         </select>
 
         <select [(ngModel)]="filtri.istituzione" (change)="applicaFiltri()">
-          <option value="">Tutte le Istituzioni</option>
+          <option value="">{{ 'LECTURER.ALL_UNIS' | translate }}</option>
           @for (ist of uniqueIstituzioni; track ist) {
             <option [value]="ist">{{ ist }}</option>
           }
         </select>
       </div>
       <div class="filter-actions">
-        <button class="btn-outline" (click)="resettaFiltri()">Resetta Filtri</button>
+        <button class="btn-outline" (click)="resettaFiltri()">{{ 'LECTURER.BTN_RESET' | translate }}</button>
       </div>
     </div>
 
     <div class="requests-list">
       @if (praticheFiltrate.length === 0) {
-        <p style="text-align: center; color: var(--text-muted); background: var(--surface); padding: 20px; border-radius: 8px;">📭 Nessuna pratica trovata con questi filtri.</p>
+        <p style="text-align: center; color: var(--text-muted); background: var(--surface); padding: 20px; border-radius: 8px;">{{ 'LECTURER.NO_MATCH' | translate }}</p>
       }
 
       @for (app of praticheFiltrate; track app.id) {
@@ -157,8 +161,8 @@
             'border-canceled': app.status === 'CANCELED'
           }">
           <div class="request-info">
-            <div class="student-name">🧑‍🎓 Studente: {{ app.student_first_name }} {{ app.student_last_name }} ({{app.matricola}})</div>
-            <div class="details">🌍 Destinazione: {{ app.institution_name }} | 📅 A.A. {{ app.academic_year }}</div>
+            <div class="student-name">🧑‍🎓 {{ 'LECTURER.STUDENT' | translate }} {{ app.student_first_name }} {{ app.student_last_name }} ({{app.matricola}})</div>
+            <div class="details">🌍 {{ 'LECTURER.DESTINATION' | translate }} {{ app.institution_name }} | 📅 {{ 'LECTURER.ACADEMIC_YEAR' | translate }} {{ app.academic_year }}</div>
             <div class="status-badge" [ngClass]="{
                 'status-created': app.status === 'CREATED',
                 'status-awaiting-la': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
@@ -172,7 +176,7 @@
             </div>
           </div>
           <div class="actions">
-            <button class="btn-outline" (click)="openHistoricalDetails(app)">🔍 Vedi Dettagli</button>
+            <button class="btn-outline" (click)="openHistoricalDetails(app)">{{ 'LECTURER.BTN_DETAILS' | translate }}</button>
           </div>
         </div>
       }
@@ -185,51 +189,51 @@
     <div class="modal" (click)="$event.stopPropagation()">
 
       @if (modalStep === 'read' || modalStep === 'reject-reason') {
-        <h3>{{ reviewData.studentName }}</h3>
-        <p style="color: var(--text-muted); margin-bottom: 24px;">{{ reviewData.actionType }}</p>
+        <h3>🧑‍🎓 {{ 'LECTURER.STUDENT' | translate }} {{ reviewData.studentName }}</h3>
+        <p style="color: var(--text-muted); margin-bottom: 24px;">{{ reviewData.actionTypeKey | translate }}</p>
       }
 
       @if (modalStep === 'read') {
         @if (reviewData.studentNote) {
           <div class="student-note-box">
-            <strong>Motivazione Studente (o info extra):</strong>
+            <strong>{{ 'LECTURER.STUDENT_NOTE' | translate }}</strong>
             <span>{{ reviewData.studentNote }}</span>
           </div>
         }
 
-        <a [href]="reviewData.docUrl" class="doc-link" target="_blank">📄 Apri File: {{ reviewData.docName }}</a>
+        <a [href]="reviewData.docUrl" class="doc-link" target="_blank">{{ 'LECTURER.OPEN_FILE' | translate }} {{ reviewData.docName }}</a>
 
-        <p style="font-size: 14px; font-weight: 600; text-align: left; margin-bottom: 8px; color: var(--text-main);">Dati Mappatura Inseriti:</p>
+        <p style="font-size: 14px; font-weight: 600; text-align: left; margin-bottom: 8px; color: var(--text-main);">{{ 'LECTURER.MAPPING_DATA' | translate }}</p>
         <div class="exam-data-box" [innerHTML]="reviewData.examsHtml"></div>
 
         <div class="modal-actions" style="margin-top: 24px;">
-          <button class="btn-outline" (click)="chiudiReviewModal()">Annulla</button>
-          <button class="btn-danger" (click)="impostaStep('reject-reason')">Rifiuta</button>
-          <button class="btn-success" (click)="chiediConferma('approve')">Approva Pratica</button>
+          <button class="btn-outline" (click)="chiudiReviewModal()">{{ 'LECTURER.BTN_CANCEL' | translate }}</button>
+          <button class="btn-danger" (click)="impostaStep('reject-reason')">{{ 'LECTURER.BTN_REJECT' | translate }}</button>
+          <button class="btn-success" (click)="chiediConferma('approve')">{{ 'LECTURER.BTN_APPROVE' | translate }}</button>
         </div>
       }
 
       @else if (modalStep === 'reject-reason') {
-        <p style="font-weight: 600; text-align: left; margin-bottom: 8px; color: var(--text-main);">Motivazione del Rifiuto (Obbligatoria):</p>
-        <textarea class="reject-textarea" [(ngModel)]="motivoRifiuto" placeholder="Spiega dettagliatamente cosa lo studente deve correggere..."></textarea>
+        <p style="font-weight: 600; text-align: left; margin-bottom: 8px; color: var(--text-main);">{{ 'LECTURER.REJECT_REASON_TITLE' | translate }}</p>
+        <textarea class="reject-textarea" [(ngModel)]="motivoRifiuto" [placeholder]="'LECTURER.REJECT_REASON_PLACE' | translate"></textarea>
         <div class="modal-actions" style="margin-top: 24px;">
-          <button class="btn-outline" (click)="impostaStep('read')">Indietro</button>
-          <button class="btn-danger" (click)="chiediConferma('reject')">Procedi col Rifiuto</button>
+          <button class="btn-outline" (click)="impostaStep('read')">{{ 'LECTURER.BTN_BACK_MODAL' | translate }}</button>
+          <button class="btn-danger" (click)="chiediConferma('reject')">{{ 'LECTURER.BTN_PROCEED_REJECT' | translate }}</button>
         </div>
       }
 
       @else if (modalStep === 'confirm') {
         <div style="text-align: center; margin-bottom: 24px; padding-top: 16px;">
           <h2 style="font-size: 64px; margin-top: 0; margin-bottom: 16px; line-height: 1;">{{ pendingAction === 'approve' ? '✅' : '⚠️' }}</h2>
-          <h3 style="margin-bottom: 8px;">{{ pendingAction === 'approve' ? 'Confermi l\'approvazione?' : 'Confermi il rifiuto?' }}</h3>
+          <h3 style="margin-bottom: 8px;">{{ pendingAction === 'approve' ? ('LECTURER.CONFIRM_APPROVE' | translate) : ('LECTURER.CONFIRM_REJECT' | translate) }}</h3>
           <p style="font-size: 15px; font-weight: 500; color: var(--text-muted);">
-            L'esito sarà registrato per {{ reviewData.studentName.replace('🧑‍🎓 Studente: ', '') }}.
+            {{ 'LECTURER.CONFIRM_DESC' | translate }} {{ reviewData.studentName }}.
           </p>
         </div>
         <div class="modal-actions center">
-          <button class="btn-outline" (click)="impostaStep('read')">Annulla</button>
+          <button class="btn-outline" (click)="impostaStep('read')">{{ 'LECTURER.BTN_CANCEL' | translate }}</button>
           <button [class]="pendingAction === 'approve' ? 'btn-success' : 'btn-danger'" (click)="eseguiAzione()">
-            Conferma {{ pendingAction === 'approve' ? 'Approvazione' : 'Rifiuto' }}
+            {{ pendingAction === 'approve' ? ('LECTURER.BTN_CONFIRM_APPROVE' | translate) : ('LECTURER.BTN_CONFIRM_REJECT' | translate) }}
           </button>
         </div>
       }
@@ -237,11 +241,11 @@
       @else if (modalStep === 'success') {
         <div style="text-align: center; margin-bottom: 24px; padding-top: 16px;">
           <h2 style="font-size: 64px; margin-top: 0; margin-bottom: 16px; line-height: 1;">🎉</h2>
-          <h3 style="margin-bottom: 8px; color: var(--success);">Completato con successo!</h3>
-          <p style="font-size: 14px; color: var(--text-muted);">Il database è stato aggiornato. Lo studente può vedere lo status modificato.</p>
+          <h3 style="margin-bottom: 8px; color: var(--success);">{{ 'LECTURER.SUCCESS_TITLE' | translate }}</h3>
+          <p style="font-size: 14px; color: var(--text-muted);">{{ 'LECTURER.SUCCESS_DESC' | translate }}</p>
         </div>
         <div class="modal-actions center">
-          <button class="btn-primary" (click)="chiudiSuccesso()">Continua il Lavoro</button>
+          <button class="btn-primary" (click)="chiudiSuccesso()">{{ 'LECTURER.BTN_DASHBOARD' | translate }}</button>
         </div>
       }
     </div>
@@ -253,15 +257,16 @@
     <div class="modal" style="max-width: 650px; text-align: left; padding: 32px;" (click)="$event.stopPropagation()">
 
       <h3 style="margin-bottom: 8px; font-size: 1.5rem; display: flex; align-items: center; gap: 8px;">
-        🧑‍🎓 Studente: {{ historicalDetails.student_first_name }} {{ historicalDetails.student_last_name }}
+        🧑‍🎓 {{ 'LECTURER.STUDENT' | translate }} {{ historicalDetails.student_first_name }} {{ historicalDetails.student_last_name }}
       </h3>
       <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 15px;">
         🌍 {{ historicalDetails.institution_name }} ({{ historicalDetails.country }})
       </p>
 
       <h4 style="color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0; display: flex; align-items: center; gap: 8px;">
-        📚 Esami nel piano di studi
+        {{ 'LECTURER.HIST_EXAMS' | translate }}
       </h4>
+
       <div style="max-height: 250px; overflow-y: auto; margin-bottom: 24px; padding-right: 8px;">
         @if (historicalDetails.exams && historicalDetails.exams.length > 0) {
           @for (exam of historicalDetails.exams; track exam.id) {
@@ -275,17 +280,17 @@
               </div>
               <div style="font-size: 14px; color: var(--text-muted);">🏛️ {{ exam.unive_course_title }} ({{ exam.unive_course_credits }} CFU) [{{exam.unive_course_code}}]</div>
               @if (exam.score_obtained) {
-                <div style="font-size: 14px; font-weight: 700; color: var(--success); margin-top: 8px;">🏆 Voto Ottenuto: {{ exam.score_obtained }}</div>
+                <div style="font-size: 14px; font-weight: 700; color: var(--success); margin-top: 8px;">{{ 'LECTURER.SCORE_OBTAINED' | translate }} {{ exam.score_obtained }}</div>
               }
             </div>
           }
         } @else {
-          <p style="font-size: 14px; color: var(--text-muted);">Nessun esame inserito nel sistema.</p>
+          <p style="font-size: 14px; color: var(--text-muted);">{{ 'LECTURER.NO_EXAMS' | translate }}</p>
         }
       </div>
 
       <h4 style="color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-        📄 Documenti Caricati
+        {{ 'LECTURER.HIST_DOCS' | translate }}
       </h4>
       <div style="margin-bottom: 32px;">
         @if (historicalDetails.documents && historicalDetails.documents.length > 0) {
@@ -302,12 +307,12 @@
             </div>
           }
         } @else {
-          <p style="font-size: 14px; color: var(--text-muted);">Nessun documento fisico caricato.</p>
+          <p style="font-size: 14px; color: var(--text-muted);">{{ 'LECTURER.NO_DOCS' | translate }}</p>
         }
       </div>
 
       <div class="modal-actions" style="justify-content: center;">
-        <button class="btn-primary" style="padding: 12px 32px; font-size: 15px;" (click)="chiudiModaleStorico()">Chiudi Dettagli</button>
+        <button class="btn-primary" style="padding: 12px 32px; font-size: 15px;" (click)="chiudiModaleStorico()">{{ 'LECTURER.BTN_CLOSE_DETAILS' | translate }}</button>
       </div>
     </div>
   </div>

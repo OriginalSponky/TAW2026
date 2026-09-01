@@ -1,30 +1,33 @@
 <header>
   <a href="#" class="back-btn" (click)="tornaIndietro($event)">
-    {{ editRequestId ? '← Torna alle mie richieste' : '← Home' }}
+    {{ editRequestId ? ('NEW_REQ.BTN_BACK_REQ' | translate) : ('NEW_REQ.BTN_BACK_HOME' | translate) }}
   </a>
 
   <div class="header-actions">
-  <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
-    {{ themeService.isDark ? '☀️' : '🌙' }}
-  </button>
+    <button class="lang-btn" (click)="translationService.toggleLanguage()">
+      {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
+    </button>
+    <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
+      {{ themeService.isDark ? '☀️' : '🌙' }}
+    </button>
 
-  <div class="profile-container">
-    <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
-    <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
-      <a href="#">Gestisci il tuo Account</a>
-      <a href="#">Impostazioni</a>
-      <a href="#">Aiuto e feedback</a>
-      <div class="divider"></div>
-      <a href="#" class="logout" (click)="effettuaLogout($event)">🚪 Log out</a>
+    <div class="profile-container">
+      <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
+      <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
+        <a href="#">{{ 'HEADER.MANAGE_ACCOUNT' | translate }}</a>
+        <a href="#">{{ 'HEADER.SETTINGS' | translate }}</a>
+        <a href="#">{{ 'HEADER.HELP' | translate }}</a>
+        <div class="divider"></div>
+        <a href="#" class="logout" (click)="effettuaLogout($event)">{{ 'HEADER.LOGOUT' | translate }}</a>
+      </div>
     </div>
-  </div>
   </div>
 </header>
 
 <main (click)="menuAperto = false">
   <div style="text-align: center; margin-bottom: 32px; margin-top: 16px;">
-    <h1 class="page-title" style="font-size: 2.5rem; margin-bottom: 8px;">✈️ Nuova Richiesta Overseas</h1>
-    <p style="color: var(--text-muted); font-size: 15px;">Compila tutti i campi per avviare la tua pratica di mobilità.</p>
+    <h1 class="page-title" style="font-size: 2.5rem; margin-bottom: 8px;">{{ 'NEW_REQ.TITLE' | translate }}</h1>
+    <p style="color: var(--text-muted); font-size: 15px;">{{ 'NEW_REQ.SUBTITLE' | translate }}</p>
   </div>
 
   @if (erroreSalvataggio) {
@@ -34,47 +37,45 @@
   }
 
   <div class="main-form-container">
-
     <form>
-      <!-- SECTION 1: Mobility Details -->
       <div class="form-section-clean">
-        <h2 style="color: var(--primary);">1. Dettagli della Mobilità</h2>
+        <h2 style="color: var(--primary);">{{ 'NEW_REQ.STEP1_TITLE' | translate }}</h2>
         <div class="form-grid">
-          <!-- ANNO ACCADEMICO-->
+
           <div class="form-group">
-            <label>Anno Accademico</label>
+            <label>{{ 'NEW_REQ.ACADEMIC_YEAR' | translate }}</label>
             <select [(ngModel)]="datiRichiesta.academic_year" name="academic_year" [class.is-invalid]="showValidationErrors && !datiRichiesta.academic_year">
-              <option value="" disabled selected>Seleziona...</option>
+              <option value="" disabled selected>{{ 'NEW_REQ.SELECT_PLACEHOLDER' | translate }}</option>
               @for (anno of anniAccademici; track anno) {
                 <option [value]="anno">{{ anno }}</option>
               }
             </select>
           </div>
-          <!-- PERIODO PREVISTO-->
+
           <div class="form-group">
-            <label>Periodo Previsto</label>
+            <label>{{ 'NEW_REQ.PERIOD' | translate }}</label>
             <select [(ngModel)]="datiRichiesta.mobility_period" name="mobility_period" [class.is-invalid]="showValidationErrors && !datiRichiesta.mobility_period">
-              <option value="" disabled selected>Seleziona...</option>
-              <option value="FIRST_SEMESTER">Primo Semestre</option>
-              <option value="SECOND_SEMESTER">Secondo Semestre</option>
-              <option value="FULL_YEAR">Intero Anno</option>
+              <option value="" disabled selected>{{ 'NEW_REQ.SELECT_PLACEHOLDER' | translate }}</option>
+              <option value="FIRST_SEMESTER">{{ 'NEW_REQ.FIRST_SEM' | translate }}</option>
+              <option value="SECOND_SEMESTER">{{ 'NEW_REQ.SECOND_SEM' | translate }}</option>
+              <option value="FULL_YEAR">{{ 'NEW_REQ.FULL_YEAR' | translate }}</option>
             </select>
           </div>
-          <!-- ISTITUZIONE OSPITANTE-->
+
           <div class="form-group">
-            <label>Istituzione Ospitante</label>
+            <label>{{ 'NEW_REQ.INSTITUTION' | translate }}</label>
             <select [(ngModel)]="datiRichiesta.institution_id" name="institution_id" [class.is-invalid]="showValidationErrors && !datiRichiesta.institution_id">
-              <option value="" disabled selected>Seleziona dalla lista partner...</option>
+              <option value="" disabled selected>{{ 'NEW_REQ.SELECT_INST_PLACEHOLDER' | translate }}</option>
               @for (inst of istituzioni; track inst.id) {
                 <option [value]="inst.id">{{ inst.name }}</option>
               }
             </select>
           </div>
-          <!-- DOCENTE REFERENTE-->
+
           <div class="form-group">
-            <label>Docente Referente</label>
+            <label>{{ 'NEW_REQ.TEACHER' | translate }}</label>
             <select [(ngModel)]="datiRichiesta.lecturer_id" name="lecturer_id" [class.is-invalid]="showValidationErrors && !datiRichiesta.lecturer_id">
-              <option value="" disabled selected>Seleziona docente...</option>
+              <option value="" disabled selected>{{ 'NEW_REQ.SELECT_TEACHER_PLACEHOLDER' | translate }}</option>
               @for (prof of professori; track prof.id) {
                 <option [value]="prof.id">Prof. {{ prof.first_name }} {{ prof.last_name }}</option>
               }
@@ -83,82 +84,76 @@
         </div>
       </div>
 
-      <!-- SECTION 2: Exam Mapping -->
       <div class="form-section-clean">
-        <h2 style="color: var(--primary);">2. Mappatura Esami (Exam Mapping)</h2>
-        <p style="font-size: 14px; color: #5f6368; margin-bottom: 20px;">Associa gli esami che intendi sostenere all'estero.</p>
+        <h2 style="color: var(--primary);">{{ 'NEW_REQ.STEP2_TITLE' | translate }}</h2>
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">{{ 'NEW_REQ.STEP2_DESC' | translate }}</p>
 
         @for (esame of esami; track $index) {
           <div class="exam-mapping-container">
-
             @if ($index > 0) {
-              <button type="button" class="remove-exam-btn" (click)="rimuoviEsame($index)">✖ Rimuovi Esame</button>
+              <button type="button" class="remove-exam-btn" (click)="rimuoviEsame($index)">{{ 'NEW_REQ.REMOVE_EXAM' | translate }}</button>
             }
-            <!-- CORSO ESTERO -->
-            <div class="exam-section-title">✈️ Corso Estero (Host Institution)</div>
+
+            <div class="exam-section-title">{{ 'NEW_REQ.FOREIGN_COURSE' | translate }}</div>
             <div class="form-grid">
               <div class="form-group">
-                <label>Codice Insegnamento</label>
+                <label>{{ 'NEW_REQ.COURSE_CODE' | translate }}</label>
                 <input type="text" [(ngModel)]="esame.foreignCode" name="fcode_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.foreignCode">
               </div>
 
               <div class="form-group">
-                <label>Crediti</label>
+                <label>{{ 'NEW_REQ.CREDITS' | translate }}</label>
                 <input type="number" [(ngModel)]="esame.foreignCredits" name="fcred_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.foreignCredits">
               </div>
 
               <div class="form-group full-width">
-                <label>Nome del Corso</label>
+                <label>{{ 'NEW_REQ.COURSE_NAME' | translate }}</label>
                 <input type="text" [(ngModel)]="esame.foreignName" name="fname_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.foreignName">
               </div>
             </div>
 
-            <!-- CORSO CA' FOSCARI -->
-            <div class="exam-section-title">🏛️ Corso Ca' Foscari</div>
+            <div class="exam-section-title">{{ 'NEW_REQ.LOCAL_COURSE' | translate }}</div>
             <div class="form-grid">
               <div class="form-group">
-                <label>Codice Corso</label>
+                <label>{{ 'NEW_REQ.COURSE_CODE' | translate }}</label>
                 <input type="text" [(ngModel)]="esame.localCode" name="lcode_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.localCode">
               </div>
 
               <div class="form-group">
-                <label>Crediti</label>
+                <label>{{ 'NEW_REQ.CREDITS' | translate }}</label>
                 <input type="number" [(ngModel)]="esame.localCredits" name="lcred_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.localCredits">
               </div>
 
               <div class="form-group full-width">
-                <label>Titolo del Corso</label>
+                <label>{{ 'NEW_REQ.COURSE_NAME' | translate }}</label>
                 <input type="text" [(ngModel)]="esame.localName" name="lname_{{$index}}" [class.is-invalid]="showValidationErrors && !esame.localName">
               </div>
             </div>
 
           </div>
         }
-        <button type="button" class="btn btn-outline" (click)="aggiungiEsame()">+ Aggiungi un altro esame</button>
+        <button type="button" class="btn btn-outline" (click)="aggiungiEsame()">{{ 'NEW_REQ.ADD_EXAM' | translate }}</button>
       </div>
 
-      <!-- SECTION 3: Upload Documenti (RIPRISTINATO DRAG & DROP) -->
       <div class="form-section-clean">
-        <h2 style="color: var(--primary);">3. Upload Documenti</h2>
+        <h2 style="color: var(--primary);">{{ 'NEW_REQ.STEP3_TITLE' | translate }}</h2>
         <div class="form-group full-width">
 
-          <!-- DOWNLOAD TEMPLATE -->
           <div class="template-download-section">
             <div class="template-info">
               <span class="icon" style="font-size: 28px;">📄</span>
               <div style="display: flex; flex-direction: column;">
-                <strong style="color: var(--text-main); font-size: 15px;">Learning Agreement Template</strong>
-                <span style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Scarica, compila e firma prima di procedere.</span>
+                <strong style="color: var(--text-main); font-size: 15px;">{{ 'NEW_REQ.TEMPLATE_TITLE' | translate }}</strong>
+                <span style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">{{ 'NEW_REQ.TEMPLATE_DESC' | translate }}</span>
               </div>
             </div>
             <button type="button" class="btn-download" (click)="scaricaTemplate()">
-              <span>⬇️</span> Scarica
+              {{ 'NEW_REQ.BTN_DOWNLOAD' | translate }}
             </button>
           </div>
 
-          <!-- DRAG & DROP ZONE RIPRISTINATA (Con click funzionante) -->
           <div class="form-group full-width" style="margin-top: 32px;">
-            <label style="display: block; margin-bottom: 12px; font-weight: 600; color: var(--text-main); font-size: 15px;">Carica il Learning Agreement firmato (PDF):</label>
+            <label style="display: block; margin-bottom: 12px; font-weight: 600; color: var(--text-main); font-size: 15px;">{{ 'NEW_REQ.UPLOAD_LABEL' | translate }}</label>
 
             <div class="drag-drop-zone"
                  [class.active-glow]="isDragging"
@@ -168,7 +163,6 @@
                  (click)="fileInput.click()"
                  style="cursor: pointer;">
 
-              <!-- Input file nascosto attivato al click -->
               <input type="file" #fileInput accept=".pdf" style="display: none;" (change)="onFileSelected($event)">
 
               <div class="upload-content">
@@ -177,10 +171,10 @@
                 </div>
 
                 @if (!fileSelezionato) {
-                  <h4 style="margin: 16px 0 8px 0; color: var(--primary); font-size: 18px;">Trascina qui il tuo PDF</h4>
-                  <p style="margin: 0; color: var(--text-muted); font-size: 14px;">Rilascia il documento all'interno dell'area tratteggiata</p>
+                  <h4 style="margin: 16px 0 8px 0; color: var(--primary); font-size: 18px;">{{ 'NEW_REQ.DRAG_PDF' | translate }}</h4>
+                  <p style="margin: 0; color: var(--text-muted); font-size: 14px;">{{ 'NEW_REQ.DROP_PDF' | translate }}</p>
                 } @else {
-                  <h4 style="margin: 16px 0 8px 0; color: var(--success); font-size: 18px;">✅ Acquisito!</h4>
+                  <h4 style="margin: 16px 0 8px 0; color: var(--success); font-size: 18px;">{{ 'NEW_REQ.ACQUIRED' | translate }}</h4>
                   <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 15px;">{{ fileSelezionato.name }}</p>
                 }
               </div>
@@ -190,58 +184,52 @@
         </div>
       </div>
 
-      <!-- BOTTONE DI INVIO (ora dentro il contenitore bianco) -->
       <div class="submit-container" style="margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--border);">
-        <button type="button" class="btn-primary" (click)="validaEApriModale()" style="width: 100%; padding: 16px; font-size: 18px;">Invia Richiesta Overseas</button>
+        <button type="button" class="btn-primary" (click)="validaEApriModale()" style="width: 100%; padding: 16px; font-size: 18px;">{{ 'NEW_REQ.BTN_SUBMIT' | translate }}</button>
       </div>
     </form>
-
-  </div> <!-- FINE main-form-container -->
-
+  </div>
 </main>
 
-<!-- ANGULAR MODAL DI CONFERMA INVIO -->
 @if (mostraModale) {
   <div class="modal-overlay">
     <div class="modal">
       @if (!richiestaCompletata) {
-        <h3 style="font-size: 1.5rem; margin-bottom: 12px;">🚀 Conferma Invio 📤</h3>
-        <p>Sei sicuro di voler inviare la tua richiesta di mobilità? Assicurati di aver inserito correttamente la mappatura degli esami.</p>
+        <h3 style="font-size: 1.5rem; margin-bottom: 12px;">{{ 'NEW_REQ.MODAL_CONFIRM_TITLE' | translate }}</h3>
+        <p>{{ 'NEW_REQ.MODAL_CONFIRM_DESC' | translate }}</p>
         <div class="modal-actions" style="display: flex; gap: 12px; width: 100%;">
-          <button type="button" class="btn btn-outline" style="flex: 1; justify-content: center; padding: 12px;" (click)="chiudiModale()" [disabled]="isSubmitting">Annulla</button>
+          <button type="button" class="btn btn-outline" style="flex: 1; justify-content: center; padding: 12px;" (click)="chiudiModale()" [disabled]="isSubmitting">{{ 'NEW_REQ.BTN_CANCEL' | translate }}</button>
           <button type="button" class="btn btn-primary" style="flex: 1; justify-content: center; padding: 12px;" (click)="confermaInvio()" [disabled]="isSubmitting">
-            {{ isSubmitting ? 'Invio in corso...' : 'Conferma e Invia' }}
+            {{ isSubmitting ? ('NEW_REQ.BTN_SUBMITTING' | translate) : ('NEW_REQ.BTN_CONFIRM_SUBMIT' | translate) }}
           </button>
         </div>
       } @else {
-        <h3>✅ Richiesta Inviata!</h3>
-        <p>La tua pratica è stata salvata con successo. Lo stato attuale è: <strong>Awaiting Learning Agreement approval</strong>.</p>
+        <h3>{{ 'NEW_REQ.MODAL_SUCCESS_TITLE' | translate }}</h3>
+        <p>{{ 'NEW_REQ.MODAL_SUCCESS_DESC' | translate }} <strong>Awaiting Learning Agreement approval</strong>.</p>
         <div class="modal-actions">
-          <button type="button" class="btn btn-primary" (click)="chiudiETornaAllaLista()">Vai alle mie richieste</button>
+          <button type="button" class="btn btn-primary" (click)="chiudiETornaAllaLista()">{{ 'NEW_REQ.BTN_GO_REQUESTS' | translate }}</button>
         </div>
       }
     </div>
   </div>
 }
 
-<!-- ERROR VALIDATION MODAL -->
 @if (showErrorModal) {
   <div class="modal-overlay">
     <div class="modal">
-      <h3 style="color: var(--danger); margin-top: 0; margin-bottom: 12px; font-size: 1.5rem;">⚠️ Dati Incompleti</h3>
+      <h3 style="color: var(--danger); margin-top: 0; margin-bottom: 12px; font-size: 1.5rem;">{{ 'NEW_REQ.MODAL_ERR_TITLE' | translate }}</h3>
       <p style="color: var(--text-muted); margin-bottom: 32px; font-size: 15px; line-height: 1.6;">
-        Attenzione: Ci sono campi obbligatori vuoti! Compila i campi evidenziati in rosso prima di procedere con l'invio della richiesta.
+        {{ 'NEW_REQ.MODAL_ERR_DESC' | translate }}
       </p>
       <div class="modal-actions" style="display: flex; justify-content: center;">
         <button type="button" class="btn-primary" style="background-color: var(--danger); border: none;" (click)="showErrorModal = false">
-          Ho capito
+          {{ 'NEW_REQ.BTN_UNDERSTOOD' | translate }}
         </button>
       </div>
     </div>
   </div>
 }
 
-<!-- ALERT POPUP DI SISTEMA (TOAST) -->
 @if (mostraAlert) {
   <div class="custom-alert" [ngClass]="alertType === 'success' ? 'alert-success' : 'alert-error'">
     <div class="alert-icon">{{ alertType === 'success' ? '✅' : '❌' }}</div>

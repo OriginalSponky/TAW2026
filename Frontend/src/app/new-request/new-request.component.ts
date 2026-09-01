@@ -1,12 +1,16 @@
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+// Servizi e i18n
 import { ThemeService } from '../services/theme.service';
+import { TranslationService } from '../services/translation.service';
+import { TranslatePipe } from '../translate.pipe';
 
 @Component({
   selector: 'app-new-request',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './new-request.component.html',
   styleUrls: ['./new-request.component.css'],
 })
@@ -17,12 +21,7 @@ export class NewRequestComponent implements OnInit {
   @Output() onLogout = new EventEmitter<void>();
   @Output() onSuccess = new EventEmitter<void>();
 
-  constructor(
-    private cdr: ChangeDetectorRef,
-    public themeService: ThemeService,
-  ) {}
-
-  // Form data model
+  // Modello Form
   datiRichiesta: any = {
     academic_year: '',
     mobility_period: '',
@@ -33,7 +32,6 @@ export class NewRequestComponent implements OnInit {
   istituzioni: any[] = [];
   professori: any[] = [];
 
-  // Dynamic exams array
   esami = [
     {
       foreignCode: '',
@@ -45,7 +43,7 @@ export class NewRequestComponent implements OnInit {
     },
   ];
 
-  // UI State variables
+  // Stati UI
   menuAperto: boolean = false;
   mostraModale: boolean = false;
   richiestaCompletata: boolean = false;
@@ -55,14 +53,18 @@ export class NewRequestComponent implements OnInit {
   showErrorModal: boolean = false;
   isDragging: boolean = false;
 
-  // File PDF e gestione Errori
+  // File e Toast
   fileSelezionato: File | null = null;
   erroreSalvataggio: string = '';
-
-  // --- VARIABILI PER IL TOAST GLOBALE ---
   mostraAlert: boolean = false;
   alertType: 'success' | 'error' = 'success';
   alertMessage: string = '';
+
+  constructor(
+    private cdr: ChangeDetectorRef,
+    public themeService: ThemeService,
+    public translationService: TranslationService,
+  ) {}
 
   get iniziali(): string {
     if (!this.utente) return '';
@@ -100,7 +102,6 @@ export class NewRequestComponent implements OnInit {
     }
   }
 
-  // --- FUNZIONE PER GESTIRE IL TOAST ---
   mostraFeedback(tipo: 'success' | 'error', messaggio: string) {
     this.alertType = tipo;
     this.alertMessage = messaggio;
@@ -151,8 +152,8 @@ export class NewRequestComponent implements OnInit {
       this.datiRichiesta.institution_id &&
       this.datiRichiesta.lecturer_id
     );
-
     let areExamsValid = this.esami.length > 0;
+
     for (let i = 0; i < this.esami.length; i++) {
       const e = this.esami[i];
       if (
@@ -183,8 +184,7 @@ export class NewRequestComponent implements OnInit {
     if (this.isSubmitting) return;
 
     if (!this.fileSelezionato && !this.editRequestId) {
-      // SOSTITUITO ALERT NATIVO CON TOAST
-      this.mostraFeedback('error', 'Devi caricare il Learning Agreement prima di inviare!');
+      this.mostraFeedback('error', this.translationService.translate('NEW_REQ.ERR_MISSING_FILE'));
       this.mostraModale = false;
       return;
     }
@@ -213,14 +213,13 @@ export class NewRequestComponent implements OnInit {
         if (!res.ok) throw new Error(await res.text());
         return res.json();
       })
-      .then((data) => {
+      .then(() => {
         this.richiestaCompletata = true;
         this.cdr.detectChanges();
       })
       .catch((error) => {
         this.mostraModale = false;
         this.erroreSalvataggio = 'Errore di connessione: ' + error.message;
-        // SOSTITUITO LOG NATIVO CON TOAST
         this.mostraFeedback('error', "Errore durante l'invio della richiesta.");
         this.isSubmitting = false;
         this.cdr.detectChanges();
@@ -235,20 +234,20 @@ export class NewRequestComponent implements OnInit {
     this.mostraModale = false;
     this.richiestaCompletata = false;
     this.isSubmitting = false;
-    // Rimuoviamo il toast di successo qui, perché verrà gestito dalla home list in teoria
     this.onSuccess.emit();
   }
 
-  // --- FUNZIONI PER I DOCUMENTI ---
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (file) {
       if (file.type === 'application/pdf') {
         this.fileSelezionato = file;
-        this.mostraFeedback('success', 'File ' + file.name + ' caricato con successo!');
+        this.mostraFeedback(
+          'success',
+          this.translationService.translate('NEW_REQ.SUCCESS_UPLOAD') + ' ' + file.name,
+        );
       } else {
-        // SOSTITUITO ALERT NATIVO CON TOAST
-        this.mostraFeedback('error', 'Per favore, seleziona solo file in formato PDF.');
+        this.mostraFeedback('error', this.translationService.translate('NEW_REQ.ERR_PDF_ONLY'));
         this.fileSelezionato = null;
       }
     }
@@ -258,7 +257,7 @@ export class NewRequestComponent implements OnInit {
     window.open('/templates/LEARNING_AGREEMENT_TEMPLATE.pdf', '_blank');
   }
 
-  // --- FUNZIONI DRAG & DROP ---
+  // --- Drag & Drop ---
   onDragOver(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
@@ -281,10 +280,12 @@ export class NewRequestComponent implements OnInit {
       const file = files[0];
       if (file.type === 'application/pdf') {
         this.fileSelezionato = file;
-        this.mostraFeedback('success', 'File ' + file.name + ' acquisito con successo!');
+        this.mostraFeedback(
+          'success',
+          this.translationService.translate('NEW_REQ.SUCCESS_UPLOAD') + ' ' + file.name,
+        );
       } else {
-        // SOSTITUITO ALERT NATIVO CON TOAST
-        this.mostraFeedback('error', 'Per favore, trascina solo file in formato PDF.');
+        this.mostraFeedback('error', this.translationService.translate('NEW_REQ.ERR_PDF_ONLY'));
         this.fileSelezionato = null;
       }
     }

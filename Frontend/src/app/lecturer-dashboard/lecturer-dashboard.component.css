@@ -24,6 +24,29 @@ header {
   letter-spacing: -0.5px;
 }
 
+/* BOTTONI HEADER */
+.lang-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-main);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.lang-btn:hover {
+  background: var(--bg-color);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+
 .profile-container { position: relative; }
 
 .profile-btn {

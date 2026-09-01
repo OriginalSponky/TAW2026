@@ -162,11 +162,14 @@ export class StaffDashboardComponent implements OnInit {
           (d: any) => d.document_type === dbDocType && d.status === 'PENDING',
         );
 
+        // Traduzione dinamica della mancanza del documento
+        const fallbackText = this.translationService.translate('STAFF.NO_DOC_FOUND');
+
         this.reviewData = {
           appId: app.id,
           studentName: `🧑‍🎓 Studente: ${app.name} (Mat. ${app.matricola})`,
           actionType: actionType,
-          docName: pendingDoc ? pendingDoc.file_name : 'Nessun documento trovato',
+          docName: pendingDoc ? pendingDoc.file_name : fallbackText,
           docUrl: pendingDoc ? `http://localhost:3000${pendingDoc.file_path}` : '#',
           profName: app.teacher,
         };

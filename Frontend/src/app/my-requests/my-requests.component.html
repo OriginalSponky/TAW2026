@@ -1,7 +1,10 @@
 <header>
-  <a href="#" class="back-btn" (click)="tornaIndietro($event)">← Home</a>
+  <a href="#" class="back-btn" (click)="tornaIndietro($event)">{{ 'MY_REQ.BTN_BACK' | translate }}</a>
 
-  <div class="header-actions" style="display: flex; align-items: center; gap: 16px;">
+  <div class="header-actions">
+    <button class="lang-btn" (click)="translationService.toggleLanguage()" title="Cambia lingua">
+      {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
+    </button>
 
     <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
       {{ themeService.isDark ? '☀️' : '🌙' }}
@@ -10,34 +13,32 @@
     <div class="profile-container">
       <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
       <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
-        <a href="#">Gestisci il tuo Account</a>
-        <a href="#">Impostazioni</a>
-        <a href="#">Aiuto e feedback</a>
+        <a href="#">{{ 'HEADER.MANAGE_ACCOUNT' | translate }}</a>
+        <a href="#">{{ 'HEADER.SETTINGS' | translate }}</a>
+        <a href="#">{{ 'HEADER.HELP' | translate }}</a>
         <div class="divider"></div>
-        <a href="#" class="logout" (click)="effettuaLogout($event)">🚪 Log out</a>
+        <a href="#" class="logout" (click)="effettuaLogout($event)">{{ 'HEADER.LOGOUT' | translate }}</a>
       </div>
     </div>
   </div>
 </header>
 
 <main (click)="menuAperto = false">
-  <!-- Request List -->
+
   @if (!richiestaSelezionata) {
     <div class="header-section">
-      <h1 class="page-title">Le Mie Richieste</h1>
-      <a href="#" class="new-btn" (click)="vaiANuovaRichiesta($event)">+ Nuova Richiesta</a>
+      <h1 class="page-title">{{ 'MY_REQ.TITLE' | translate }}</h1>
+      <a href="#" class="new-btn" (click)="vaiANuovaRichiesta($event)">{{ 'MY_REQ.BTN_NEW' | translate }}</a>
     </div>
 
     <div class="requests-list">
 
-      <!-- Error Message -->
       @if (richieste.length === 0) {
-        <p style="text-align: center; color: #5f6368; margin-top: 40px;">
-          Non hai ancora effettuato nessuna richiesta di mobilità.
+        <p style="text-align: center; color: var(--text-muted); margin-top: 40px;">
+          {{ 'MY_REQ.EMPTY_MSG' | translate }}
         </p>
       }
 
-      <!-- Applications Cycling -->
       @for (richiesta of richieste; track richiesta.id) {
         <div class="request-card" [ngClass]="{
             'border-created': richiesta.status === 'CREATED',
@@ -48,83 +49,66 @@
             'border-closed': richiesta.status === 'CLOSED',
             'border-canceled': richiesta.status === 'CANCELED'
           }">
+
           <div class="card-header">
             <div class="request-info">
               <div class="university-name">{{ richiesta.institution_name }}</div>
               <div class="details">
-                <span>📅 A.A. {{ richiesta.academic_year }}</span>
+                <span>📅 {{ 'MY_REQ.ACADEMIC_YEAR' | translate }} {{ richiesta.academic_year }}</span>
                 <span>⏱️ {{ formattaPeriodo(richiesta.mobility_period) }}</span>
               </div>
-
-              <!-- Dynamicly Calculated Badge -->
               <div class="status-badge" [ngClass]="getClasseStato(richiesta.status)">
                 {{ getTestoStato(richiesta.status) }}
               </div>
             </div>
 
             <div class="actions">
-              <!-- SE NON SIAMO IN FASE DI CONFERMA PER QUESTA CARD -->
               @if (confermaEliminazioneId !== richiesta.id) {
-                <!-- Status Buttons Logic -->
-                @if (richiesta.status === 'CREATED' || richiesta.status === 'AWAITING_FOR_APPROVAL') {
-                  <button class="btn-outline btn-danger" (click)="chiediConfermaEliminazione(richiesta.id)">Elimina</button>
-                  <button class="btn-outline" (click)="apriDettaglio(richiesta.id)">Vedi Dettagli</button>
-                } @else if (richiesta.status === 'MOBILITY_IN_PROGRESS') {
-                  <button class="btn-outline" (click)="apriDettaglio(richiesta.id)">Vedi Dettagli</button>
-                } @else {
-                  <button class="btn-outline" (click)="apriDettaglio(richiesta.id)">Vedi Dettagli</button>
+
+                @if (richiesta.status === 'CREATED') {
+                  <button class="btn-outline btn-danger" (click)="chiediConfermaEliminazione(richiesta.id)">{{ 'MY_REQ.BTN_DELETE' | translate }}</button>
+                  <button class="btn-outline" (click)="apriDettaglio(richiesta.id)">{{ 'MY_REQ.BTN_EDIT_DRAFT' | translate }}</button>
                 }
+                @else if (richiesta.status === 'PRE_DEPARTURE_COMPLETED' || richiesta.status === 'MOBILITY_IN_PROGRESS' || richiesta.status === 'AWAITING_MODIFICATION_APPROVAL' || richiesta.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL') {
+                  <button class="btn-primary" (click)="modificaRichiesta(richiesta.id)">{{ 'MY_REQ.BTN_MANAGE' | translate }}</button>
+                  <button class="btn-outline" (click)="apriDettaglio(richiesta.id)">{{ 'MY_REQ.BTN_DETAILS' | translate }}</button>
+                }
+                @else {
+                  @if (richiesta.status === 'AWAITING_FOR_APPROVAL') {
+                    <button class="btn-outline btn-danger" (click)="chiediConfermaEliminazione(richiesta.id)">{{ 'MY_REQ.BTN_CANCEL' | translate }}</button>
+                  }
+                  <button class="btn-outline" (click)="apriDettaglio(richiesta.id)">{{ 'MY_REQ.BTN_DETAILS' | translate }}</button>
+                }
+
               } @else {
-                <!-- SE SIAMO IN FASE DI CONFERMA INLINE -->
                 <div class="modern-delete-bar">
                   <div class="delete-message">
                     <span class="warning-icon">⚠️</span>
-                    <span>Sei sicuro?</span>
+                    <span>{{ 'MY_REQ.ARE_YOU_SURE' | translate }}</span>
                   </div>
                   <div class="delete-actions">
                     <button class="btn-cancel-pill" (click)="annullaEliminazione()" [disabled]="isDeleting">
-                      Annulla
+                      {{ 'MY_REQ.BTN_CANCEL' | translate }}
                     </button>
                     <button class="btn-confirm-pill" (click)="confermaEliminazioneDefinitiva(richiesta.id)" [disabled]="isDeleting">
-                      {{ isDeleting ? 'Attendere...' : 'Conferma' }}
+                      {{ isDeleting ? ('MY_REQ.BTN_WAIT' | translate) : ('MY_REQ.BTN_CONFIRM' | translate) }}
                     </button>
                   </div>
                 </div>
               }
             </div>
           </div>
-
-          @if (richiesta.status === 'MOBILITY_IN_PROGRESS') {
-            <div class="edit-panel" [class.active]="pannelloAttivo === richiesta.id">
-              <h4>Proponi una modifica al Learning Agreement</h4>
-              <div class="form-group">
-                <label>Descrizione della modifica:</label>
-                <textarea placeholder="Descrivi le variazioni agli esami..."></textarea>
-              </div>
-              <div class="form-group">
-                <label>Carica Learning Agreement aggiornato (PDF):</label>
-                <input type="file" accept=".pdf" (click)="$event.stopPropagation()">
-              </div>
-              <div class="panel-actions">
-                <button class="btn-outline" (click)="togglePannello(richiesta.id)">Annulla</button>
-                <button class="btn-primary" (click)="inviaModifica()">Invia al Docente</button>
-              </div>
-            </div>
-          }
         </div>
       }
-
     </div>
   }
   @else {
-    <!-- SE LA RICHIESTA È SELEZIONATA, MOSTRA IL DETTAGLIO -->
     <app-request-detail
       [requestId]="richiestaSelezionata"
       (onBack)="chiudiDettaglio()">
     </app-request-detail>
   }
 
-  <!-- ALERT POPUP DI SISTEMA (TOAST) -->
   @if (mostraAlert) {
     <div class="custom-alert" [ngClass]="alertType === 'success' ? 'alert-success' : 'alert-error'">
       <div class="alert-icon">{{ alertType === 'success' ? '✅' : '❌' }}</div>

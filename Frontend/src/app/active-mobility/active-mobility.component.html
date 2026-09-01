@@ -1,16 +1,20 @@
 <header>
-  <a href="#" class="back-btn" (click)="tornaIndietro($event)">← Torna alla Home</a>
+  <a href="#" class="back-btn" (click)="tornaIndietro($event)">{{ 'ACTIVE_MOBILITY.BTN_BACK' | translate }}</a>
   <div class="header-actions">
+    <button class="lang-btn" (click)="translationService.toggleLanguage()" title="Cambia lingua">
+      {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
+    </button>
     <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
       {{ themeService.isDark ? '☀️' : '🌙' }}
     </button>
     <div class="profile-container">
       <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
       <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
-        <a href="#">Il mio profilo</a>
-        <a href="#">Impostazioni</a>
+        <a href="#">{{ 'HEADER.MANAGE_ACCOUNT' | translate }}</a>
+        <a href="#">{{ 'HEADER.SETTINGS' | translate }}</a>
+        <a href="#">{{ 'HEADER.HELP' | translate }}</a>
         <div class="divider"></div>
-        <a href="#" class="logout" (click)="effettuaLogout($event)">🚪 Log out</a>
+        <a href="#" class="logout" (click)="effettuaLogout($event)">{{ 'HEADER.LOGOUT' | translate }}</a>
       </div>
     </div>
   </div>
@@ -18,22 +22,22 @@
 
 <main>
   <div style="text-align: center; margin-bottom: 40px;">
-    <h1 class="page-title">✈️ Il Mio Erasmus</h1>
-    <p class="page-subtitle">Gestisci la tua mobilità e verifica lo stato delle tue proposte.</p>
+    <h1 class="page-title">{{ 'ACTIVE_MOBILITY.TITLE' | translate }}</h1>
+    <p class="page-subtitle">{{ 'ACTIVE_MOBILITY.SUBTITLE' | translate }}</p>
   </div>
 
   <div class="boxes-container">
     <div class="home-box" [class.box-active]="activeView === 'activeMobility'" (click)="cambiaVista('activeMobility')">
       <div class="box-icon">🌍</div>
-      <h2>Gestione Mobilità</h2>
-      <p>Inserisci date, proponi modifiche al Learning Agreement o carica il Transcript finale.</p>
+      <h2>{{ 'ACTIVE_MOBILITY.BOX_MANAGE_TITLE' | translate }}</h2>
+      <p>{{ 'ACTIVE_MOBILITY.BOX_MANAGE_DESC' | translate }}</p>
     </div>
     <div class="home-box" [class.box-active]="activeView === 'modifications'" (click)="cambiaVista('modifications')">
       <div class="box-icon">📋</div>
-      <h2>Stato Modifiche</h2>
-      <p>Controlla se il docente ha accettato o rifiutato le tue variazioni e i tuoi voti.</p>
+      <h2>{{ 'ACTIVE_MOBILITY.BOX_STATUS_TITLE' | translate }}</h2>
+      <p>{{ 'ACTIVE_MOBILITY.BOX_STATUS_DESC' | translate }}</p>
       @if (hasNotifiche) {
-        <div class="badge-count">1 Notifica</div>
+        <div class="badge-count">1 {{ 'ACTIVE_MOBILITY.NOTIFICATION' | translate }}</div>
       }
     </div>
   </div>
@@ -42,7 +46,7 @@
 
     @if (richiesteAttive.length === 0) {
       <div style="text-align: center; padding: 40px; color: var(--text-muted); background: var(--surface); border-radius: var(--radius-xl); border: 1px solid var(--border);">
-        <p style="font-size: 18px; font-weight: 600;">Non hai mobilità attive da gestire in questo momento.</p>
+        <p style="font-size: 18px; font-weight: 600;">{{ 'ACTIVE_MOBILITY.EMPTY_MSG' | translate }}</p>
       </div>
     }
 
@@ -62,7 +66,7 @@
               {{ app.institution_name }} @if (app.country) { ({{ app.country }}) }
             </h2>
             <p style="font-size: 15px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
-              📅 A.A. {{ app.academic_year }} • ⏱️ {{ app.mobility_period }}
+              📅 {{ 'ACTIVE_MOBILITY.ACADEMIC_YEAR' | translate }} {{ app.academic_year }} • ⏱️ {{ app.mobility_period }}
             </p>
           </div>
           <div class="status-badge" [ngClass]="{
@@ -80,23 +84,23 @@
 
         @if (app.status === 'PRE_DEPARTURE_COMPLETED') {
           <div class="highlight-box">
-            <h3 style="color: var(--warning); margin-bottom: 12px;">L'Ufficio ha approvato la partenza!</h3>
-            <p style="font-size: 14px; margin-bottom: 16px;">Per avviare ufficialmente la tua mobilità, inserisci le date effettive del soggiorno e conferma.</p>
+            <h3 style="color: var(--warning); margin-bottom: 12px;">{{ 'ACTIVE_MOBILITY.OFFICE_APPROVED' | translate }}</h3>
+            <p style="font-size: 14px; margin-bottom: 16px;">{{ 'ACTIVE_MOBILITY.OFFICE_APPROVED_DESC' | translate }}</p>
 
             <div class="form-grid">
               <div class="form-group">
-                <label>Data di Arrivo:</label>
+                <label>{{ 'ACTIVE_MOBILITY.ARRIVAL_DATE' | translate }}</label>
                 <input type="date" [(ngModel)]="app.arrival_date">
               </div>
               <div class="form-group">
-                <label>Data di Partenza:</label>
+                <label>{{ 'ACTIVE_MOBILITY.DEPARTURE_DATE' | translate }}</label>
                 <input type="date" [(ngModel)]="app.departure_date">
               </div>
             </div>
 
             <div class="actions right">
-              <button class="btn-danger-outline" (click)="apriModaleConferma('reject_mobility', app)">❌ Rinuncia</button>
-              <button class="btn-primary" (click)="apriModaleConferma('start_mobility', app)">✅ Avvia Erasmus</button>
+              <button class="btn-danger-outline" (click)="apriModaleConferma('reject_mobility', app)">{{ 'ACTIVE_MOBILITY.BTN_REJECT' | translate }}</button>
+              <button class="btn-primary" (click)="apriModaleConferma('start_mobility', app)">{{ 'ACTIVE_MOBILITY.BTN_START' | translate }}</button>
             </div>
           </div>
         }
@@ -104,47 +108,47 @@
         @if (app.status === 'MOBILITY_IN_PROGRESS' || app.status === 'AWAITING_MODIFICATION_APPROVAL' || app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL') {
           <div class="actions" style="border-top: 1px solid var(--border); padding-top: 24px;">
             <p style="width: 100%; font-size: 15px; color: var(--primary); font-weight: 600; margin-bottom: 12px; margin-top: 0;">
-              Erasmus Attivo! Cosa devi gestire?
+              {{ 'ACTIVE_MOBILITY.WHAT_TO_MANAGE' | translate }}
             </p>
-            <button class="btn-outline" [class.btn-active]="app.activePanel === 'dates'" (click)="togglePanel(app, 'dates')">📅 Modifica Date</button>
-            <button class="btn-outline" [class.btn-active]="app.activePanel === 'la'" (click)="togglePanel(app, 'la')">📝 Proponi Modifica L.A.</button>
-            <button class="btn-success" [class.btn-active]="app.activePanel === 'tor'" (click)="togglePanel(app, 'tor')">🎓 Chiudi Erasmus (Carica ToR)</button>
+            <button class="btn-outline" [class.btn-active]="app.activePanel === 'dates'" (click)="togglePanel(app, 'dates')">{{ 'ACTIVE_MOBILITY.BTN_EDIT_DATES' | translate }}</button>
+            <button class="btn-outline" [class.btn-active]="app.activePanel === 'la'" (click)="togglePanel(app, 'la')">{{ 'ACTIVE_MOBILITY.BTN_PROPOSE_LA' | translate }}</button>
+            <button class="btn-success" [class.btn-active]="app.activePanel === 'tor'" (click)="togglePanel(app, 'tor')">{{ 'ACTIVE_MOBILITY.BTN_CLOSE_ERASMUS' | translate }}</button>
           </div>
 
           @if (app.activePanel === 'la') {
             <div class="collapsible-panel">
               <div class="form-group full-width" style="margin-bottom: 24px;">
                 <label style="font-weight: 600; display: flex; align-items: center; gap: 6px;">
-                  💬 Motivo della variazione (Obbligatorio per il docente):
+                  {{ 'ACTIVE_MOBILITY.LA_REASON' | translate }}
                 </label>
-                <textarea rows="3" [(ngModel)]="app.motivoVariazioneLA" placeholder="Es. Il corso X si sovrappone al corso Y o ci sono variazioni nel piano di studi..." style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: 14px; background-color: var(--bg-color); outline: none;"></textarea>
+                <textarea rows="3" [(ngModel)]="app.motivoVariazioneLA" [placeholder]="'ACTIVE_MOBILITY.LA_REASON_PLACE' | translate" style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: 14px; background-color: var(--bg-color); outline: none;"></textarea>
               </div>
 
               @for (esame of app.nuoviEsamiLA; track $index) {
                 <div class="exam-row" style="position: relative;">
-                  <button type="button" class="remove-exam-btn" (click)="rimuoviEsameLA(app, $index)">❌ Rimuovi Insegnamento</button>
-                  <h4 style="color: var(--primary); margin-top: 0;">Nuova Mappatura #{{ $index + 1 }}</h4>
+                  <button type="button" class="remove-exam-btn" (click)="rimuoviEsameLA(app, $index)">{{ 'ACTIVE_MOBILITY.REMOVE_EXAM' | translate }}</button>
+                  <h4 style="color: var(--primary); margin-top: 0;">{{ 'ACTIVE_MOBILITY.NEW_MAPPING' | translate }} #{{ $index + 1 }}</h4>
 
-                  <label class="section-label">✈️ Corso Estero</label>
+                  <label class="section-label">{{ 'ACTIVE_MOBILITY.FOREIGN_COURSE' | translate }}</label>
                   <div class="exam-details-grid">
-                    <div class="form-group"><label>Codice</label><input type="text" [(ngModel)]="esame.foreignCode"></div>
-                    <div class="form-group" style="grid-column: span 2;"><label>Nome</label><input type="text" [(ngModel)]="esame.foreignName"></div>
-                    <div class="form-group"><label>CFU</label><input type="number" [(ngModel)]="esame.foreignCredits"></div>
+                    <div class="form-group"><label>{{ 'ACTIVE_MOBILITY.CODE' | translate }}</label><input type="text" [(ngModel)]="esame.foreignCode"></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>{{ 'ACTIVE_MOBILITY.NAME' | translate }}</label><input type="text" [(ngModel)]="esame.foreignName"></div>
+                    <div class="form-group"><label>{{ 'ACTIVE_MOBILITY.CREDITS' | translate }}</label><input type="number" [(ngModel)]="esame.foreignCredits"></div>
                   </div>
 
-                  <label class="section-label" style="margin-top: 16px;">🏛️ Equivalente Ca' Foscari</label>
+                  <label class="section-label" style="margin-top: 16px;">{{ 'ACTIVE_MOBILITY.UNIVE_COURSE' | translate }}</label>
                   <div class="exam-details-grid">
-                    <div class="form-group"><label>Codice</label><input type="text" [(ngModel)]="esame.localCode"></div>
-                    <div class="form-group" style="grid-column: span 2;"><label>Nome</label><input type="text" [(ngModel)]="esame.localName"></div>
-                    <div class="form-group"><label>CFU</label><input type="number" [(ngModel)]="esame.localCredits"></div>
+                    <div class="form-group"><label>{{ 'ACTIVE_MOBILITY.CODE' | translate }}</label><input type="text" [(ngModel)]="esame.localCode"></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>{{ 'ACTIVE_MOBILITY.NAME' | translate }}</label><input type="text" [(ngModel)]="esame.localName"></div>
+                    <div class="form-group"><label>{{ 'ACTIVE_MOBILITY.CREDITS' | translate }}</label><input type="number" [(ngModel)]="esame.localCredits"></div>
                   </div>
                 </div>
               }
 
-              <button class="btn-outline" style="margin-bottom: 24px;" (click)="aggiungiEsameLA(app)">+ Aggiungi Insegnamento</button>
+              <button class="btn-outline" style="margin-bottom: 24px;" (click)="aggiungiEsameLA(app)">{{ 'ACTIVE_MOBILITY.ADD_EXAM' | translate }}</button>
 
               <div class="form-group full-width">
-                <label style="font-weight: 600; display: block; margin-bottom: 8px;">📄 Carica il nuovo L.A. firmato (PDF):</label>
+                <label style="font-weight: 600; display: block; margin-bottom: 8px;">{{ 'ACTIVE_MOBILITY.UPLOAD_NEW_LA' | translate }}</label>
 
                 <div class="drag-drop-zone" (click)="triggerFileInput('fileLA-' + app.id)">
                   <input type="file" id="fileLA-{{app.id}}" accept=".pdf" style="display: none;" (change)="onFileLASelected($event, app)">
@@ -154,10 +158,10 @@
                       <span style="font-size: 24px;">📥</span>
                     </div>
                     @if (!app.fileLA) {
-                      <h4 style="margin: 4px 0; color: var(--primary); font-size: 16px;">Trascina qui il tuo PDF o clicca per caricarlo</h4>
-                      <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Formato accettato: .PDF</p>
+                      <h4 style="margin: 4px 0; color: var(--primary); font-size: 16px;">{{ 'ACTIVE_MOBILITY.DRAG_PDF' | translate }}</h4>
+                      <p style="margin: 0; color: var(--text-muted); font-size: 13px;">{{ 'ACTIVE_MOBILITY.FORMAT_PDF' | translate }}</p>
                     } @else {
-                      <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">✅ File Acquisito!</h4>
+                      <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">{{ 'ACTIVE_MOBILITY.ACQUIRED' | translate }}</h4>
                       <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 14px;">{{ app.fileLA.name }}</p>
                     }
                   </div>
@@ -165,74 +169,74 @@
               </div>
 
               <div class="actions right">
-                <button class="btn-outline" (click)="togglePanel(app, 'la')">Annulla</button>
-                <button class="btn-primary" (click)="apriModaleConferma('submit_la', app)">Invia Proposta</button>
+                <button class="btn-outline" (click)="togglePanel(app, 'la')">{{ 'ACTIVE_MOBILITY.BTN_CANCEL' | translate }}</button>
+                <button class="btn-primary" (click)="apriModaleConferma('submit_la', app)">{{ 'ACTIVE_MOBILITY.BTN_SEND_PROPOSAL' | translate }}</button>
               </div>
             </div>
           }
 
           @if (app.activePanel === 'dates') {
             <div class="collapsible-panel">
-              <h3 style="color: var(--primary); margin-top: 0;">📅 Aggiorna le tue Date</h3>
-              <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">Se i tuoi piani sono cambiati, puoi aggiornare le date di arrivo e partenza.</p>
+              <h3 style="color: var(--primary); margin-top: 0;">{{ 'ACTIVE_MOBILITY.UPDATE_DATES_TITLE' | translate }}</h3>
+              <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">{{ 'ACTIVE_MOBILITY.UPDATE_DATES_DESC' | translate }}</p>
 
               <div class="form-grid">
                 <div class="form-group">
-                  <label>Nuova Data di Arrivo:</label>
+                  <label>{{ 'ACTIVE_MOBILITY.NEW_ARRIVAL' | translate }}</label>
                   <input type="date" [(ngModel)]="app.arrival_date">
                 </div>
                 <div class="form-group">
-                  <label>Nuova Data di Partenza:</label>
+                  <label>{{ 'ACTIVE_MOBILITY.NEW_DEPARTURE' | translate }}</label>
                   <input type="date" [(ngModel)]="app.departure_date">
                 </div>
               </div>
 
               <div class="actions right" style="margin-top: 24px;">
-                <button class="btn-outline" (click)="togglePanel(app, 'dates')">Annulla</button>
-                <button class="btn-primary" (click)="apriModaleConferma('update_dates', app)">Salva Nuove Date</button>
+                <button class="btn-outline" (click)="togglePanel(app, 'dates')">{{ 'ACTIVE_MOBILITY.BTN_CANCEL' | translate }}</button>
+                <button class="btn-primary" (click)="apriModaleConferma('update_dates', app)">{{ 'ACTIVE_MOBILITY.BTN_SAVE_DATES' | translate }}</button>
               </div>
             </div>
           }
 
           @if (app.activePanel === 'tor') {
             <div class="collapsible-panel" style="border: 2px solid var(--success);">
-              <h3 style="color: var(--success); margin-top: 0;">🎓 Caricamento Voti Finali</h3>
-              <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">Inserisci i voti esatti riportati nel documento ufficiale della tua università ospitante.</p>
+              <h3 style="color: var(--success); margin-top: 0;">{{ 'ACTIVE_MOBILITY.TOR_TITLE' | translate }}</h3>
+              <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">{{ 'ACTIVE_MOBILITY.TOR_DESC' | translate }}</p>
 
               @for (esame of app.esamiToR; track $index) {
                 <div class="exam-row" style="border-color: var(--success); position: relative;">
-                  <button type="button" class="remove-exam-btn" (click)="rimuoviEsameToR(app, $index)">❌ Rimuovi Esame</button>
-                  <h4 style="color: var(--success); margin-top: 0;">Esame Sostenuto #{{ $index + 1 }}</h4>
+                  <button type="button" class="remove-exam-btn" (click)="rimuoviEsameToR(app, $index)">{{ 'ACTIVE_MOBILITY.REMOVE_EXAM' | translate }}</button>
+                  <h4 style="color: var(--success); margin-top: 0;">{{ 'ACTIVE_MOBILITY.TAKEN_EXAM' | translate }} #{{ $index + 1 }}</h4>
 
-                  <label class="section-label">✈️ Corso Estero</label>
+                  <label class="section-label">{{ 'ACTIVE_MOBILITY.FOREIGN_COURSE' | translate }}</label>
                   <div class="exam-details-grid">
-                    <div class="form-group"><label>Codice</label><input type="text" [(ngModel)]="esame.foreignCode"></div>
-                    <div class="form-group" style="grid-column: span 2;"><label>Nome</label><input type="text" [(ngModel)]="esame.foreignName"></div>
-                    <div class="form-group"><label>CFU</label><input type="number" [(ngModel)]="esame.foreignCredits"></div>
+                    <div class="form-group"><label>{{ 'ACTIVE_MOBILITY.CODE' | translate }}</label><input type="text" [(ngModel)]="esame.foreignCode"></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>{{ 'ACTIVE_MOBILITY.NAME' | translate }}</label><input type="text" [(ngModel)]="esame.foreignName"></div>
+                    <div class="form-group"><label>{{ 'ACTIVE_MOBILITY.CREDITS' | translate }}</label><input type="number" [(ngModel)]="esame.foreignCredits"></div>
                   </div>
 
-                  <label class="section-label" style="margin-top: 16px;">🏛️ Equivalente Ca' Foscari</label>
+                  <label class="section-label" style="margin-top: 16px;">{{ 'ACTIVE_MOBILITY.UNIVE_COURSE' | translate }}</label>
                   <div class="exam-details-grid">
-                    <div class="form-group"><label>Codice</label><input type="text" [(ngModel)]="esame.localCode"></div>
-                    <div class="form-group" style="grid-column: span 2;"><label>Nome</label><input type="text" [(ngModel)]="esame.localName"></div>
-                    <div class="form-group"><label>CFU</label><input type="number" [(ngModel)]="esame.localCredits"></div>
+                    <div class="form-group"><label>{{ 'ACTIVE_MOBILITY.CODE' | translate }}</label><input type="text" [(ngModel)]="esame.localCode"></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>{{ 'ACTIVE_MOBILITY.NAME' | translate }}</label><input type="text" [(ngModel)]="esame.localName"></div>
+                    <div class="form-group"><label>{{ 'ACTIVE_MOBILITY.CREDITS' | translate }}</label><input type="number" [(ngModel)]="esame.localCredits"></div>
                   </div>
 
                   <div class="form-grid" style="margin-top: 16px; border-top: 1px dashed var(--border); padding-top: 16px;">
-                    <div class="form-group"><label>🏆 Voto Ottenuto (Score):</label>
+                    <div class="form-group"><label>{{ 'ACTIVE_MOBILITY.FINAL_SCORE' | translate }}</label>
                       <input type="text" [(ngModel)]="esame.score" placeholder="Es. 30, A, B+...">
                     </div>
-                    <div class="form-group"><label>📅 Data Esame:</label>
+                    <div class="form-group"><label>{{ 'ACTIVE_MOBILITY.EXAM_DATE' | translate }}</label>
                       <input type="date" [(ngModel)]="esame.date">
                     </div>
                   </div>
                 </div>
               }
 
-              <button class="btn-outline" style="margin-bottom: 24px; color: var(--success); border-color: var(--success);" (click)="aggiungiEsameToR(app)">+ Aggiungi Esame Sostenuto</button>
+              <button class="btn-outline" style="margin-bottom: 24px; color: var(--success); border-color: var(--success);" (click)="aggiungiEsameToR(app)">{{ 'ACTIVE_MOBILITY.ADD_TAKEN_EXAM' | translate }}</button>
 
               <div class="form-group full-width">
-                <label style="font-weight: 600; display: block; margin-bottom: 8px;">📄 Carica il Transcript of Records originale (PDF):</label>
+                <label style="font-weight: 600; display: block; margin-bottom: 8px;">{{ 'ACTIVE_MOBILITY.UPLOAD_TOR' | translate }}</label>
 
                 <div class="drag-drop-zone" style="border-color: var(--success);" (click)="triggerFileInput('fileToR-' + app.id)">
                   <input type="file" id="fileToR-{{app.id}}" accept=".pdf" style="display: none;" (change)="onFileToRSelected($event, app)">
@@ -242,10 +246,10 @@
                       <span style="font-size: 24px;">📥</span>
                     </div>
                     @if (!app.fileToR) {
-                      <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">Trascina qui il tuo ToR o clicca per caricarlo</h4>
-                      <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Formato accettato: .PDF</p>
+                      <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">{{ 'ACTIVE_MOBILITY.DRAG_PDF' | translate }}</h4>
+                      <p style="margin: 0; color: var(--text-muted); font-size: 13px;">{{ 'ACTIVE_MOBILITY.FORMAT_PDF' | translate }}</p>
                     } @else {
-                      <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">✅ File Acquisito!</h4>
+                      <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">{{ 'ACTIVE_MOBILITY.ACQUIRED' | translate }}</h4>
                       <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 14px;">{{ app.fileToR.name }}</p>
                     }
                   </div>
@@ -253,42 +257,42 @@
               </div>
 
               <div class="actions right">
-                <button class="btn-outline" (click)="togglePanel(app, 'tor')">Annulla</button>
-                <button class="btn-success" (click)="apriModaleConferma('submit_tor', app)">Invia Voti Ufficiali</button>
+                <button class="btn-outline" (click)="togglePanel(app, 'tor')">{{ 'ACTIVE_MOBILITY.BTN_CANCEL' | translate }}</button>
+                <button class="btn-success" (click)="apriModaleConferma('submit_tor', app)">{{ 'ACTIVE_MOBILITY.BTN_SEND_VOTES' | translate }}</button>
               </div>
             </div>
           }
 
           @if (app.activePanel === 'correction') {
             <div class="collapsible-panel" style="border: 2px solid var(--danger); border-radius: 8px; padding: 24px;">
-              <h3 style="color: var(--danger); margin-top: 0; font-size: 1.25rem;">⚠️ Correggi i Dati Rifiutati</h3>
-              <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">Modifica gli esami o i dati richiesti e carica il nuovo documento corretto.</p>
+              <h3 style="color: var(--danger); margin-top: 0; font-size: 1.25rem;">{{ 'ACTIVE_MOBILITY.CORRECTION_TITLE' | translate }}</h3>
+              <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 14px;">{{ 'ACTIVE_MOBILITY.CORRECTION_DESC' | translate }}</p>
 
               @for (esame of app.nuoviEsamiLA; track $index) {
                 <div class="exam-row" style="border: 1px solid var(--border); padding: 20px; border-radius: 6px; position: relative;">
-                  <button type="button" class="remove-exam-btn" (click)="rimuoviEsameLA(app, $index)">❌ Rimuovi Esame</button>
+                  <button type="button" class="remove-exam-btn" (click)="rimuoviEsameLA(app, $index)">{{ 'ACTIVE_MOBILITY.REMOVE_EXAM' | translate }}</button>
                   <h4 style="color: var(--danger); margin-top: 0; margin-bottom: 16px; font-size: 1.1rem;">Esame #{{ $index + 1 }}</h4>
 
-                  <label class="section-label" style="color: var(--primary); font-weight: 600; font-size: 11px;">✈️ CORSO ESTERO</label>
+                  <label class="section-label" style="color: var(--primary); font-weight: 600; font-size: 11px;">{{ 'ACTIVE_MOBILITY.FOREIGN_COURSE' | translate }}</label>
                   <div class="exam-details-grid">
-                    <div class="form-group"><label>Codice</label><input type="text" [(ngModel)]="esame.foreignCode"></div>
-                    <div class="form-group" style="grid-column: span 2;"><label>Nome</label><input type="text" [(ngModel)]="esame.foreignName"></div>
-                    <div class="form-group"><label>CFU</label><input type="number" [(ngModel)]="esame.foreignCredits"></div>
+                    <div class="form-group"><label>{{ 'ACTIVE_MOBILITY.CODE' | translate }}</label><input type="text" [(ngModel)]="esame.foreignCode"></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>{{ 'ACTIVE_MOBILITY.NAME' | translate }}</label><input type="text" [(ngModel)]="esame.foreignName"></div>
+                    <div class="form-group"><label>{{ 'ACTIVE_MOBILITY.CREDITS' | translate }}</label><input type="number" [(ngModel)]="esame.foreignCredits"></div>
                   </div>
 
-                  <label class="section-label" style="color: var(--text-muted); font-weight: 600; font-size: 11px; margin-top: 20px;">🏛️ EQUIVALENTE CA' FOSCARI</label>
+                  <label class="section-label" style="color: var(--text-muted); font-weight: 600; font-size: 11px; margin-top: 20px;">{{ 'ACTIVE_MOBILITY.UNIVE_COURSE' | translate }}</label>
                   <div class="exam-details-grid">
-                    <div class="form-group"><label>Codice</label><input type="text" [(ngModel)]="esame.localCode"></div>
-                    <div class="form-group" style="grid-column: span 2;"><label>Nome</label><input type="text" [(ngModel)]="esame.localName"></div>
-                    <div class="form-group"><label>CFU</label><input type="number" [(ngModel)]="esame.localCredits"></div>
+                    <div class="form-group"><label>{{ 'ACTIVE_MOBILITY.CODE' | translate }}</label><input type="text" [(ngModel)]="esame.localCode"></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>{{ 'ACTIVE_MOBILITY.NAME' | translate }}</label><input type="text" [(ngModel)]="esame.localName"></div>
+                    <div class="form-group"><label>{{ 'ACTIVE_MOBILITY.CREDITS' | translate }}</label><input type="number" [(ngModel)]="esame.localCredits"></div>
                   </div>
                 </div>
               }
 
-              <button class="btn-outline" style="color: var(--primary); border-color: var(--primary); margin-bottom: 24px;" (click)="aggiungiEsameLA(app)">+ Aggiungi Insegnamento</button>
+              <button class="btn-outline" style="color: var(--primary); border-color: var(--primary); margin-bottom: 24px;" (click)="aggiungiEsameLA(app)">{{ 'ACTIVE_MOBILITY.ADD_EXAM' | translate }}</button>
 
               <div class="form-group full-width" style="margin-bottom: 32px;">
-                <label style="color: var(--text-main); font-weight: 500; font-size: 14px; display: block; margin-bottom: 8px;">📄 Carica il Documento Corretto (PDF):</label>
+                <label style="color: var(--text-main); font-weight: 500; font-size: 14px; display: block; margin-bottom: 8px;">{{ 'ACTIVE_MOBILITY.UPLOAD_CORRECTED' | translate }}</label>
 
                 <div class="drag-drop-zone" style="border-color: var(--danger);" (click)="triggerFileInput('fileCorr-' + app.id)">
                   <input type="file" id="fileCorr-{{app.id}}" accept=".pdf" style="display: none;" (change)="onFileCorrectionSelected($event, app)">
@@ -298,10 +302,10 @@
                       <span style="font-size: 24px;">📥</span>
                     </div>
                     @if (!app.fileCorrection) {
-                      <h4 style="margin: 4px 0; color: var(--danger); font-size: 16px;">Trascina qui il PDF corretto o clicca</h4>
-                      <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Formato accettato: .PDF</p>
+                      <h4 style="margin: 4px 0; color: var(--danger); font-size: 16px;">{{ 'ACTIVE_MOBILITY.DRAG_PDF' | translate }}</h4>
+                      <p style="margin: 0; color: var(--text-muted); font-size: 13px;">{{ 'ACTIVE_MOBILITY.FORMAT_PDF' | translate }}</p>
                     } @else {
-                      <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">✅ File Acquisito!</h4>
+                      <h4 style="margin: 4px 0; color: var(--success); font-size: 16px;">{{ 'ACTIVE_MOBILITY.ACQUIRED' | translate }}</h4>
                       <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 14px;">{{ app.fileCorrection.name }}</p>
                     }
                   </div>
@@ -309,11 +313,33 @@
               </div>
 
               <div class="actions right" style="border-top: 1px solid var(--border); padding-top: 20px;">
-                <button class="btn-outline" (click)="togglePanel(app, 'correction')">Annulla</button>
-                <button class="btn-primary" (click)="apriModaleConferma('resubmit_modification', app)">Invia Nuova Revisione</button>
+                <button class="btn-outline" (click)="togglePanel(app, 'correction')">{{ 'ACTIVE_MOBILITY.BTN_CANCEL' | translate }}</button>
+                <button class="btn-primary" (click)="apriModaleConferma('resubmit_modification', app)">{{ 'ACTIVE_MOBILITY.BTN_RESUBMIT' | translate }}</button>
               </div>
             </div>
           }
+        }
+
+        @if (app.status === 'CLOSED' && app.exams && app.exams.length > 0) {
+          <div style="border-top: 1px solid var(--border); padding-top: 24px; margin-top: 24px;">
+            <h3 style="color: var(--success); margin-top: 0; font-size: 1.15rem; margin-bottom: 16px;">
+              {{ 'ACTIVE_MOBILITY.VALIDATED_EXAMS' | translate }}
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              @for (esame of app.exams; track esame.id) {
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px; background: var(--bg-color); border: 1px solid var(--border); border-radius: var(--radius-md);">
+                  <div>
+                    <strong style="color: var(--text-main); display: block; font-size: 14px;">✈️ {{ esame.foreign_course_name }} ({{ esame.foreign_course_credits }} CFU)</strong>
+                    <span style="font-size: 13px; color: var(--text-muted);">🏛️ Ca' Foscari: {{ esame.unive_course_title }} ({{ esame.unive_course_credits }} CFU)</span>
+                  </div>
+                  <div style="text-align: right; background: var(--surface); padding: 6px 14px; border-radius: var(--radius-md); border: 1px solid var(--success);">
+                    <span style="font-size: 10px; font-weight: 700; color: var(--success); display: block; text-transform: uppercase;">{{ 'ACTIVE_MOBILITY.SCORE' | translate }}</span>
+                    <strong style="font-size: 15px; color: var(--success);">{{ esame.score_obtained || ('ACTIVE_MOBILITY.APPROVED' | translate) }}</strong>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
         }
       </div>
     }
@@ -323,12 +349,12 @@
     <div class="card">
       <div class="card-header-flex" style="border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; position: relative;">
         <h2 style="font-size: 1.25rem; display: flex; align-items: center; gap: 8px; margin: 0;">
-          <span style="font-size: 1.2rem;">📄</span> Cronologia dei File Inviati
+          {{ 'ACTIVE_MOBILITY.HISTORY_TITLE' | translate }}
         </h2>
 
         <div style="position: relative;">
           <button class="history-uni-btn" (click)="toggleHistoryDropdown($event)">
-            🏛️ {{ selectedHistoryApp?.institution_name || 'Nessuna mobilità' }}
+            🏛️ {{ selectedHistoryApp?.institution_name || ('ACTIVE_MOBILITY.NO_MOBILITY' | translate) }}
             <span style="font-size: 10px; margin-left: 6px;">▼</span>
           </button>
 
@@ -351,7 +377,7 @@
                     {{ doc.document_type === 'LEARNING_AGREEMENT' ? 'Learning Agreement' : 'Transcript of Records' }}
                   </strong>
                   <span style="font-size: 13px; color: var(--text-muted);">
-                    {{ doc.file_name }} • Caricato il: {{ doc.upload_date | date:'dd/MM/yyyy HH:mm' }}
+                    {{ doc.file_name }} • {{ doc.upload_date | date:'dd/MM/yyyy HH:mm' }}
                   </span>
                 </div>
 
@@ -360,23 +386,23 @@
                   'badge-danger': doc.status === 'REJECTED',
                   'status-closed': doc.status === 'APPROVED'
                 }">
-                  {{ doc.status === 'PENDING' ? 'IN ATTESA' : (doc.status === 'APPROVED' ? 'APPROVATO' : 'RIFIUTATO') }}
+                  {{ doc.status === 'PENDING' ? ('ACTIVE_MOBILITY.WAITING' | translate) : (doc.status === 'APPROVED' ? ('ACTIVE_MOBILITY.APPROVED' | translate) : ('ACTIVE_MOBILITY.REJECTED' | translate)) }}
                 </div>
               </div>
 
               @if (doc.status === 'REJECTED') {
                 <div style="padding: 20px; background-color: var(--danger-light); border-top: 1px solid var(--danger);">
-                  <strong style="color: var(--danger); font-size: 14px; display: block; margin-bottom: 8px;">⚠️ Motivazione del Rifiuto:</strong>
+                  <strong style="color: var(--danger); font-size: 14px; display: block; margin-bottom: 8px;">{{ 'ACTIVE_MOBILITY.REJECT_MOTIVATION' | translate }}</strong>
                   <p style="margin: 0 0 16px 0; font-size: 14px; color: var(--danger); font-weight: 500;">
                     "{{ doc.rejection_reason }}"
                   </p>
 
                   @if (!hasPendingModifications(selectedHistoryApp)) {
                     <button class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px;" (click)="apriCorrezione(selectedHistoryApp)">
-                      <span>✏️</span> Modifica e Reinvia
+                      {{ 'ACTIVE_MOBILITY.BTN_EDIT_RESUBMIT' | translate }}
                     </button>
                   } @else {
-                    <p style="margin:0; font-size: 13px; color: var(--text-muted); font-weight: 500;"><em>⏳ Hai già inviato una nuova revisione, attendi l'esito.</em></p>
+                    <p style="margin:0; font-size: 13px; color: var(--text-muted); font-weight: 500;"><em>{{ 'ACTIVE_MOBILITY.WAIT_OUTCOME' | translate }}</em></p>
                   }
                 </div>
               }
@@ -385,7 +411,7 @@
         </div>
       } @else {
         <div style="text-align: center; padding: 40px; color: var(--text-muted);">
-          <p>Nessun documento caricato per questa mobilità al momento.</p>
+          <p>{{ 'ACTIVE_MOBILITY.NO_DOCS' | translate }}</p>
         </div>
       }
     </div>
@@ -393,23 +419,23 @@
 </main>
 
 @if (mostraModale) {
-  <div class="modal-overlay">
-    <div class="modal">
+  <div class="modal-overlay" (click)="chiudiModale()">
+    <div class="modal" (click)="$event.stopPropagation()">
       <h3 style="font-size: 40px; margin-bottom: 12px;">{{ modalConfig.icon }}</h3>
-      <h3>{{ modalConfig.title }}</h3>
-      <p>{{ modalConfig.text }}</p>
+      <h3>{{ modalConfig.titleKey | translate }}</h3>
+      <p>{{ modalConfig.textKey | translate }}</p>
 
       @if (modalConfig.action === 'reject_mobility') {
         <div class="form-group" style="text-align: left; margin-bottom: 24px;">
-          <label>Motivo della rinuncia:</label>
-          <textarea rows="3" [(ngModel)]="motivoRinuncia" placeholder="Specifica il motivo per l'Ufficio..."></textarea>
+          <label>{{ 'ACTIVE_MOBILITY.REJECT_MOTIVATION_LABEL' | translate }}</label>
+          <textarea rows="3" [(ngModel)]="motivoRinuncia" [placeholder]="'ACTIVE_MOBILITY.REJECT_MOTIVATION_PLACEHOLDER' | translate"></textarea>
         </div>
       }
 
       <div class="modal-actions">
-        <button class="btn-outline" (click)="chiudiModale()" [disabled]="isSubmitting">Annulla</button>
+        <button class="btn-outline" (click)="chiudiModale()" [disabled]="isSubmitting">{{ 'ACTIVE_MOBILITY.BTN_CANCEL' | translate }}</button>
         <button [class]="modalConfig.btnClass" (click)="eseguiAzione()" [disabled]="isSubmitting">
-          {{ isSubmitting ? 'Attendere...' : modalConfig.btnText }}
+          {{ isSubmitting ? ('ACTIVE_MOBILITY.BTN_WAIT' | translate) : (modalConfig.btnKey | translate) }}
         </button>
       </div>
     </div>

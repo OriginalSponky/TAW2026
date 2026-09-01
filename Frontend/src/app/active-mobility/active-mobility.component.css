@@ -69,9 +69,7 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
-/* ========================================= */
-/* COMPONENTI STRUTTURALI E TESTI            */
-/* ========================================= */
+/* COMPONENTI STRUTTURALI E TESTI*/
 .page-title { font-size: 2rem; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
 .page-subtitle { color: var(--text-muted); font-size: 15px; margin-bottom: 40px; }
 
@@ -98,6 +96,27 @@ header {
   position: sticky;
   top: 0;
   z-index: 100;
+}
+
+.lang-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-main);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.lang-btn:hover {
+  background: var(--bg-color);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .back-btn { text-decoration: none; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 8px; transition: color 0.2s ease; }

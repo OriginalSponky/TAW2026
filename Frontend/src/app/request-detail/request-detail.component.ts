@@ -1,12 +1,15 @@
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ThemeService } from '../services/theme.service';
+
+// i18n
+import { TranslatePipe } from '../translate.pipe';
+import { TranslationService } from '../services/translation.service';
 
 @Component({
   selector: 'app-request-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './request-detail.component.html',
   styleUrls: ['./request-detail.component.css'],
 })
@@ -14,27 +17,23 @@ export class RequestDetailComponent implements OnInit {
   @Input() requestId!: number;
   @Input() utente: any;
   @Output() onBack = new EventEmitter<void>();
-  @Output() onLogout = new EventEmitter<void>();
 
   dettagli: any = null;
   dettagliBackup: any = null;
   isEditing: boolean = false;
   mostraModale: boolean = false;
   isSubmitting: boolean = false;
-  menuAperto: boolean = false;
 
-  // --- VARIABILI PER IL TOAST GLOBALE ---
   mostraAlert: boolean = false;
   alertType: 'success' | 'error' = 'success';
   alertMessage: string = '';
 
-  // --- VARIABILI PER IL DRAG & DROP ---
   isDragging: boolean = false;
   fileSelezionato: File | null = null;
 
   constructor(
     private cdr: ChangeDetectorRef,
-    public themeService: ThemeService,
+    public translationService: TranslationService,
   ) {}
 
   ngOnInit() {
@@ -64,10 +63,12 @@ export class RequestDetailComponent implements OnInit {
     this.mostraAlert = false;
   }
 
+  // TRADOTTO!
   getNomeDocumento(): string {
-    if (!this.dettagli || !this.dettagli.documents) return 'Nessun file caricato';
+    if (!this.dettagli || !this.dettagli.documents)
+      return this.translationService.translate('REQ_DETAIL.NOT_ENTERED');
     const doc = this.dettagli.documents.find((d: any) => d.document_type === 'LEARNING_AGREEMENT');
-    return doc ? doc.file_name : 'Nessun file caricato';
+    return doc ? doc.file_name : this.translationService.translate('REQ_DETAIL.NOT_ENTERED');
   }
 
   scaricaDocumento(event: Event) {
@@ -80,29 +81,21 @@ export class RequestDetailComponent implements OnInit {
       const url = 'http://localhost:3000' + doc.file_path;
       fetch(url, { method: 'HEAD' })
         .then((response) => {
-          if (response.ok) {
-            window.open(url, '_blank');
-          } else {
-            this.mostraFeedback('error', 'Il file non è disponibile sul server.');
-            this.cdr.detectChanges();
-          }
+          if (response.ok) window.open(url, '_blank');
+          else this.mostraFeedback('error', 'Il file non è disponibile sul server.');
         })
-        .catch(() => {
-          this.mostraFeedback('error', 'Impossibile connettersi al server dei file.');
-          this.cdr.detectChanges();
-        });
+        .catch(() => this.mostraFeedback('error', 'Impossibile connettersi al server dei file.'));
     } else {
       this.mostraFeedback('error', 'Nessun percorso file associato.');
     }
   }
 
-  // Intercetta la scelta del nuovo file PDF
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (file) {
       if (file.type === 'application/pdf') {
         this.fileSelezionato = file;
-        this.mostraFeedback('success', 'Nuovo file pronto: ' + file.name);
+        this.mostraFeedback('success', 'File ' + file.name + ' pronto!');
       } else {
         this.mostraFeedback('error', 'Seleziona un file in formato PDF.');
         this.fileSelezionato = null;
@@ -125,7 +118,6 @@ export class RequestDetailComponent implements OnInit {
   richiediSalvataggio() {
     this.mostraModale = true;
   }
-
   chiudiModale() {
     this.mostraModale = false;
   }
@@ -134,7 +126,6 @@ export class RequestDetailComponent implements OnInit {
     if (this.isSubmitting) return;
     this.isSubmitting = true;
 
-    // Usiamo FormData anziché JSON per permettere al backend di ricevere sia gli esami che il file PDF aggiornato
     const formData = new FormData();
     formData.append('institution_id', this.dettagli.institution_id);
     formData.append('lecturer_id', this.dettagli.lecturer_id);
@@ -151,14 +142,11 @@ export class RequestDetailComponent implements OnInit {
     }));
 
     formData.append('exams', JSON.stringify(examsPayload));
-
-    if (this.fileSelezionato) {
-      formData.append('learning_agreement_file', this.fileSelezionato);
-    }
+    if (this.fileSelezionato) formData.append('learning_agreement_file', this.fileSelezionato);
 
     fetch(`http://localhost:3000/api/applications/${this.requestId}`, {
       method: 'PUT',
-      body: formData, // Invio tramite FormData corretto
+      body: formData,
     })
       .then((res) => {
         if (!res.ok) throw new Error('Errore durante il salvataggio');
@@ -181,23 +169,44 @@ export class RequestDetailComponent implements OnInit {
       });
   }
 
+  // TRADOTTO!
   formattaPeriodo(periodo: string): string {
     if (!periodo) return '';
     switch (periodo) {
       case 'FIRST_SEMESTER':
-        return 'First Semester';
+        return this.translationService.translate('REQ_DETAIL.FIRST_SEM');
       case 'SECOND_SEMESTER':
-        return 'Second Semester';
+        return this.translationService.translate('REQ_DETAIL.SECOND_SEM');
       case 'FULL_YEAR':
-        return 'Full Year';
+        return this.translationService.translate('REQ_DETAIL.FULL_YEAR');
       default:
         return periodo;
     }
   }
 
+  // TRADOTTO! Usa le chiavi di MY_REQ per avere gli stati identici alla pagina precedente
   formattaStato(status: string): string {
     if (!status) return '';
-    return status.replace(/_/g, ' ');
+    switch (status) {
+      case 'CREATED':
+        return this.translationService.translate('MY_REQ.STATUS_CREATED');
+      case 'AWAITING_FOR_APPROVAL':
+        return this.translationService.translate('MY_REQ.STATUS_AW_LA');
+      case 'PRE_DEPARTURE_COMPLETED':
+        return this.translationService.translate('MY_REQ.STATUS_PRE_DEP');
+      case 'MOBILITY_IN_PROGRESS':
+        return this.translationService.translate('MY_REQ.STATUS_MOB_PROG');
+      case 'AWAITING_MODIFICATION_APPROVAL':
+        return this.translationService.translate('MY_REQ.STATUS_AW_MOD');
+      case 'WAITING_FOR_EXAM_SCORE_APPROVAL':
+        return this.translationService.translate('MY_REQ.STATUS_AW_SCORE');
+      case 'CLOSED':
+        return this.translationService.translate('MY_REQ.STATUS_CLOSED');
+      case 'CANCELED':
+        return this.translationService.translate('MY_REQ.STATUS_CANCELED');
+      default:
+        return this.translationService.translate('MY_REQ.STATUS_UNKNOWN');
+    }
   }
 
   tornaIndietro(event: Event) {
@@ -205,19 +214,16 @@ export class RequestDetailComponent implements OnInit {
     this.onBack.emit();
   }
 
-  // Funzioni Drag & Drop
   onDragOver(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
     this.isDragging = true;
   }
-
   onDragLeave(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
     this.isDragging = false;
   }
-
   onDrop(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
@@ -228,24 +234,11 @@ export class RequestDetailComponent implements OnInit {
       const file = files[0];
       if (file.type === 'application/pdf') {
         this.fileSelezionato = file;
-        this.mostraFeedback('success', 'File ' + file.name + ' acquisito con successo!');
+        this.mostraFeedback('success', 'File acquisito con successo!');
       } else {
         this.mostraFeedback('error', 'Per favore, trascina solo file in formato PDF.');
         this.fileSelezionato = null;
       }
     }
-  }
-
-  effettuaLogout(event: Event) {
-    event.preventDefault();
-    this.onLogout.emit();
-  }
-  toggleMenu(event: Event) {
-    event.stopPropagation();
-    this.menuAperto = !this.menuAperto;
-  }
-  get iniziali(): string {
-    if (!this.utente) return '';
-    return (this.utente.first_name.charAt(0) + this.utente.last_name.charAt(0)).toUpperCase();
   }
 }

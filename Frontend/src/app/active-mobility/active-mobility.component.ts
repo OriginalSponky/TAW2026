@@ -10,38 +10,37 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ThemeService } from '../services/theme.service';
+import { TranslationService } from '../services/translation.service';
+import { TranslatePipe } from '../translate.pipe';
 
 @Component({
   selector: 'app-active-mobility',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './active-mobility.component.html',
   styleUrls: ['./active-mobility.component.css'],
 })
 export class ActiveMobilityComponent implements OnInit {
   @Input() utente: any;
-  @Input() pratica: any; // Mantenuto per compatibilità, ma ora peschiamo tutte le attive
+  @Input() pratica: any;
   @Output() onBack = new EventEmitter<void>();
   @Output() onLogout = new EventEmitter<void>();
 
   menuAperto: boolean = false;
   activeView: 'activeMobility' | 'modifications' = 'activeMobility';
 
-  // ARRAY CON TUTTE LE MOBILITÀ ATTIVE DELLO STUDENTE
   richiesteAttive: any[] = [];
 
-  // SELEZIONE PER IL DROPDOWN NELLA VISTA "STATO MODIFICHE"
   selectedHistoryApp: any = null;
   historyDropdownAperto: boolean = false;
 
-  // MODALE CONFERMA
   mostraModale: boolean = false;
-  modalConfig: any = { icon: '', title: '', text: '', action: '', btnClass: '', btnText: '' };
+  // Aggiunto l'uso di "Key" per passare la chiave di traduzione all'HTML
+  modalConfig: any = { icon: '', titleKey: '', textKey: '', action: '', btnClass: '', btnKey: '' };
   appInModifica: any = null;
   motivoRinuncia: string = '';
   isSubmitting: boolean = false;
 
-  // TOAST
   mostraAlert: boolean = false;
   alertType: 'success' | 'error' = 'success';
   alertMessage: string = '';
@@ -49,14 +48,14 @@ export class ActiveMobilityComponent implements OnInit {
   constructor(
     private cdr: ChangeDetectorRef,
     public themeService: ThemeService,
+    public translationService: TranslationService,
   ) {}
 
   get iniziali(): string {
-    if (!this.utente) return 'ST';
+    if (!this.utente) return '';
     return (this.utente.first_name.charAt(0) + this.utente.last_name.charAt(0)).toUpperCase();
   }
 
-  // Notifica globale se ALMENO UNA pratica ha documenti rifiutati
   get hasNotifiche(): boolean {
     if (!this.richiesteAttive) return false;
     return this.richiesteAttive.some(
@@ -80,7 +79,6 @@ export class ActiveMobilityComponent implements OnInit {
     this.caricaTutteLeAttive();
   }
 
-  // CHIUSURA DROPDOWN CLICCANDO FUORI
   @HostListener('document:click')
   clickout() {
     this.menuAperto = false;
@@ -92,7 +90,6 @@ export class ActiveMobilityComponent implements OnInit {
     fetch(`http://localhost:3000/api/applications?email=${emailSicura}`)
       .then((res) => res.json())
       .then((data) => {
-        // Filtriamo per ottenere SOLO le pratiche attive (non in bozza, non chiuse o annullate)
         const statiAttivi = [
           'AWAITING_FOR_APPROVAL',
           'PRE_DEPARTURE_COMPLETED',
@@ -102,21 +99,18 @@ export class ActiveMobilityComponent implements OnInit {
         ];
         const activeApps = data.filter((a: any) => statiAttivi.includes(a.status));
 
-        // Facciamo una fetch dettagliata per ogni pratica attiva (per avere esami e documenti)
         const promises = activeApps.map((a: any) =>
           fetch(`http://localhost:3000/api/applications/${a.id}`).then((res) => res.json()),
         );
 
         Promise.all(promises).then((detailedApps) => {
           this.richiesteAttive = detailedApps.map((app) => {
-            // Ordina cronologia documenti
             if (app.documents && app.documents.length > 0) {
               app.documents.sort(
                 (a: any, b: any) =>
                   new Date(b.upload_date).getTime() - new Date(a.upload_date).getTime(),
               );
             }
-            // Inizializza lo stato indipendente per ogni singola card
             return {
               ...app,
               activePanel: null,
@@ -129,9 +123,7 @@ export class ActiveMobilityComponent implements OnInit {
             };
           });
 
-          // Seleziona la prima pratica attiva come default per la vista Storico File
           if (this.richiesteAttive.length > 0) {
-            // Mantiene la selezione precedente se esiste, altrimenti prende la prima
             if (this.selectedHistoryApp) {
               this.selectedHistoryApp =
                 this.richiesteAttive.find((a) => a.id === this.selectedHistoryApp.id) ||
@@ -154,7 +146,6 @@ export class ActiveMobilityComponent implements OnInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // GESTIONE DROPDOWN STORICO MODIFICHE
   toggleHistoryDropdown(event: Event) {
     event.stopPropagation();
     this.historyDropdownAperto = !this.historyDropdownAperto;
@@ -167,7 +158,6 @@ export class ActiveMobilityComponent implements OnInit {
     this.historyDropdownAperto = false;
   }
 
-  // APERTURA PANNELLI PER SPECIFICA PRATICA
   togglePanel(app: any, panel: string) {
     app.activePanel = app.activePanel === panel ? null : panel;
 
@@ -203,7 +193,6 @@ export class ActiveMobilityComponent implements OnInit {
     }
     if (app.nuoviEsamiLA.length === 0) this.aggiungiEsameLA(app);
 
-    // Scorri giù verso la pratica interessata
     setTimeout(() => {
       document
         .getElementById('app-card-' + app.id)
@@ -226,7 +215,6 @@ export class ActiveMobilityComponent implements OnInit {
     destinazione.push(...mappatura);
   }
 
-  // AGGIUNTA/RIMOZIONE ESAMI NELLE SPECIFICHE CARD
   aggiungiEsameLA(app: any) {
     app.nuoviEsamiLA.push({
       foreignCode: '',
@@ -256,7 +244,6 @@ export class ActiveMobilityComponent implements OnInit {
     app.esamiToR.splice(indice, 1);
   }
 
-  // FILE UPLOAD TRIGGERS
   triggerFileInput(id: string) {
     document.getElementById(id)?.click();
   }
@@ -271,7 +258,7 @@ export class ActiveMobilityComponent implements OnInit {
     if (event.target.files.length > 0) app.fileCorrection = event.target.files[0];
   }
 
-  // MODALE CONFERMA
+  // LOGICA MODALE CONFERMA AGGIORNATA PER LA TRADUZIONE
   apriModaleConferma(azione: string, app: any) {
     this.appInModifica = app;
     this.modalConfig.action = azione;
@@ -280,70 +267,76 @@ export class ActiveMobilityComponent implements OnInit {
     switch (azione) {
       case 'start_mobility':
         if (!app.arrival_date || !app.departure_date) {
-          this.mostraFeedback('error', 'Inserisci entrambe le date per proseguire.');
+          this.mostraFeedback(
+            'error',
+            this.translationService.translate('ACTIVE_MOBILITY.ERR_DATES'),
+          );
           return;
         }
         this.modalConfig = {
           action: azione,
           icon: '🌍',
-          title: 'Avvia Mobilità',
-          text: "Confermi le date inserite per l'inizio del tuo Erasmus?",
+          titleKey: 'ACTIVE_MOBILITY.MODAL_START_TITLE',
+          textKey: 'ACTIVE_MOBILITY.MODAL_START_TEXT',
           btnClass: 'btn-primary',
-          btnText: 'Conferma e Parti',
+          btnKey: 'ACTIVE_MOBILITY.BTN_START_CONFIRM',
         };
         break;
       case 'update_dates':
         if (!app.arrival_date || !app.departure_date) {
-          this.mostraFeedback('error', 'Inserisci entrambe le date per salvare.');
+          this.mostraFeedback(
+            'error',
+            this.translationService.translate('ACTIVE_MOBILITY.ERR_DATES'),
+          );
           return;
         }
         this.modalConfig = {
           action: azione,
           icon: '📅',
-          title: 'Modifica Date',
-          text: 'Vuoi salvare le nuove date per la tua mobilità in corso?',
+          titleKey: 'ACTIVE_MOBILITY.MODAL_DATES_TITLE',
+          textKey: 'ACTIVE_MOBILITY.MODAL_DATES_TEXT',
           btnClass: 'btn-primary',
-          btnText: 'Salva Date',
+          btnKey: 'ACTIVE_MOBILITY.BTN_DATES_CONFIRM',
         };
         break;
       case 'reject_mobility':
         this.modalConfig = {
           action: azione,
           icon: '⚠️',
-          title: 'Rinuncia Mobilità',
-          text: 'Sei sicuro di voler rinunciare? La pratica verrà annullata.',
+          titleKey: 'ACTIVE_MOBILITY.MODAL_REJECT_TITLE',
+          textKey: 'ACTIVE_MOBILITY.MODAL_REJECT_TEXT',
           btnClass: 'btn-danger-outline',
-          btnText: 'Conferma Rinuncia',
+          btnKey: 'ACTIVE_MOBILITY.BTN_REJECT_CONFIRM',
         };
         break;
       case 'submit_la':
         this.modalConfig = {
           action: azione,
           icon: '📝',
-          title: 'Invia Modifica L.A.',
-          text: 'La modifica sarà inviata al docente. Potrai vederne lo stato nella sezione "Stato Modifiche".',
+          titleKey: 'ACTIVE_MOBILITY.MODAL_LA_TITLE',
+          textKey: 'ACTIVE_MOBILITY.MODAL_LA_TEXT',
           btnClass: 'btn-primary',
-          btnText: 'Invia Proposta',
+          btnKey: 'ACTIVE_MOBILITY.BTN_LA_CONFIRM',
         };
         break;
       case 'submit_tor':
         this.modalConfig = {
           action: azione,
           icon: '🎓',
-          title: 'Invia Voti e ToR',
-          text: 'Confermi l\'invio dei voti? Verificherai l\'esito nella sezione "Stato Modifiche".',
+          titleKey: 'ACTIVE_MOBILITY.MODAL_TOR_TITLE',
+          textKey: 'ACTIVE_MOBILITY.MODAL_TOR_TEXT',
           btnClass: 'btn-success',
-          btnText: 'Conferma e Invia',
+          btnKey: 'ACTIVE_MOBILITY.BTN_TOR_CONFIRM',
         };
         break;
       case 'resubmit_modification':
         this.modalConfig = {
           action: azione,
           icon: '🔄',
-          title: 'Invia Nuova Revisione',
-          text: "I dati corretti verranno inviati all'ufficio per una nuova approvazione.",
+          titleKey: 'ACTIVE_MOBILITY.MODAL_RESUBMIT_TITLE',
+          textKey: 'ACTIVE_MOBILITY.MODAL_RESUBMIT_TEXT',
           btnClass: 'btn-primary',
-          btnText: 'Invia Revisione',
+          btnKey: 'ACTIVE_MOBILITY.BTN_RESUBMIT_CONFIRM',
         };
         break;
     }
@@ -419,8 +412,11 @@ export class ActiveMobilityComponent implements OnInit {
       })
       .then(() => {
         this.mostraModale = false;
-        this.mostraFeedback('success', 'Operazione registrata con successo!');
-        this.caricaTutteLeAttive(); // Ricarica tutto dal DB
+        this.mostraFeedback(
+          'success',
+          this.translationService.translate('ACTIVE_MOBILITY.SUCCESS_OP'),
+        );
+        this.caricaTutteLeAttive();
       })
       .catch((err) => {
         this.mostraModale = false;
@@ -448,11 +444,13 @@ export class ActiveMobilityComponent implements OnInit {
     event.preventDefault();
     this.onBack.emit();
   }
+
   toggleMenu(event: Event) {
     event.stopPropagation();
     this.menuAperto = !this.menuAperto;
     this.historyDropdownAperto = false;
   }
+
   effettuaLogout(event: Event) {
     event.preventDefault();
     this.onLogout.emit();

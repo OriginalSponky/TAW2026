@@ -1,12 +1,16 @@
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RequestDetailComponent } from '../request-detail/request-detail.component';
+
+// Servizi e i18n
 import { ThemeService } from '../services/theme.service';
+import { TranslationService } from '../services/translation.service';
+import { TranslatePipe } from '../translate.pipe';
 
 @Component({
   selector: 'app-my-requests',
   standalone: true,
-  imports: [CommonModule, RequestDetailComponent],
+  imports: [CommonModule, RequestDetailComponent, TranslatePipe],
   templateUrl: './my-requests.component.html',
   styleUrls: ['./my-requests.component.css'],
 })
@@ -15,15 +19,13 @@ export class MyRequestsComponent implements OnInit {
   @Output() onBack = new EventEmitter<void>();
   @Output() onNewRequest = new EventEmitter<void>();
   @Output() onLogout = new EventEmitter<void>();
-  @Output() onEditRequest = new EventEmitter<number>();
+  @Output() onEditRequest = new EventEmitter<number>(); // Passa l'ID della pratica attiva ad Active Mobility
 
-  pannelloAttivo: number | null = null;
   richieste: any[] = [];
   richiestaSelezionata: number | null = null;
   menuAperto: boolean = false;
 
-
-  // --- VARIABILI PER IL TOAST GLOBALE ---
+  // --- VARIABILI TOAST ---
   mostraAlert: boolean = false;
   alertType: 'success' | 'error' = 'success';
   alertMessage: string = '';
@@ -35,6 +37,7 @@ export class MyRequestsComponent implements OnInit {
   constructor(
     private cdr: ChangeDetectorRef,
     public themeService: ThemeService,
+    public translationService: TranslationService,
   ) {}
 
   get iniziali(): string {
@@ -56,7 +59,6 @@ export class MyRequestsComponent implements OnInit {
       .catch((err) => console.error('❌ Errore di lettura:', err));
   }
 
-  // --- FUNZIONE PER GESTIRE IL TOAST ---
   mostraFeedback(tipo: 'success' | 'error', messaggio: string) {
     this.alertType = tipo;
     this.alertMessage = messaggio;
@@ -80,18 +82,13 @@ export class MyRequestsComponent implements OnInit {
     this.onNewRequest.emit();
   }
 
-  togglePannello(id: number) {
-    if (this.pannelloAttivo === id) {
-      this.pannelloAttivo = null;
-    } else {
-      this.pannelloAttivo = id;
-    }
-  }
-
+  // Riutilizza la traduzione già usata in Request Detail per consistenza
   formattaPeriodo(periodo: string): string {
-    if (periodo === 'FIRST_SEMESTER') return 'First Semester';
-    if (periodo === 'SECOND_SEMESTER') return 'Second Semester';
-    if (periodo === 'FULL_YEAR') return 'Entire Year';
+    if (periodo === 'FIRST_SEMESTER')
+      return this.translationService.translate('REQ_DETAIL.FIRST_SEM');
+    if (periodo === 'SECOND_SEMESTER')
+      return this.translationService.translate('REQ_DETAIL.SECOND_SEM');
+    if (periodo === 'FULL_YEAR') return this.translationService.translate('REQ_DETAIL.FULL_YEAR');
     return periodo;
   }
 
@@ -121,40 +118,45 @@ export class MyRequestsComponent implements OnInit {
   getTestoStato(stato: string): string {
     switch (stato) {
       case 'CREATED':
-        return 'Created (Bozza)';
+        return this.translationService.translate('MY_REQ.STATUS_CREATED');
       case 'AWAITING_FOR_APPROVAL':
-        return 'Awaiting L.A. approval';
+        return this.translationService.translate('MY_REQ.STATUS_AW_LA');
       case 'PRE_DEPARTURE_COMPLETED':
-        return 'Pre-departure completed';
+        return this.translationService.translate('MY_REQ.STATUS_PRE_DEP');
       case 'MOBILITY_IN_PROGRESS':
-        return 'Mobility in progress';
+        return this.translationService.translate('MY_REQ.STATUS_MOB_PROG');
       case 'AWAITING_MODIFICATION_APPROVAL':
-        return 'Awaiting modification approval';
+        return this.translationService.translate('MY_REQ.STATUS_AW_MOD');
       case 'WAITING_FOR_EXAM_SCORE_APPROVAL':
-        return 'Awaiting exam score approval';
+        return this.translationService.translate('MY_REQ.STATUS_AW_SCORE');
       case 'CLOSED':
-        return 'Closed';
+        return this.translationService.translate('MY_REQ.STATUS_CLOSED');
       case 'CANCELED':
-        return 'Canceled';
+        return this.translationService.translate('MY_REQ.STATUS_CANCELED');
       default:
-        return 'Stato Sconosciuto';
+        return this.translationService.translate('MY_REQ.STATUS_UNKNOWN');
     }
   }
 
   apriDettaglio(id: number) {
     this.richiestaSelezionata = id;
   }
+
   chiudiDettaglio() {
     this.richiestaSelezionata = null;
   }
+
   toggleMenu(event: Event) {
     event.stopPropagation();
     this.menuAperto = !this.menuAperto;
   }
+
   effettuaLogout(event: Event) {
     event.preventDefault();
     this.onLogout.emit();
   }
+
+  // Viene chiamato quando clicchi "Gestisci Pratica" e spinge l'utente nella Dashboard di gestione attiva
   modificaRichiesta(id: number) {
     this.onEditRequest.emit(id);
   }
@@ -165,7 +167,6 @@ export class MyRequestsComponent implements OnInit {
   }
 
   annullaEliminazione() {
-    // Chiudiamo la zona di conferma
     this.confermaEliminazioneId = null;
   }
 
@@ -180,20 +181,16 @@ export class MyRequestsComponent implements OnInit {
       })
       .then(() => {
         this.richieste = this.richieste.filter((r) => r.id !== id);
-        this.mostraFeedback('success', 'Richiesta eliminata correttamente.');
+        this.mostraFeedback('success', this.translationService.translate('MY_REQ.SUCCESS_DEL'));
         this.confermaEliminazioneId = null;
         this.cdr.detectChanges();
       })
       .catch((err) => {
-        this.mostraFeedback('error', "Errore durante l'eliminazione della richiesta.");
+        this.mostraFeedback('error', this.translationService.translate('MY_REQ.ERR_DEL'));
         this.confermaEliminazioneId = null;
       })
       .finally(() => {
         this.isDeleting = false;
       });
-  }
-  inviaModifica() {
-    this.mostraFeedback('success', 'Richiesta di modifica inoltrata correttamente.');
-    this.pannelloAttivo = null;
   }
 }

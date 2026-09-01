@@ -1,6 +1,6 @@
 <div class="detail-header">
   <button class="back-header-btn" (click)="tornaIndietro($event)">
-    ← Torna a Le Mie Richieste
+    {{ 'REQ_DETAIL.BTN_BACK' | translate }}
   </button>
 </div>
 
@@ -8,21 +8,21 @@
   <main>
     <div class="card" style="margin-bottom: 24px;">
       <div class="card-header-flex">
-        <h2>Dettagli Mobilità</h2>
+        <h2>{{ 'REQ_DETAIL.TITLE' | translate }}</h2>
 
         @if (dettagli.status === 'CREATED' && !isEditing) {
-          <button class="btn-outline" (click)="attivaModifica()">✏️ Modifica Bozza</button>
+          <button class="btn-outline" (click)="attivaModifica()">{{ 'REQ_DETAIL.BTN_EDIT' | translate }}</button>
         }
       </div>
 
       <div class="info-grid">
         <div class="info-item">
-          <label>Istituzione Ospitante</label>
+          <label>{{ 'REQ_DETAIL.INSTITUTION' | translate }}</label>
           <p>{{ dettagli.institution_name }} @if (dettagli.country) { ({{ dettagli.country }}) }</p>
         </div>
 
         <div class="info-item">
-          <label>Stato Pratica</label>
+          <label>{{ 'REQ_DETAIL.STATUS' | translate }}</label>
           <span class="status-badge" [ngClass]="{
             'status-created': dettagli.status === 'CREATED',
             'status-awaiting-la': dettagli.status === 'AWAITING_FOR_APPROVAL',
@@ -38,12 +38,12 @@
         </div>
 
         <div class="info-item">
-          <label>Anno Accademico</label>
-          <p>📅 A.A. {{ dettagli.academic_year }}</p>
+          <label>{{ 'REQ_DETAIL.ACADEMIC_YEAR' | translate }}</label>
+          <p>📅 {{ dettagli.academic_year }}</p>
         </div>
 
         <div class="info-item">
-          <label>Periodo</label>
+          <label>{{ 'REQ_DETAIL.PERIOD' | translate }}</label>
           <p>⏱️ {{ formattaPeriodo(dettagli.mobility_period) }}</p>
         </div>
       </div>
@@ -51,20 +51,20 @@
 
     @if (dettagli.status === 'CANCELED') {
       <div class="cancellation-box">
-        <div class="cancellation-title">⚠️ Motivo dell'Annullamento / Rifiuto</div>
+        <div class="cancellation-title">{{ 'REQ_DETAIL.REASON_TITLE' | translate }}</div>
         <p class="cancellation-reason">
-          "{{ dettagli.la_rejection_reason || 'La richiesta è stata annullata dall\'ufficio o su rinuncia dello studente.' }}"
+          "{{ dettagli.la_rejection_reason || ('REQ_DETAIL.REASON_DEFAULT' | translate) }}"
         </p>
       </div>
     }
 
     @if (dettagli.actual_arrival_date || dettagli.actual_departure_date) {
       <div class="card">
-        <h2>📅 Date di Soggiorno Effettive</h2>
+        <h2>{{ 'REQ_DETAIL.DATES_TITLE' | translate }}</h2>
 
         <div class="dates-calendar-grid">
           <div class="calendar-box">
-            <span class="calendar-label">Arrivo</span>
+            <span class="calendar-label">{{ 'REQ_DETAIL.ARRIVAL' | translate }}</span>
             @if (dettagli.actual_arrival_date) {
               <div class="calendar-widget">
                 <div class="cal-month">{{ dettagli.actual_arrival_date | date:'MMM' }}</div>
@@ -77,12 +77,12 @@
                 <div class="cal-day">?</div>
                 <div class="cal-year">-</div>
               </div>
-              <span class="empty-text">Non inserita</span>
+              <span class="empty-text">{{ 'REQ_DETAIL.NOT_ENTERED' | translate }}</span>
             }
           </div>
 
           <div class="calendar-box">
-            <span class="calendar-label">Partenza</span>
+            <span class="calendar-label">{{ 'REQ_DETAIL.DEPARTURE' | translate }}</span>
             @if (dettagli.actual_departure_date) {
               <div class="calendar-widget">
                 <div class="cal-month">{{ dettagli.actual_departure_date | date:'MMM' }}</div>
@@ -95,7 +95,7 @@
                 <div class="cal-day">?</div>
                 <div class="cal-year">-</div>
               </div>
-              <span class="empty-text">Non inserita</span>
+              <span class="empty-text">{{ 'REQ_DETAIL.NOT_ENTERED' | translate }}</span>
             }
           </div>
         </div>
@@ -103,7 +103,7 @@
     }
 
     <div class="card">
-      <h2>Learning Agreement & Documenti</h2>
+      <h2>{{ 'REQ_DETAIL.DOCS_TITLE' | translate }}</h2>
 
       @if (dettagli.exams && dettagli.exams.length > 0) {
         @for (esame of dettagli.exams; track esame.id) {
@@ -111,50 +111,50 @@
 
             @if (!isEditing) {
               <div class="exam-half">
-                <h4>✈️ Corso Estero</h4>
+                <h4>{{ 'REQ_DETAIL.FOREIGN_COURSE' | translate }}</h4>
                 <div class="exam-details">
-                  <p><strong>Codice:</strong> {{ esame.foreign_course_code }}</p>
-                  <p><strong>Nome:</strong> {{ esame.foreign_course_name }}</p>
-                  <p><strong>Crediti:</strong> {{ esame.foreign_course_credits }}</p>
+                  <p><strong>{{ 'REQ_DETAIL.CODE' | translate }}</strong> {{ esame.foreign_course_code }}</p>
+                  <p><strong>{{ 'REQ_DETAIL.NAME' | translate }}</strong> {{ esame.foreign_course_name }}</p>
+                  <p><strong>{{ 'REQ_DETAIL.CREDITS' | translate }}</strong> {{ esame.foreign_course_credits }}</p>
                 </div>
               </div>
               <div class="exam-half">
-                <h4>🏛️ Corso Ca' Foscari</h4>
+                <h4>{{ 'REQ_DETAIL.UNIVE_COURSE' | translate }}</h4>
                 <div class="exam-details">
-                  <p><strong>Codice:</strong> {{ esame.unive_course_code }}</p>
-                  <p><strong>Nome:</strong> {{ esame.unive_course_title }}</p>
-                  <p><strong>Crediti:</strong> {{ esame.unive_course_credits }}</p>
+                  <p><strong>{{ 'REQ_DETAIL.CODE' | translate }}</strong> {{ esame.unive_course_code }}</p>
+                  <p><strong>{{ 'REQ_DETAIL.NAME' | translate }}</strong> {{ esame.unive_course_title }}</p>
+                  <p><strong>{{ 'REQ_DETAIL.CREDITS' | translate }}</strong> {{ esame.unive_course_credits }}</p>
                 </div>
               </div>
             }
 
             @if (dettagli.status === 'CLOSED' || esame.score_obtained) {
               <div class="exam-score-box">
-                <span class="score-label">🏆 Voto Finale</span>
-                <span class="score-value">{{ esame.score_obtained || 'Approvato' }}</span>
+                <span class="score-label">{{ 'REQ_DETAIL.FINAL_SCORE' | translate }}</span>
+                <span class="score-value">{{ esame.score_obtained || ('REQ_DETAIL.APPROVED' | translate) }}</span>
               </div>
             }
 
             @if (isEditing) {
               <div class="exam-half">
-                <h4>✈️ Corso Estero</h4>
+                <h4>{{ 'REQ_DETAIL.FOREIGN_COURSE' | translate }}</h4>
                 <div class="exam-details">
-                  <label>Codice:</label>
+                  <label>{{ 'REQ_DETAIL.CODE' | translate }}</label>
                   <input type="text" [(ngModel)]="esame.foreign_course_code">
-                  <label>Nome:</label>
+                  <label>{{ 'REQ_DETAIL.NAME' | translate }}</label>
                   <input type="text" [(ngModel)]="esame.foreign_course_name">
-                  <label>Crediti:</label>
+                  <label>{{ 'REQ_DETAIL.CREDITS' | translate }}</label>
                   <input type="number" [(ngModel)]="esame.foreign_course_credits">
                 </div>
               </div>
               <div class="exam-half">
-                <h4>🏛️ Corso Ca' Foscari</h4>
+                <h4>{{ 'REQ_DETAIL.UNIVE_COURSE' | translate }}</h4>
                 <div class="exam-details">
-                  <label>Codice:</label>
+                  <label>{{ 'REQ_DETAIL.CODE' | translate }}</label>
                   <input type="text" [(ngModel)]="esame.unive_course_code">
-                  <label>Nome:</label>
+                  <label>{{ 'REQ_DETAIL.NAME' | translate }}</label>
                   <input type="text" [(ngModel)]="esame.unive_course_title">
-                  <label>Crediti:</label>
+                  <label>{{ 'REQ_DETAIL.CREDITS' | translate }}</label>
                   <input type="number" [(ngModel)]="esame.unive_course_credits">
                 </div>
               </div>
@@ -162,21 +162,21 @@
           </div>
         }
       } @else {
-        <p style="color: var(--text-muted); font-size: 14px;">Nessun esame associato a questa richiesta.</p>
+        <p style="color: var(--text-muted); font-size: 14px;">{{ 'REQ_DETAIL.NO_EXAMS' | translate }}</p>
       }
 
       <div class="document-section">
-        <h4>Documento Ufficiale</h4>
+        <h4>{{ 'REQ_DETAIL.OFFICIAL_DOC' | translate }}</h4>
 
         @if (!isEditing) {
           <div class="doc-view">
             <p>📄 {{ getNomeDocumento() }}</p>
-            <a href="#" class="doc-link" (click)="scaricaDocumento($event)">Scarica/Visualizza</a>
+            <a href="#" class="doc-link" (click)="scaricaDocumento($event)">{{ 'REQ_DETAIL.VIEW_DOWNLOAD' | translate }}</a>
           </div>
         } @else {
           <div class="doc-edit">
             <label style="font-size: 13px; font-weight: 500; color: var(--text-muted); display: block; margin-bottom: 8px;">
-              Sostituisci il Learning Agreement (PDF facoltativo):
+              {{ 'REQ_DETAIL.REPLACE_DOC' | translate }}
             </label>
 
             <div class="drag-drop-zone"
@@ -194,10 +194,10 @@
                 </div>
 
                 @if (!fileSelezionato) {
-                  <h4 style="margin: 16px 0 8px 0; color: var(--primary); font-size: 18px;">Trascina qui il tuo PDF</h4>
-                  <p style="margin: 0; color: var(--text-muted); font-size: 14px;">Rilascia il documento all'interno dell'area tratteggiata</p>
+                  <h4 style="margin: 16px 0 8px 0; color: var(--primary); font-size: 18px;">{{ 'REQ_DETAIL.DRAG_PDF' | translate }}</h4>
+                  <p style="margin: 0; color: var(--text-muted); font-size: 14px;">{{ 'REQ_DETAIL.DROP_PDF' | translate }}</p>
                 } @else {
-                  <h4 style="margin: 16px 0 8px 0; color: var(--success); font-size: 18px;">✅ Acquisito!</h4>
+                  <h4 style="margin: 16px 0 8px 0; color: var(--success); font-size: 18px;">{{ 'REQ_DETAIL.ACQUIRED' | translate }}</h4>
                   <p style="margin: 0; color: var(--text-main); font-weight: 600; font-size: 15px;">{{ fileSelezionato.name }}</p>
                 }
               </div>
@@ -209,29 +209,29 @@
 
       @if (isEditing) {
         <div class="edit-actions">
-          <button class="btn-outline" (click)="annullaModifica()">Annulla</button>
-          <button class="btn-primary" (click)="richiediSalvataggio()">Salva Modifiche</button>
+          <button class="btn-outline" (click)="annullaModifica()">{{ 'REQ_DETAIL.BTN_CANCEL' | translate }}</button>
+          <button class="btn-primary" (click)="richiediSalvataggio()">{{ 'REQ_DETAIL.BTN_SAVE' | translate }}</button>
         </div>
       }
     </div>
   </main>
 } @else {
   <div style="text-align: center; padding: 40px; color: var(--text-muted);">
-    <p>⏳ Caricamento dettagli in corso...</p>
+    <p>{{ 'REQ_DETAIL.LOADING' | translate }}</p>
   </div>
 }
 
 @if (mostraModale) {
-  <div class="modal-overlay">
-    <div class="modal">
-      <h3 style="font-size: 1.5rem; margin-bottom: 12px;">💾 Conferma Modifiche 📝</h3>
+  <div class="modal-overlay" (click)="chiudiModale()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3 style="font-size: 1.5rem; margin-bottom: 12px;">{{ 'REQ_DETAIL.MODAL_TITLE' | translate }}</h3>
       <p style="color: var(--text-muted); margin-bottom: 32px; font-size: 15px; line-height: 1.6;">
-        Stai per aggiornare i dati della tua bozza. Sei sicuro che le nuove mappature degli esami siano corrette?
+        {{ 'REQ_DETAIL.MODAL_DESC' | translate }}
       </p>
       <div class="modal-actions" style="display: flex; gap: 12px; width: 100%;">
-        <button class="btn-outline" style="flex: 1; justify-content: center; padding: 12px;" (click)="chiudiModale()" [disabled]="isSubmitting">Annulla</button>
+        <button class="btn-outline" style="flex: 1; justify-content: center; padding: 12px;" (click)="chiudiModale()" [disabled]="isSubmitting">{{ 'REQ_DETAIL.BTN_CANCEL' | translate }}</button>
         <button class="btn-primary" style="flex: 1; justify-content: center; padding: 12px;" (click)="confermaSalvataggio()" [disabled]="isSubmitting">
-          {{ isSubmitting ? 'Salvataggio...' : 'Conferma e Salva' }}
+          {{ isSubmitting ? ('REQ_DETAIL.BTN_MODAL_SAVING' | translate) : ('REQ_DETAIL.BTN_MODAL_CONFIRM' | translate) }}
         </button>
       </div>
     </div>
