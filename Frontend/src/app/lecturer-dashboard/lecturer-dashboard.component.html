@@ -20,7 +20,6 @@
 
 <main (click)="menuAperto = false">
 
-  <!-- VISTA 1: HOME DASHBOARD -->
   @if (activeView === 'homeView') {
     <div class="hero">
       <h1 class="page-title">Ciao Prof. {{ utente?.first_name }} {{ utente?.last_name }}. </h1>
@@ -51,7 +50,6 @@
   }
 
   @else if (activeView === 'laView') {
-    <!-- VISTA 2: APPROVAZIONE LEARNING AGREEMENT -->
     <button class="back-header-btn" (click)="switchView('homeView')">← Torna alla Dashboard</button>
     <h1 class="page-title" style="text-align: left;">📝 Valutazione Learning Agreement</h1>
     <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">Richieste di approvazione dei piani di studio esteri.</p>
@@ -64,10 +62,10 @@
       @for (app of pendingLAs; track app.id) {
         <div class="request-card" [ngClass]="app.status === 'AWAITING_FOR_APPROVAL' ? 'border-warning' : 'border-info'">
           <div class="request-info">
-            <div class="student-name">🧑‍🎓 Studente: {{ app.student_first_name }} {{ app.student_last_name }}</div>
+            <div class="student-name">🧑‍🎓 Studente: {{ app.student_first_name }} {{ app.student_last_name }} ({{app.matricola}})</div>
             <div class="details">🌍 Destinazione: {{ app.institution_name }} ({{ app.country }}) | 📅 A.A. {{ app.academic_year }}</div>
             <div class="status-badge" [ngClass]="app.status === 'AWAITING_FOR_APPROVAL' ? 'badge-warning' : 'badge-info'">
-              {{ app.status === 'AWAITING_FOR_APPROVAL' ? 'L.A. Pre-Partenza' : 'Modifica L.A. in itinere' }}
+              {{ app.status }}
             </div>
           </div>
           <div class="actions">
@@ -79,7 +77,6 @@
   }
 
   @else if (activeView === 'torView') {
-    <!-- VISTA 3: TRANSCRIPT OF RECORDS -->
     <button class="back-header-btn" (click)="switchView('homeView')">← Torna alla Dashboard</button>
     <h1 class="page-title" style="text-align: left;">🎓 Approvazione Voti (ToR)</h1>
     <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">Studenti rientrati in attesa della conversione voti.</p>
@@ -92,9 +89,11 @@
       @for (app of pendingToRs; track app.id) {
         <div class="request-card border-purple">
           <div class="request-info">
-            <div class="student-name">🧑‍🎓 Studente: {{ app.student_first_name }} {{ app.student_last_name }}</div>
+            <div class="student-name">🧑‍🎓 Studente: {{ app.student_first_name }} {{ app.student_last_name }} ({{app.matricola}})</div>
             <div class="details">🌍 Destinazione: {{ app.institution_name }} ({{ app.country }}) | 📅 A.A. {{ app.academic_year }}</div>
-            <div class="status-badge badge-purple">In attesa conversione voti</div>
+            <div class="status-badge badge-purple">
+              {{ app.status }}
+            </div>
           </div>
           <div class="actions">
             <button class="btn-purple" (click)="startReview(app, 'TRANSCRIPT_OF_RECORDS')">Valuta Voti</button>
@@ -105,17 +104,49 @@
   }
 
   @else if (activeView === 'handledView') {
-    <!-- VISTA 4: STORICO PRATICHE -->
     <button class="back-header-btn" (click)="switchView('homeView')">← Torna alla Dashboard</button>
     <h1 class="page-title" style="text-align: left;">🗂️ Pratiche Gestite</h1>
     <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">📚 Storico delle tue approvazioni passate e pratiche concluse.</p>
 
+    <div class="filter-container">
+      <div class="filter-title">🔎 Cerca e Filtra Nello Storico</div>
+      <div class="filter-grid">
+        <input type="text" [(ngModel)]="filtri.studente" placeholder="Nome, Cognome o Matricola..." (input)="applicaFiltri()">
+
+        <select [(ngModel)]="filtri.stato" (change)="applicaFiltri()">
+          <option value="">Tutti gli Stati</option>
+          <option value="PRE_DEPARTURE_COMPLETED">PRE_DEPARTURE_COMPLETED</option>
+          <option value="MOBILITY_IN_PROGRESS">MOBILITY_IN_PROGRESS</option>
+          <option value="WAITING_FOR_EXAM_SCORE_APPROVAL">WAITING_FOR_EXAM_SCORE_APPROVAL</option>
+          <option value="CLOSED">CLOSED</option>
+          <option value="CANCELED">CANCELED</option>
+        </select>
+
+        <select [(ngModel)]="filtri.anno" (change)="applicaFiltri()">
+          <option value="">Tutti gli Anni</option>
+          @for (anno of uniqueAnni; track anno) {
+            <option [value]="anno">{{ anno }}</option>
+          }
+        </select>
+
+        <select [(ngModel)]="filtri.istituzione" (change)="applicaFiltri()">
+          <option value="">Tutte le Istituzioni</option>
+          @for (ist of uniqueIstituzioni; track ist) {
+            <option [value]="ist">{{ ist }}</option>
+          }
+        </select>
+      </div>
+      <div class="filter-actions">
+        <button class="btn-outline" (click)="resettaFiltri()">Resetta Filtri</button>
+      </div>
+    </div>
+
     <div class="requests-list">
-      @if (handledApps.length === 0) {
-        <p style="color: var(--text-muted);">📭 Nessuna pratica nello storico.</p>
+      @if (praticheFiltrate.length === 0) {
+        <p style="text-align: center; color: var(--text-muted); background: var(--surface); padding: 20px; border-radius: 8px;">📭 Nessuna pratica trovata con questi filtri.</p>
       }
 
-      @for (app of handledApps; track app.id) {
+      @for (app of praticheFiltrate; track app.id) {
         <div class="request-card" [ngClass]="{
             'border-created': app.status === 'CREATED',
             'border-awaiting': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
@@ -126,7 +157,7 @@
             'border-canceled': app.status === 'CANCELED'
           }">
           <div class="request-info">
-            <div class="student-name">🧑‍🎓 Studente: {{ app.student_first_name }} {{ app.student_last_name }}</div>
+            <div class="student-name">🧑‍🎓 Studente: {{ app.student_first_name }} {{ app.student_last_name }} ({{app.matricola}})</div>
             <div class="details">🌍 Destinazione: {{ app.institution_name }} | 📅 A.A. {{ app.academic_year }}</div>
             <div class="status-badge" [ngClass]="{
                 'status-created': app.status === 'CREATED',
@@ -137,11 +168,10 @@
                 'status-closed': app.status === 'CLOSED',
                 'status-canceled': app.status === 'CANCELED'
               }">
-              STATO PRATICA: {{ formattaStato(app.status) }}
+              {{ app.status }}
             </div>
           </div>
           <div class="actions">
-            <!-- Passo l'intero oggetto "app" per avere il nome dello studente! -->
             <button class="btn-outline" (click)="openHistoricalDetails(app)">🔍 Vedi Dettagli</button>
           </div>
         </div>
@@ -150,10 +180,9 @@
   }
 </main>
 
-<!-- MODALE VALUTAZIONE PER LA/TOR -->
 @if (mostraModaleReview) {
-  <div class="modal-overlay">
-    <div class="modal">
+  <div class="modal-overlay" (click)="chiudiReviewModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
 
       @if (modalStep === 'read' || modalStep === 'reject-reason') {
         <h3>{{ reviewData.studentName }}</h3>
@@ -212,19 +241,17 @@
           <p style="font-size: 14px; color: var(--text-muted);">Il database è stato aggiornato. Lo studente può vedere lo status modificato.</p>
         </div>
         <div class="modal-actions center">
-          <button class="btn-primary" (click)="chiudiSuccesso()">Torna alla Dashboard</button>
+          <button class="btn-primary" (click)="chiudiSuccesso()">Continua il Lavoro</button>
         </div>
       }
     </div>
   </div>
 }
 
-<!-- NUOVO MODALE STORICO DETTAGLI (Grafica Allineata!) -->
 @if (mostraModaleStorico && historicalDetails) {
-  <div class="modal-overlay">
-    <div class="modal" style="max-width: 650px; text-align: left; padding: 32px;">
+  <div class="modal-overlay" (click)="chiudiModaleStorico()">
+    <div class="modal" style="max-width: 650px; text-align: left; padding: 32px;" (click)="$event.stopPropagation()">
 
-      <!-- Intestazione Studente ed Emoji combacianti con la tua foto -->
       <h3 style="margin-bottom: 8px; font-size: 1.5rem; display: flex; align-items: center; gap: 8px;">
         🧑‍🎓 Studente: {{ historicalDetails.student_first_name }} {{ historicalDetails.student_last_name }}
       </h3>
@@ -232,7 +259,6 @@
         🌍 {{ historicalDetails.institution_name }} ({{ historicalDetails.country }})
       </p>
 
-      <!-- Sezione Esami -->
       <h4 style="color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0; display: flex; align-items: center; gap: 8px;">
         📚 Esami nel piano di studi
       </h4>
@@ -240,8 +266,14 @@
         @if (historicalDetails.exams && historicalDetails.exams.length > 0) {
           @for (exam of historicalDetails.exams; track exam.id) {
             <div style="padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 12px; background: var(--bg-color);">
-              <div style="font-weight: 600; font-size: 15px; color: var(--text-main); margin-bottom: 4px;">✈️ {{ exam.foreign_course_name }} ({{ exam.foreign_course_credits }} CFU)</div>
-              <div style="font-size: 14px; color: var(--text-muted);">🏛️ {{ exam.unive_course_title }} ({{ exam.unive_course_credits }} CFU)</div>
+              <div style="font-weight: 600; font-size: 15px; color: var(--text-main); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
+                <span>✈️ {{ exam.foreign_course_name }} ({{ exam.foreign_course_credits }} CFU) [{{exam.foreign_course_code}}]</span>
+
+                @if (exam.is_proposed_change) {
+                  <span class="exam-new-tag">NEW</span>
+                }
+              </div>
+              <div style="font-size: 14px; color: var(--text-muted);">🏛️ {{ exam.unive_course_title }} ({{ exam.unive_course_credits }} CFU) [{{exam.unive_course_code}}]</div>
               @if (exam.score_obtained) {
                 <div style="font-size: 14px; font-weight: 700; color: var(--success); margin-top: 8px;">🏆 Voto Ottenuto: {{ exam.score_obtained }}</div>
               }
@@ -252,7 +284,6 @@
         }
       </div>
 
-      <!-- Sezione Documenti -->
       <h4 style="color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
         📄 Documenti Caricati
       </h4>
@@ -262,9 +293,8 @@
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 12px; background: var(--bg-color);">
               <div>
                 <div style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">{{ doc.document_type === 'LEARNING_AGREEMENT' ? 'Learning Agreement' : 'Transcript of Records' }}</div>
-                <div style="font-size: 13px; color: var(--text-muted);">{{ doc.file_name }}</div>
+                <a [href]="'http://localhost:3000' + doc.file_path" target="_blank" style="font-size: 13px; color: var(--primary); font-weight: 500; text-decoration: none;">📄 {{ doc.file_name }}</a>
               </div>
-              <!-- Badge Documenti a forma di Pillola -->
               <div class="status-badge" style="margin-top: 0; padding: 6px 14px; font-size: 11px; border-radius: 20px;"
                    [ngClass]="{'badge-warning': doc.status === 'PENDING', 'badge-danger': doc.status === 'REJECTED', 'status-closed': doc.status === 'APPROVED'}">
                 {{ doc.status }}

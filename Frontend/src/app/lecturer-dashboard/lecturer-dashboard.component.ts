@@ -20,6 +20,17 @@ export class LecturerDashboardComponent implements OnInit {
   pendingLAs: any[] = [];
   pendingToRs: any[] = [];
   handledApps: any[] = [];
+  praticheFiltrate: any[] = [];
+
+  uniqueIstituzioni: string[] = [];
+  uniqueAnni: string[] = [];
+
+  filtri = {
+    studente: '',
+    stato: '',
+    anno: '',
+    istituzione: '',
+  };
 
   mostraModaleReview: boolean = false;
   modalStep: 'read' | 'reject-reason' | 'confirm' | 'success' = 'read';
@@ -65,6 +76,15 @@ export class LecturerDashboardComponent implements OnInit {
           return !isPendingLA && !isPendingToR;
         });
 
+        this.uniqueIstituzioni = [...new Set(this.handledApps.map((a) => a.institution_name))]
+          .filter(Boolean)
+          .sort() as string[];
+        this.uniqueAnni = [...new Set(this.handledApps.map((a) => a.academic_year))]
+          .filter(Boolean)
+          .sort() as string[];
+
+        this.praticheFiltrate = [...this.handledApps];
+
         this.cdr.detectChanges();
       })
       .catch((err) => console.error('Errore recupero pratiche:', err));
@@ -91,13 +111,38 @@ export class LecturerDashboardComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  applicaFiltri() {
+    this.praticheFiltrate = this.handledApps.filter((app) => {
+      const nomeCompleto = `${app.student_first_name} ${app.student_last_name}`.toLowerCase();
+      const searchTerm = this.filtri.studente.toLowerCase();
+
+      const matchStudente =
+        !this.filtri.studente ||
+        nomeCompleto.includes(searchTerm) ||
+        (app.matricola && app.matricola.toLowerCase().includes(searchTerm));
+      const matchStato = !this.filtri.stato || app.status === this.filtri.stato;
+      const matchAnno = !this.filtri.anno || app.academic_year === this.filtri.anno;
+      const matchIstituzione =
+        !this.filtri.istituzione || app.institution_name === this.filtri.istituzione;
+
+      return matchStudente && matchStato && matchAnno && matchIstituzione;
+    });
+    this.cdr.detectChanges();
+  }
+
+  resettaFiltri() {
+    this.filtri = { studente: '', stato: '', anno: '', istituzione: '' };
+    this.praticheFiltrate = [...this.handledApps];
+    this.cdr.detectChanges();
+  }
+
   startReview(app: any, docType: 'LEARNING_AGREEMENT' | 'TRANSCRIPT_OF_RECORDS') {
     const actionType =
       docType === 'LEARNING_AGREEMENT'
         ? app.status === 'AWAITING_MODIFICATION_APPROVAL'
-          ? 'Valutazione Modifica L.A.'
-          : 'Valutazione L.A. Iniziale'
-        : 'Valutazione Voti Rientro (ToR)';
+          ? 'L.A. Modification Evaluation'
+          : 'Initial L.A. Evaluation'
+        : 'ToR Grades Evaluation';
 
     fetch(`http://localhost:3000/api/applications/${app.id}`)
       .then((res) => res.json())
@@ -106,32 +151,46 @@ export class LecturerDashboardComponent implements OnInit {
           (d: any) => d.document_type === docType && d.status === 'PENDING',
         );
 
-        let examsHtml = '';
+        // CREAZIONE LISTA ESAMI FORMATTATA A PUNTI E TRATTEGGI
+        let examsHtml = '<ul style="list-style-type: none; padding: 0; margin: 0;">';
+
         if (docType === 'LEARNING_AGREEMENT') {
           const examsToShow = details.exams.filter(
             (e: any) => e.is_proposed_change || app.status === 'AWAITING_FOR_APPROVAL',
           );
           examsToShow.forEach((e: any) => {
+            const isNewBadge = e.is_proposed_change ? `<span class="exam-new-tag">NEW</span>` : ``;
+
             examsHtml += `
-              <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px dashed var(--border); margin-bottom: 8px;">
-                <span>✈️ ${e.foreign_course_name} (${e.foreign_course_credits} CFU)</span>
-                <span>🏛️ ${e.unive_course_title} (${e.unive_course_credits} CFU)</span>
-              </div>`;
+              <li style="border-bottom: 1px dashed var(--border); padding-bottom: 12px; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                  <strong style="color: var(--text-main); font-size: 14px;">✈️ ${e.foreign_course_name} [${e.foreign_course_code}] (${e.foreign_course_credits} CFU) ${isNewBadge}</strong>
+                </div>
+                <div style="color: var(--text-muted); font-size: 13px;">
+                  🏛️ ${e.unive_course_title} [${e.unive_course_code}] (${e.unive_course_credits} CFU)
+                </div>
+              </li>`;
           });
         } else {
           details.exams.forEach((e: any) => {
             examsHtml += `
-              <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px dashed var(--border); margin-bottom: 8px;">
-                <span>✈️ ${e.foreign_course_name} <strong>(Voto: ${e.score_obtained})</strong></span>
-                <span>🏛️ ${e.unive_course_title}</span>
-              </div>`;
+              <li style="border-bottom: 1px dashed var(--border); padding-bottom: 12px; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <strong style="color: var(--text-main); font-size: 14px;">✈️ ${e.foreign_course_name} [${e.foreign_course_code}]</strong>
+                  <span style="background: var(--surface); border: 1px solid var(--success); color: var(--success); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px;">Voto: ${e.score_obtained}</span>
+                </div>
+                <div style="color: var(--text-muted); font-size: 13px;">
+                  🏛️ ${e.unive_course_title} [${e.unive_course_code}]
+                </div>
+              </li>`;
           });
         }
+        examsHtml += '</ul>';
 
         this.reviewData = {
           appId: app.id,
           docType: docType,
-          studentName: `🧑‍🎓 Studente: ${app.student_first_name} ${app.student_last_name}`,
+          studentName: `🧑‍🎓 Studente: ${app.student_first_name} ${app.student_last_name} (${app.matricola || 'N/A'})`,
           actionType: actionType,
           studentNote: pendingDoc ? pendingDoc.modification_description : null,
           docName: pendingDoc ? pendingDoc.file_name : 'Documento non trovato',
@@ -182,10 +241,8 @@ export class LecturerDashboardComponent implements OnInit {
 
   chiudiSuccesso() {
     this.chiudiReviewModal();
-    this.switchView('homeView');
   }
 
-  // LOGICA MODALE STORICO AGGIORNATA
   openHistoricalDetails(app: any) {
     fetch(`http://localhost:3000/api/applications/${app.id}`)
       .then((res) => res.json())
@@ -194,6 +251,7 @@ export class LecturerDashboardComponent implements OnInit {
           ...details,
           student_first_name: app.student_first_name,
           student_last_name: app.student_last_name,
+          matricola: app.matricola,
         };
         this.mostraModaleStorico = true;
         this.cdr.detectChanges();

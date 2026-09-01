@@ -592,6 +592,7 @@ app.get('/api/lecturer/applications', async (req, res) => {
                 a.id, a.academic_year, a.mobility_period, a.status,
                 i.name AS institution_name, i.country,
                 s.first_name AS student_first_name, s.last_name AS student_last_name,
+                s.matriculation_number AS matricola,
                 (SELECT COUNT(*) FROM Documents d WHERE d.application_id = a.id AND d.status = 'PENDING') AS pending_docs
             FROM Applications a
                      JOIN Institutions i ON a.institution_id = i.id
