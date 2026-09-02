@@ -1,5 +1,5 @@
 <header>
-  <a href="#" class="back-btn" (click)="tornaIndietro($event)">{{ 'ACTIVE_MOBILITY.BTN_BACK' | translate }}</a>
+  <div class="logo-area">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
   <div class="header-actions">
     <button class="lang-btn" (click)="translationService.toggleLanguage()" title="Cambia lingua">
       {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
@@ -28,6 +28,8 @@
 </header>
 
 <main>
+  <button class="back-header-btn" (click)="tornaIndietro($event)">{{ 'ACTIVE_MOBILITY.BTN_BACK' | translate }}</button>
+
   <div style="text-align: center; margin-bottom: 40px;">
     <h1 class="page-title">{{ 'ACTIVE_MOBILITY.TITLE' | translate }}</h1>
     <p class="page-subtitle">{{ 'ACTIVE_MOBILITY.SUBTITLE' | translate }}</p>

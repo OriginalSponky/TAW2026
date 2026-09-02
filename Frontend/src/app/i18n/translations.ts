@@ -12,7 +12,7 @@ export const translations: any = {
     },
     REGISTER: {
       TITLE: 'Nuovo Utente',
-      SUBTITLE: 'La tua email non è nel sistema. Conferma i tuoi dati per registrarti.',
+      SUBTITLE: ' La tua email non è nel sistema. Conferma i tuoi dati per registrarti.',
       EMAIL: 'Email:',
       ROLE: 'Ruolo Assegnato:',
       MATRICULA: 'Matricola:',
@@ -34,6 +34,7 @@ export const translations: any = {
       REGISTRATION_ERROR: 'Errore durante la registrazione.',
     },
     HEADER: {
+      OVERSEAS_TITLE: 'Ufficio Overseas',
       MANAGE_ACCOUNT: 'Gestisci il tuo Account',
       SETTINGS: 'Impostazioni',
       HELP: 'Aiuto e feedback',
@@ -53,7 +54,7 @@ export const translations: any = {
         'Gestisci la tua mobilità in corso, aggiorna il L.A. o carica il Transcript of Records.',
     },
     STAFF: {
-      GREETING: 'Ciao Staff',
+      GREETING: 'Ciao',
       SUBTITLE: "Pannello di controllo dell'Ufficio Mobilità Overseas di UniVe.",
       BOX_PRE_DEP_TITLE: 'Verifiche Pre-Partenza',
       BOX_PRE_DEP_DESC: 'Pratiche approvate dai docenti, in attesa di nulla osta per la partenza.',
@@ -284,7 +285,7 @@ export const translations: any = {
         'Inserisci i voti esatti riportati nel documento ufficiale della tua università ospitante.',
       FINAL_SCORE: '🏆 Voto Ottenuto (Score):',
       EXAM_DATE: '📅 Data Esame:',
-      ADD_TAKEN_EXAM: '+ Aggiungi Esame Sostenuto',
+      ADD_TAKEN_EXAM: '+ Add Taken Exam',
       UPLOAD_TOR: '📄 Carica il Transcript of Records originale (PDF):',
       BTN_SEND_VOTES: 'Invia Voti Ufficiali',
       CORRECTION_TITLE: '⚠️ Correggi i Dati Rifiutati',
@@ -333,7 +334,7 @@ export const translations: any = {
       SUCCESS_OP: 'Operazione registrata con successo!',
     },
     LECTURER: {
-      GREETING: 'Ciao Prof.',
+      GREETING: 'Ciao',
       SUBTITLE:
         "Benvenuto nell'Area Docenti. Scegli un'area di competenza per gestire le richieste degli studenti UniVe.",
       BOX_LA_TITLE: 'Approvazioni L.A.',
@@ -431,6 +432,7 @@ export const translations: any = {
       REGISTRATION_ERROR: 'Error during registration.',
     },
     HEADER: {
+      OVERSEAS_TITLE: 'Overseas Office',
       MANAGE_ACCOUNT: 'Manage your Account',
       SETTINGS: 'Settings',
       HELP: 'Help and feedback',
@@ -450,7 +452,7 @@ export const translations: any = {
         'Manage your ongoing mobility, update your L.A., or upload the Transcript of Records.',
     },
     STAFF: {
-      GREETING: 'Hello Staff',
+      GREETING: 'Hello',
       SUBTITLE: 'Control panel of the UniVe Overseas Mobility Office.',
       BOX_PRE_DEP_TITLE: 'Pre-Departure Checks',
       BOX_PRE_DEP_DESC: 'Applications approved by teachers, waiting for departure clearance.',
@@ -725,7 +727,7 @@ export const translations: any = {
       SUCCESS_OP: 'Operation successfully recorded!',
     },
     LECTURER: {
-      GREETING: 'Hello Prof.',
+      GREETING: 'Hello',
       SUBTITLE:
         'Welcome to the Teachers Area. Choose an area of expertise to manage UniVe student requests.',
       BOX_LA_TITLE: 'L.A. Approvals',
@@ -768,13 +770,14 @@ export const translations: any = {
       BTN_REJECT: 'Reject',
       BTN_APPROVE: 'Approve Application',
       REJECT_REASON_TITLE: 'Reason for Rejection (Mandatory):',
-      REJECT_REASON_PLACE: 'Explain in detail what the student needs to correct...',
+      REJECT_REASON_PLACE: 'Explain in detail what student needs to correct...',
       BTN_BACK_MODAL: 'Back',
       BTN_PROCEED_REJECT: 'Proceed with Rejection',
       CONFIRM_APPROVE: 'Do you confirm the approval?',
       CONFIRM_REJECT: 'Do you confirm the rejection?',
       CONFIRM_DESC: 'The outcome will be recorded for',
       BTN_CONFIRM_APPROVE: 'Confirm Approval',
+      BTN_CONFIRM_RESUBMIT: 'Confirm Revision',
       BTN_CONFIRM_REJECT: 'Confirm Rejection',
       SUCCESS_TITLE: 'Successfully completed!',
       SUCCESS_DESC: 'The database has been updated. The student can see the modified status.',

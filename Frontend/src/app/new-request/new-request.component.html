@@ -1,7 +1,5 @@
 <header>
-  <a href="#" class="back-btn" (click)="tornaIndietro($event)">
-    {{ editRequestId ? ('NEW_REQ.BTN_BACK_REQ' | translate) : ('NEW_REQ.BTN_BACK_HOME' | translate) }}
-  </a>
+  <div class="logo-area">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
 
   <div class="header-actions">
     <button class="lang-btn" (click)="translationService.toggleLanguage()">
@@ -32,6 +30,10 @@
 </header>
 
 <main (click)="menuAperto = false">
+  <button class="back-header-btn" (click)="tornaIndietro($event)">
+    {{ editRequestId ? ('NEW_REQ.BTN_BACK_REQ' | translate) : ('NEW_REQ.BTN_BACK_HOME' | translate) }}
+  </button>
+
   <div style="text-align: center; margin-bottom: 32px; margin-top: 16px;">
     <h1 class="page-title" style="font-size: 2.5rem; margin-bottom: 8px;">{{ 'NEW_REQ.TITLE' | translate }}</h1>
     <p style="color: var(--text-muted); font-size: 15px;">{{ 'NEW_REQ.SUBTITLE' | translate }}</p>

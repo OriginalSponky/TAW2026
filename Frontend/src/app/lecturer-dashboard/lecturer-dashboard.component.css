@@ -172,28 +172,6 @@ main {
   border: 1px solid #d8b4fe;
 }
 
-/* Tasto Indietro Specifico */
-.back-header-btn {
-  margin-bottom: 24px;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-}
-
-.back-header-btn:hover {
-  color: var(--primary);
-  border-color: var(--primary);
-  background-color: var(--primary-light);
-}
-
 /* -----------------------------------------------------------
    ELEMENTI INTERNI AL MODALE DI VALUTAZIONE
    ----------------------------------------------------------- */

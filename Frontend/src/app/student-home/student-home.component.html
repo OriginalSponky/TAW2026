@@ -1,6 +1,6 @@
 @if (vistaAttiva === 'dashboard') {
   <header>
-    <div class="header-logo">Overseas Program</div>
+    <div class="logo-area">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
 
     <div class="header-actions">
       <button class="lang-btn" (click)="translationService.toggleLanguage()" title="Cambia lingua">
@@ -25,6 +25,8 @@
               <button class="swatch bg-rose" (click)="themeService.setThemeColor('rose')" [class.active]="themeService.currentColor === 'rose'"></button>
             </div>
           </div>
+
+          <div class="divider"></div>
           <a href="#" class="logout" (click)="logout($event)">{{ 'HEADER.LOGOUT' | translate }}</a>
         </div>
       </div>

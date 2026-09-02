@@ -1,5 +1,5 @@
 <header>
-  <a href="#" class="back-btn" (click)="tornaIndietro($event)">{{ 'MY_REQ.BTN_BACK' | translate }}</a>
+  <div class="logo-area">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
 
   <div class="header-actions">
     <button class="lang-btn" (click)="translationService.toggleLanguage()" title="Cambia lingua">
@@ -33,6 +33,8 @@
 <main (click)="menuAperto = false">
 
   @if (!richiestaSelezionata) {
+    <button class="back-header-btn" (click)="tornaIndietro($event)">{{ 'MY_REQ.BTN_BACK' | translate }}</button>
+
     <div class="header-section">
       <h1 class="page-title">{{ 'MY_REQ.TITLE' | translate }}</h1>
       <a href="#" class="new-btn" (click)="vaiANuovaRichiesta($event)">{{ 'MY_REQ.BTN_NEW' | translate }}</a>

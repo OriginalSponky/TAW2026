@@ -134,6 +134,43 @@ h1, h2, h3, h4, h5, h6, .page-title, .page-subtitle {
   color: var(--text-main);
 }
 
+.page-title {
+  font-size: 2rem; /* Dimensione unificata per tutte le dashboard */
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+}
+
+/* Logo Testuale Header (Ufficio Overseas / Overseas Program) */
+.logo-area {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--primary); /* Prende dinamicamente il colore del tema scelto! */
+  margin: 0;
+  letter-spacing: -0.5px;
+  transition: color 0.3s ease;
+}
+
+/* ==========================================================
+   TITOLI HERO (Uniforma Student, Staff e Lecturer)
+   ========================================================== */
+.hero h1,
+.hero .page-title {
+  font-size: 3rem !important; /* Forza la grandezza grande per tutte le home */
+  font-weight: 700 !important;
+  color: var(--text-main);
+  margin: 0 0 12px 0 !important;
+  letter-spacing: -1px !important;
+}
+
+.hero .page-subtitle {
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+}
+
 /* --------------------------------------------------------------------------
    4. FORM INPUTS (Stile universale per input, textarea e select)
    -------------------------------------------------------------------------- */

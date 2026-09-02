@@ -1,5 +1,5 @@
 <header>
-  <div class="logo-area">Ufficio Overseas</div>
+  <div class="logo-area">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
 
   <div class="header-actions">
     <button class="lang-btn" (click)="translationService.toggleLanguage()">
@@ -32,7 +32,7 @@
 
   @if (activeView === 'homeView') {
     <div class="hero">
-      <h1 class="page-title">{{ 'STAFF.GREETING' | translate }}, {{ utente.first_name }} {{ utente.last_name }}</h1>
+      <h1 class="page-title">{{ 'STAFF.GREETING' | translate }} {{ utente.first_name }} {{ utente.last_name }}</h1>
       <p class="page-subtitle">{{ 'STAFF.SUBTITLE' | translate }}</p>
     </div>
 

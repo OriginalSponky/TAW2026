@@ -10,9 +10,9 @@
 }
 
 /* -----------------------------------------------------------
-   HEADER LOGO (Specifico per questa pagina)
+   HEADER LOGO (Uniformato con Staff e Lecturer)
    ----------------------------------------------------------- */
-.header-logo {
+.logo-area {
   font-size: 1.4rem;
   font-weight: 700;
   color: var(--primary);

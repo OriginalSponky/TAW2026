@@ -1,11 +1,9 @@
-<div class="detail-header">
-  <button class="back-header-btn" (click)="tornaIndietro($event)">
-    {{ 'REQ_DETAIL.BTN_BACK' | translate }}
-  </button>
-</div>
-
 @if (dettagli) {
   <main>
+    <button class="back-header-btn" (click)="tornaIndietro($event)">
+      {{ 'REQ_DETAIL.BTN_BACK' | translate }}
+    </button>
+
     <div class="card" style="margin-bottom: 24px;">
       <div class="card-header-flex">
         <h2>{{ 'REQ_DETAIL.TITLE' | translate }}</h2>
