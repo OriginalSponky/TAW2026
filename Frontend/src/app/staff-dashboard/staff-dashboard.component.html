@@ -70,7 +70,7 @@
       }
 
       @for (app of preDepartureApps; track app.id) {
-        <div class="request-card card-departure">
+        <div class="request-card border-pre-departure">
           <div class="request-info">
             <div class="student-name">🧑‍🎓 {{ app.name }} (Mat. {{ app.matricola }})</div>
             <div class="details">🌍 Destinazione: {{ app.institution }} | ✉️ Docente: {{ app.teacher }}</div>
@@ -103,7 +103,7 @@
       }
 
       @for (app of closureApps; track app.id) {
-        <div class="request-card card-closure">
+        <div class="request-card border-waiting-score">
           <div class="request-info">
             <div class="student-name">🧑‍🎓 {{ app.name }} (Mat. {{ app.matricola }})</div>
             <div class="details">🌍 Destinazione: {{ app.institution }} | ✉️ Docente: {{ app.teacher }}</div>

@@ -128,13 +128,6 @@
           </div>
         }
 
-        @if (app.status === 'PRE_DEPARTURE_COMPLETED') {
-          <div class="highlight-box" style="border-color: var(--success); background-color: #dcfce7;">
-            <h3 style="color: var(--success); margin-bottom: 12px;">✅ L.A. Approvato!</h3>
-            <p style="font-size: 14px; color: var(--text-main); margin-bottom: 0;">Il tuo Learning Agreement è stato approvato dal docente. L'Ufficio Overseas verificherà a breve la pratica per attivare ufficialmente la tua mobilità.</p>
-          </div>
-        }
-
         @if (app.status === 'MOBILITY_IN_PROGRESS' || app.status === 'AWAITING_MODIFICATION_APPROVAL' || app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL') {
           <div class="actions" style="border-top: 1px solid var(--border); padding-top: 24px;">
             <p style="width: 100%; font-size: 15px; color: var(--primary); font-weight: 600; margin-bottom: 12px; margin-top: 0;">

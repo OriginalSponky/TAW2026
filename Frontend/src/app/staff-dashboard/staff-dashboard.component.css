@@ -112,10 +112,6 @@ main {
   transform: translateY(-2px);
 }
 
-/* Colori distintivi laterali specifici per lo Staff in Pre-Departure e Closure */
-.card-departure { border-left-color: #fbbc05 !important; }
-.card-closure { border-left-color: var(--success) !important; }
-
 .request-info {
   display: flex;
   flex-direction: column;
