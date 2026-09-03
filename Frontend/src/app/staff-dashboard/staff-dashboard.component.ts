@@ -79,9 +79,9 @@ export class StaffDashboardComponent implements OnInit {
           .sort() as string[];
 
         this.preDepartureApps = this.allApps.filter((a) => a.status === 'PRE_DEPARTURE_COMPLETED');
-        this.closureApps = this.allApps.filter(
-          (a) => a.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' && a.pending_docs === 0,
-        );
+
+        // MODIFICA: Ora lo Staff prende le pratiche in EXAM_SCORES_APPROVED
+        this.closureApps = this.allApps.filter((a) => a.status === 'EXAM_SCORES_APPROVED');
 
         this.praticheFiltrate = [...this.allApps];
         this.cdr.detectChanges();
@@ -103,6 +103,8 @@ export class StaffDashboardComponent implements OnInit {
         return 'badge-warning';
       case 'WAITING_FOR_EXAM_SCORE_APPROVAL':
         return 'badge-purple';
+      case 'EXAM_SCORES_APPROVED':
+        return 'badge-purple'; // Nuovo stato aggiunto qui!
       case 'CLOSED':
         return 'badge-success';
       case 'CANCELED':
@@ -159,10 +161,11 @@ export class StaffDashboardComponent implements OnInit {
         const dbDocType =
           actionType === 'pre-departure' ? 'LEARNING_AGREEMENT' : 'TRANSCRIPT_OF_RECORDS';
 
-        const pendingDoc = details.documents.find((d: any) => d.document_type === dbDocType);
+        const relevantDocs = details.documents.filter((d: any) => d.document_type === dbDocType);
+        const pendingDoc = relevantDocs.length > 0 ? relevantDocs[relevantDocs.length - 1] : null;
+
         const fallbackText = this.translationService.translate('STAFF.NO_DOC_FOUND');
 
-        // Formatta le date per mostrarle allo staff
         const formatData = (dataStr: string) => {
           if (!dataStr) return '';
           return new Date(dataStr).toLocaleDateString('it-IT');
@@ -179,7 +182,7 @@ export class StaffDashboardComponent implements OnInit {
           docName: pendingDoc ? pendingDoc.file_name : fallbackText,
           docUrl: pendingDoc ? `http://localhost:3000${pendingDoc.file_path}` : '#',
           profName: app.teacher,
-          datesText: datesText, // Passo le date all'HTML
+          datesText: datesText,
         };
 
         this.modalStep = 'read';
@@ -187,9 +190,6 @@ export class StaffDashboardComponent implements OnInit {
         this.pendingAction = null;
         this.mostraModaleReview = true;
         this.cdr.detectChanges();
-      })
-      .catch((err) => {
-        console.error("Errore nel caricamento del documento dell'application:", err);
       });
   }
 

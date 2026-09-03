@@ -150,6 +150,7 @@
           <option value="PRE_DEPARTURE_COMPLETED">PRE_DEPARTURE_COMPLETED</option>
           <option value="MOBILITY_IN_PROGRESS">MOBILITY_IN_PROGRESS</option>
           <option value="WAITING_FOR_EXAM_SCORE_APPROVAL">WAITING_FOR_EXAM_SCORE_APPROVAL</option>
+          <option value="EXAM_SCORES_APPROVED">EXAM_SCORES_APPROVED</option>
           <option value="CLOSED">CLOSED</option>
           <option value="CANCELED">CANCELED</option>
         </select>
@@ -184,7 +185,7 @@
             'border-awaiting': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
             'border-pre-departure': app.status === 'PRE_DEPARTURE_COMPLETED',
             'border-in-progress': app.status === 'MOBILITY_IN_PROGRESS',
-            'border-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+            'border-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' || app.status === 'EXAM_SCORES_APPROVED',
             'border-closed': app.status === 'CLOSED',
             'border-canceled': app.status === 'CANCELED'
           }">
@@ -196,7 +197,7 @@
                 'status-awaiting-la': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
                 'status-pre-departure': app.status === 'PRE_DEPARTURE_COMPLETED',
                 'status-in-progress': app.status === 'MOBILITY_IN_PROGRESS',
-                'status-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+                'status-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' || app.status === 'EXAM_SCORES_APPROVED',
                 'status-closed': app.status === 'CLOSED',
                 'status-canceled': app.status === 'CANCELED'
               }" style="margin-top: 8px;">

@@ -112,7 +112,6 @@
                 <button class="btn-primary" (click)="apriModaleConferma('save_dates', app)">{{ 'ACTIVE_MOBILITY.BTN_SEND_TO_DOCENT' | translate }}</button>
               </div>
             } @else {
-              <!-- Nuova grafica per "In Valutazione" (Adatta alla Dark/Light mode) -->
               <div style="padding: 16px; background-color: rgba(37, 99, 235, 0.1); border: 1px solid var(--primary); border-radius: var(--radius-md);">
                 <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 8px; font-size: 1.15rem;">{{ 'ACTIVE_MOBILITY.IN_EVALUATION_TITLE' | translate }}</h3>
                 <p style="font-size: 14px; color: var(--text-main); margin-bottom: 0; line-height: 1.5;">{{ 'ACTIVE_MOBILITY.IN_EVALUATION_DESC' | translate }}</p>
@@ -125,6 +124,13 @@
           <div class="highlight-box" style="border-color: var(--success); background-color: rgba(16, 185, 129, 0.1); padding: 16px; margin-top: 16px;">
             <h3 style="color: var(--success); margin-top: 0; margin-bottom: 8px; font-size: 1.15rem;">{{ 'ACTIVE_MOBILITY.LA_APPROVED_TITLE' | translate }}</h3>
             <p style="font-size: 14px; color: var(--text-main); margin-bottom: 0; line-height: 1.5;">{{ 'ACTIVE_MOBILITY.LA_APPROVED_DESC' | translate }}</p>
+          </div>
+        }
+
+        @if (app.status === 'EXAM_SCORES_APPROVED') {
+          <div class="highlight-box" style="border-color: var(--primary); background-color: rgba(37, 99, 235, 0.1); padding: 16px; margin-top: 16px;">
+            <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 8px; font-size: 1.15rem;">{{ 'ACTIVE_MOBILITY.SCORES_APPROVED_TITLE' | translate }}</h3>
+            <p style="font-size: 14px; color: var(--text-main); margin-bottom: 0; line-height: 1.5;">{{ 'ACTIVE_MOBILITY.SCORES_APPROVED_DESC' | translate }}</p>
           </div>
         }
 
@@ -343,26 +349,53 @@
           }
         }
 
-        @if (app.status === 'CLOSED' && app.exams && app.exams.length > 0) {
+        @if (app.status === 'CLOSED') {
+
+          @if (app.exams && app.exams.length > 0) {
+            <div style="border-top: 1px solid var(--border); padding-top: 24px; margin-top: 24px;">
+              <h3 style="color: var(--success); margin-top: 0; font-size: 1.15rem; margin-bottom: 16px;">
+                {{ 'ACTIVE_MOBILITY.VALIDATED_EXAMS' | translate }}
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                @for (esame of app.exams; track esame.id) {
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px; background: var(--bg-color); border: 1px solid var(--border); border-radius: var(--radius-md);">
+                    <div>
+                      <strong style="color: var(--text-main); display: block; font-size: 14px;">✈️ {{ esame.foreign_course_name }} ({{ esame.foreign_course_credits }} CFU)</strong>
+                      <span style="font-size: 13px; color: var(--text-muted);">🏛️ Ca' Foscari: {{ esame.unive_course_title }} ({{ esame.unive_course_credits }} CFU)</span>
+                    </div>
+                    <div style="text-align: right; background: var(--surface); padding: 6px 14px; border-radius: var(--radius-md); border: 1px solid var(--success);">
+                      <span style="font-size: 10px; font-weight: 700; color: var(--success); display: block; text-transform: uppercase;">{{ 'ACTIVE_MOBILITY.SCORE' | translate }}</span>
+                      <strong style="font-size: 15px; color: var(--success);">{{ esame.score_obtained || ('ACTIVE_MOBILITY.APPROVED' | translate) }}</strong>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
           <div style="border-top: 1px solid var(--border); padding-top: 24px; margin-top: 24px;">
-            <h3 style="color: var(--success); margin-top: 0; font-size: 1.15rem; margin-bottom: 16px;">
-              {{ 'ACTIVE_MOBILITY.VALIDATED_EXAMS' | translate }}
+            <h3 style="color: var(--primary); margin-top: 0; font-size: 1.15rem; margin-bottom: 16px;">
+              📄 {{ 'ACTIVE_MOBILITY.OFFICIAL_DOCS' | translate }}
             </h3>
             <div style="display: flex; flex-direction: column; gap: 12px;">
-              @for (esame of app.exams; track esame.id) {
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px; background: var(--bg-color); border: 1px solid var(--border); border-radius: var(--radius-md);">
-                  <div>
-                    <strong style="color: var(--text-main); display: block; font-size: 14px;">✈️ {{ esame.foreign_course_name }} ({{ esame.foreign_course_credits }} CFU)</strong>
-                    <span style="font-size: 13px; color: var(--text-muted);">🏛️ Ca' Foscari: {{ esame.unive_course_title }} ({{ esame.unive_course_credits }} CFU)</span>
+              @for (doc of app.documents; track doc.id) {
+                @if (doc.status === 'APPROVED') {
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px; background: var(--bg-color); border: 1px solid var(--border); border-radius: var(--radius-md);">
+                    <div>
+                      <strong style="color: var(--text-main); display: block; font-size: 14px;">
+                        {{ doc.document_type === 'LEARNING_AGREEMENT' ? 'Learning Agreement' : 'Transcript of Records' }}
+                      </strong>
+                      <span style="font-size: 13px; color: var(--text-muted);">{{ doc.file_name }}</span>
+                    </div>
+                    <a [href]="'http://localhost:3000' + doc.file_path" target="_blank" class="btn-outline" style="text-decoration: none; font-size: 13px; padding: 6px 16px; display: inline-flex; align-items: center; gap: 6px;">
+                      📥 {{ 'ACTIVE_MOBILITY.DOWNLOAD' | translate }}
+                    </a>
                   </div>
-                  <div style="text-align: right; background: var(--surface); padding: 6px 14px; border-radius: var(--radius-md); border: 1px solid var(--success);">
-                    <span style="font-size: 10px; font-weight: 700; color: var(--success); display: block; text-transform: uppercase;">{{ 'ACTIVE_MOBILITY.SCORE' | translate }}</span>
-                    <strong style="font-size: 15px; color: var(--success);">{{ esame.score_obtained || ('ACTIVE_MOBILITY.APPROVED' | translate) }}</strong>
-                  </div>
-                </div>
+                }
               }
             </div>
           </div>
+
         }
       </div>
     }

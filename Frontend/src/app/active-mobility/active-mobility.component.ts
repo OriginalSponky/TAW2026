@@ -95,6 +95,7 @@ export class ActiveMobilityComponent implements OnInit {
           'MOBILITY_IN_PROGRESS',
           'AWAITING_MODIFICATION_APPROVAL',
           'WAITING_FOR_EXAM_SCORE_APPROVAL',
+          'EXAM_SCORES_APPROVED',
         ];
         const activeApps = data.filter((a: any) => statiAttivi.includes(a.status));
 
@@ -319,6 +320,27 @@ export class ActiveMobilityComponent implements OnInit {
         };
         break;
       case 'submit_tor':
+        // NUOVO CONTROLLO: Verifica che ci sia almeno un esame e che Voto e Data siano compilati per TUTTI
+        if (!app.esamiToR || app.esamiToR.length === 0) {
+          this.mostraFeedback(
+            'error',
+            this.translationService.translate('ACTIVE_MOBILITY.ERR_MISSING_TOR_DATA'),
+          );
+          return;
+        }
+
+        const datiMancanti = app.esamiToR.some(
+          (e: any) =>
+            !e.score || String(e.score).trim() === '' || !e.date || String(e.date).trim() === '',
+        );
+        if (datiMancanti) {
+          this.mostraFeedback(
+            'error',
+            this.translationService.translate('ACTIVE_MOBILITY.ERR_MISSING_TOR_DATA'),
+          );
+          return;
+        }
+
         this.modalConfig = {
           action: azione,
           icon: '🎓',

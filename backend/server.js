@@ -441,12 +441,10 @@ app.put('/api/applications/:id/modify-la', upload.single('learning_agreement_fil
         await connection.beginTransaction();
 
         await connection.query(`UPDATE Applications SET status = 'AWAITING_MODIFICATION_APPROVAL' WHERE id = ?`, [appId]);
-
         await connection.query(`DELETE FROM ExamsMapping WHERE application_id = ? AND is_proposed_change = TRUE`, [appId]);
 
         for (const exam of parsedExams) {
             const isProposed = exam.is_proposed_change ? true : false;
-
             await connection.query(
                 `INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits, is_proposed_change)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -459,6 +457,12 @@ app.put('/api/applications/:id/modify-la', upload.single('learning_agreement_fil
                 `INSERT INTO Documents (application_id, document_type, file_name, file_path, status, modification_description)
                  VALUES (?, 'LEARNING_AGREEMENT', ?, ?, 'PENDING', ?)`,
                 [appId, file.originalname, '/uploads/' + file.filename, reason]
+            );
+        } else {
+            await connection.query(
+                `INSERT INTO Documents (application_id, document_type, file_name, file_path, status, modification_description)
+                 VALUES (?, 'LEARNING_AGREEMENT', 'Modifica Piano di Studi (Nessun File)', '#', 'PENDING', ?)`,
+                [appId, reason]
             );
         }
 
@@ -517,45 +521,24 @@ app.put('/api/applications/:id/resubmit-modification', upload.single('learning_a
     const file = req.file;
     let parsedExams = [];
 
-    try {
-        parsedExams = JSON.parse(exams);
-    } catch (e) {
-        console.error("Errore parsing JSON esami:", e);
-    }
+    try { parsedExams = JSON.parse(exams); } catch (e) { }
 
     const connection = await dbPool.getConnection();
     try {
         await connection.beginTransaction();
 
-        await connection.query(
-            `UPDATE Applications SET status = 'AWAITING_MODIFICATION_APPROVAL', la_rejection_reason = NULL WHERE id = ?`,
-            [appId]
-        );
-
-        // Cancella le vecchie proposte rifiutate
+        await connection.query(`UPDATE Applications SET status = 'AWAITING_MODIFICATION_APPROVAL', la_rejection_reason = NULL WHERE id = ?`, [appId]);
         await connection.query(`DELETE FROM ExamsMapping WHERE application_id = ? AND is_proposed_change = TRUE`, [appId]);
 
         for (const exam of parsedExams) {
             const isProposed = exam.is_proposed_change ? true : false;
-
             const examDate = (exam.date && exam.date.trim() !== '') ? exam.date : null;
             const examScore = (exam.score && exam.score.trim() !== '') ? exam.score : null;
 
             await connection.query(
                 `INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits, score_obtained, exam_date, is_proposed_change)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    appId,
-                    exam.foreignCode || '',
-                    exam.foreignName || '',
-                    exam.foreignCredits || 0,
-                    exam.localCode || '',
-                    exam.localName || '',
-                    exam.localCredits || 0,
-                    examScore,
-                    examDate,
-                    isProposed
-                ]
+                [appId, exam.foreignCode || '', exam.foreignName || '', exam.foreignCredits || 0, exam.localCode || '', exam.localName || '', exam.localCredits || 0, examScore, examDate, isProposed]
             );
         }
 
@@ -565,6 +548,12 @@ app.put('/api/applications/:id/resubmit-modification', upload.single('learning_a
                  VALUES (?, 'LEARNING_AGREEMENT', ?, ?, 'PENDING')`,
                 [appId, file.originalname, '/uploads/' + file.filename]
             );
+        } else {
+            await connection.query(
+                `INSERT INTO Documents (application_id, document_type, file_name, file_path, status)
+                 VALUES (?, 'LEARNING_AGREEMENT', 'Modifica Piano di Studi (Nessun File)', '#', 'PENDING')`,
+                [appId]
+            );
         }
 
         await connection.commit();
@@ -573,9 +562,7 @@ app.put('/api/applications/:id/resubmit-modification', upload.single('learning_a
         await connection.rollback();
         console.error("🔴 ERRORE CRITICO NEL SERVER (Resubmit):", error);
         res.status(500).send("Errore server durante il reinvio: " + error.message);
-    } finally {
-        connection.release();
-    }
+    } finally { connection.release(); }
 });
 
 // ROTTE PER L'AREA DOCENTE (LECTURER DASHBOARD)
@@ -611,32 +598,69 @@ app.get('/api/lecturer/applications', async (req, res) => {
 // 2. Approva o Rifiuta un documento (L.A. o ToR)
 app.put('/api/lecturer/applications/:id/review', async (req, res) => {
     const appId = req.params.id;
-    // action sarà 'APPROVE' o 'REJECT'
     const { document_type, action, rejection_reason } = req.body;
 
     const connection = await dbPool.getConnection();
     try {
         await connection.beginTransaction();
 
-        // 1. Aggiorna lo stato del singolo documento in sospeso
+        // 1. GESTIONE PULIZIA DOCUMENTI: Eliminiamo i vecchi APPROVED se stiamo approvando
+        if (action === 'APPROVE') {
+            // Cerchiamo il documento PENDING che stiamo per approvare
+            const [pendingDocs] = await connection.query(`
+                SELECT id, file_path 
+                FROM Documents 
+                WHERE application_id = ? AND document_type = ? AND status = 'PENDING'
+                ORDER BY upload_date DESC LIMIT 1
+            `, [appId, document_type]);
+
+            if (pendingDocs.length > 0) {
+                const pendingDoc = pendingDocs[0];
+
+                // Se il documento PENDING è "virtuale" (nessun nuovo PDF caricato per questa modifica)
+                if (pendingDoc.file_path === '#') {
+                    // Recuperiamo il vecchio file PDF dal documento precedentemente approvato
+                    const [oldApprovedDocs] = await connection.query(`
+                        SELECT file_name, file_path 
+                        FROM Documents 
+                        WHERE application_id = ? AND document_type = ? AND status = 'APPROVED'
+                        ORDER BY upload_date DESC LIMIT 1
+                    `, [appId, document_type]);
+
+                    if (oldApprovedDocs.length > 0) {
+                        const oldDoc = oldApprovedDocs[0];
+                        // Trasferiamo il file fisico al nuovo documento prima di eliminarlo!
+                        await connection.query(`
+                            UPDATE Documents 
+                            SET file_name = ?, file_path = ? 
+                            WHERE id = ?
+                        `, [oldDoc.file_name, oldDoc.file_path, pendingDoc.id]);
+                    }
+                }
+
+                // Ora possiamo eliminare tranquillamente tutti i vecchi documenti APPROVED (evitiamo doppioni)
+                await connection.query(`
+                    DELETE FROM Documents 
+                    WHERE application_id = ? AND document_type = ? AND status = 'APPROVED'
+                `, [appId, document_type]);
+            }
+        }
+
+        // 2. Aggiorna lo stato del singolo documento in sospeso ad APPROVED o REJECTED
         await connection.query(`
             UPDATE Documents
             SET status = ?, decision_date = CURDATE(), rejection_reason = ?
             WHERE application_id = ? AND document_type = ? AND status = 'PENDING'
-                ORDER BY upload_date DESC LIMIT 1
+            ORDER BY upload_date DESC LIMIT 1
         `, [action === 'APPROVE' ? 'APPROVED' : 'REJECTED', rejection_reason || null, appId, document_type]);
 
-        // Recuperiamo lo stato attuale della pratica per sapere se stiamo gestendo una modifica in corso
+        // Recuperiamo lo stato attuale della pratica per sapere in che fase siamo
         const [app] = await connection.query(`SELECT status FROM Applications WHERE id = ?`, [appId]);
         const currentStatus = app[0].status;
 
-        // 2. Gestione Logica Esami in base all'esito
+        // 3. Gestione Logica Esami in base all'esito
         if (action === 'APPROVE') {
-            if (document_type === 'LEARning_AGREEMENT' || document_type === 'LEARNING_AGREEMENT') {
-                const [app] = await connection.query(`SELECT status FROM Applications WHERE id = ?`, [appId]);
-                const currentStatus = app[0].status;
-
-                // Se è una modifica in corso va in MOBILITY_IN_PROGRESS, altrimenti (se viene da AWAITING_FOR_APPROVAL) va in PRE_DEPARTURE_COMPLETED!
+            if (document_type === 'LEARNING_AGREEMENT' || document_type === 'LEARning_AGREEMENT') {
                 const newStatus = (currentStatus === 'AWAITING_MODIFICATION_APPROVAL')
                     ? 'MOBILITY_IN_PROGRESS'
                     : 'PRE_DEPARTURE_COMPLETED';
@@ -646,6 +670,11 @@ app.put('/api/lecturer/applications/:id/review', async (req, res) => {
                     SET status = ?, is_la_approved = TRUE, la_decision_date = CURDATE(), la_rejection_reason = NULL
                     WHERE id = ?`, [newStatus, appId]);
 
+                // Eliminiamo i vecchi corsi se stiamo approvando una modifica
+                if (currentStatus === 'AWAITING_MODIFICATION_APPROVAL') {
+                    await connection.query(`DELETE FROM ExamsMapping WHERE application_id = ? AND is_proposed_change = FALSE`, [appId]);
+                }
+
                 await connection.query(`
                     UPDATE ExamsMapping
                     SET is_approved_by_lecturer = TRUE, is_proposed_change = FALSE
@@ -654,16 +683,21 @@ app.put('/api/lecturer/applications/:id/review', async (req, res) => {
             else if (document_type === 'TRANSCRIPT_OF_RECORDS') {
                 await connection.query(`
                     UPDATE Applications
-                    SET status = 'CLOSED', are_exams_approved = TRUE
+                    SET status = 'EXAM_SCORES_APPROVED', are_exams_approved = TRUE
                     WHERE id = ?`, [appId]);
+
+                await connection.query(`
+                    UPDATE ExamsMapping 
+                    SET is_approved_by_lecturer = TRUE 
+                    WHERE application_id = ?`, [appId]);
             }
         }
         else if (action === 'REJECT') {
             if (document_type === 'LEARNING_AGREEMENT') {
                 if (currentStatus === 'AWAITING_MODIFICATION_APPROVAL') {
-                    // Il prof ha rifiutato la modifica: eliminiamo dal DB i corsi proposti (is_proposed_change = TRUE)
-                    // I vecchi corsi originali (is_proposed_change = FALSE) rimarranno intatti nel DB!
                     await connection.query(`DELETE FROM ExamsMapping WHERE application_id = ? AND is_proposed_change = TRUE`, [appId]);
+                    // Riportiamo la pratica in corso se la modifica viene rifiutata
+                    await connection.query(`UPDATE Applications SET status = 'MOBILITY_IN_PROGRESS' WHERE id = ?`, [appId]);
                 }
             }
         }
@@ -711,6 +745,7 @@ app.get('/api/staff/applications', async (req, res) => {
         const [rows] = await dbPool.query(`
             SELECT
                 a.id, a.academic_year, a.mobility_period, a.status,
+                a.actual_arrival_date, a.actual_departure_date, /* AGGIUNTO QUI */
                 i.name AS institution, i.country,
                 s.first_name AS student_first_name, s.last_name AS student_last_name, s.matriculation_number AS matricola,
                 l.email AS teacher,

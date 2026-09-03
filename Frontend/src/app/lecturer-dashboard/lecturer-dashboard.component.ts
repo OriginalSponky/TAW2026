@@ -63,7 +63,10 @@ export class LecturerDashboardComponent implements OnInit {
       .then((data) => {
         const praticheVisibili = data;
 
-        // FILTRO AGGIORNATO: AWAITING_FOR_APPROVAL richiede date E un documento caricato
+        // FILTRO AGGIORNATO:
+        // 1. CREATED = Sempre visibile
+        // 2. AWAITING_FOR_APPROVAL = Visibile SOLO con date inserite E documento pending
+        // 3. AWAITING_MODIFICATION_APPROVAL = Sempre visibile (lo studente potrebbe non aver ricaricato il PDF)
         this.pendingLAs = praticheVisibili.filter(
           (a: any) =>
             a.status === 'CREATED' ||
@@ -71,7 +74,7 @@ export class LecturerDashboardComponent implements OnInit {
               a.actual_arrival_date &&
               a.actual_departure_date &&
               a.pending_docs > 0) ||
-            (a.status === 'AWAITING_MODIFICATION_APPROVAL' && a.pending_docs > 0),
+            a.status === 'AWAITING_MODIFICATION_APPROVAL',
         );
 
         this.pendingToRs = praticheVisibili.filter(
@@ -86,7 +89,7 @@ export class LecturerDashboardComponent implements OnInit {
               a.actual_arrival_date &&
               a.actual_departure_date &&
               a.pending_docs > 0) ||
-            (a.status === 'AWAITING_MODIFICATION_APPROVAL' && a.pending_docs > 0);
+            a.status === 'AWAITING_MODIFICATION_APPROVAL';
 
           const isPendingToR = a.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' && a.pending_docs > 0;
 
@@ -226,9 +229,16 @@ export class LecturerDashboardComponent implements OnInit {
     fetch(`http://localhost:3000/api/applications/${app.id}`)
       .then((res) => res.json())
       .then((details) => {
-        const pendingDoc = details.documents.find(
+        let pendingDoc = details.documents.find(
           (d: any) => d.document_type === docType && d.status === 'PENDING',
         );
+
+        // Se la pratica è in modifica ma non c'è un nuovo documento in pending,
+        // recuperiamo l'ultimo documento caricato (quello originale approvato) per farlo vedere al prof come riferimento.
+        if (!pendingDoc && app.status === 'AWAITING_MODIFICATION_APPROVAL') {
+          const docs = details.documents.filter((d: any) => d.document_type === docType);
+          pendingDoc = docs.length > 0 ? docs[docs.length - 1] : null;
+        }
 
         let examsHtml = '<ul style="list-style-type: none; padding: 0; margin: 0;">';
         const transVoto = this.translationService.translate('LECTURER.SCORE');
@@ -266,7 +276,6 @@ export class LecturerDashboardComponent implements OnInit {
         }
         examsHtml += '</ul>';
 
-        // Estrazione e formattazione delle date
         const formatData = (dataStr: string) => {
           if (!dataStr) return '';
           return new Date(dataStr).toLocaleDateString('it-IT');
@@ -283,7 +292,11 @@ export class LecturerDashboardComponent implements OnInit {
           actionTypeKey: actionTypeKey,
           studentNote: pendingDoc ? pendingDoc.modification_description : null,
           docName: pendingDoc ? pendingDoc.file_name : 'N/A',
-          docUrl: pendingDoc ? `http://localhost:3000${pendingDoc.file_path}` : null,
+          docUrl:
+            pendingDoc && pendingDoc.file_path !== '#'
+              ? `http://localhost:3000${pendingDoc.file_path}`
+              : null,
+
           examsHtml: examsHtml,
           isAcceptingDraft: false,
           datesText: datesText,

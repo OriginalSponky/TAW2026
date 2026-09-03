@@ -343,6 +343,13 @@ export const translations: any = {
       LA_APPROVED_TITLE: '✅ L.A. Approvato!',
       LA_APPROVED_DESC:
         "Il tuo Learning Agreement è stato approvato dal docente. L'Ufficio Overseas verificherà a breve la pratica per attivare ufficialmente la tua mobilità.",
+      SCORES_APPROVED_TITLE: '⏳ In attesa di Chiusura',
+      SCORES_APPROVED_DESC:
+        "I tuoi voti sono stati approvati dal docente! L'Ufficio Overseas sta effettuando le verifiche finali per chiudere ufficialmente la pratica.",
+      ERR_MISSING_TOR_DATA:
+        'Assicurati di inserire il Voto Finale e la Data per tutti gli esami prima di inviare!',
+      OFFICIAL_DOCS: 'Documenti Ufficiali',
+      DOWNLOAD: 'Scarica',
     },
     LECTURER: {
       GREETING: 'Ciao',
@@ -747,6 +754,13 @@ export const translations: any = {
       LA_APPROVED_TITLE: '✅ L.A. Approved!',
       LA_APPROVED_DESC:
         'Your Learning Agreement has been approved by the lecturer. The Overseas Office will shortly verify the file to officially activate your mobility.',
+      SCORES_APPROVED_TITLE: '⏳ Awaiting Closure',
+      SCORES_APPROVED_DESC:
+        'Your grades have been approved by the lecturer! The Overseas Office is performing the final checks to officially close your application.',
+      ERR_MISSING_TOR_DATA:
+        'Make sure to enter the Final Score and Date for all exams before submitting!',
+      OFFICIAL_DOCS: 'Official Documents',
+      DOWNLOAD: 'Download',
     },
     LECTURER: {
       GREETING: 'Hello',
