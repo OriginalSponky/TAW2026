@@ -35,6 +35,7 @@ export const translations: any = {
     },
     HEADER: {
       OVERSEAS_TITLE: 'Ufficio Overseas',
+      LECTURER_TITLE: 'Area Docente',
       MANAGE_ACCOUNT: 'Gestisci il tuo Account',
       SETTINGS: 'Impostazioni',
       HELP: 'Aiuto e feedback',
@@ -332,6 +333,16 @@ export const translations: any = {
       BTN_WAIT: 'Attendere...',
       ERR_DATES: 'Inserisci entrambe le date per proseguire/salvare.',
       SUCCESS_OP: 'Operazione registrata con successo!',
+      INSERT_DATES_TITLE: '📅 Inserisci le Date',
+      INSERT_DATES_DESC:
+        'Il professore ha accettato la tua bozza. Inserisci le date di arrivo e partenza previste per poter inviare la richiesta di Learning Agreement in valutazione ufficiale.',
+      BTN_SEND_TO_DOCENT: 'Invia al Docente',
+      IN_EVALUATION_TITLE: '⏳ In Valutazione',
+      IN_EVALUATION_DESC:
+        'Hai inserito correttamente le date. Il docente sta ora valutando il tuo Learning Agreement.',
+      LA_APPROVED_TITLE: '✅ L.A. Approvato!',
+      LA_APPROVED_DESC:
+        "Il tuo Learning Agreement è stato approvato dal docente. L'Ufficio Overseas verificherà a breve la pratica per attivare ufficialmente la tua mobilità.",
     },
     LECTURER: {
       GREETING: 'Ciao',
@@ -433,6 +444,7 @@ export const translations: any = {
     },
     HEADER: {
       OVERSEAS_TITLE: 'Overseas Office',
+      LECTURER_TITLE: 'Lecturer Office',
       MANAGE_ACCOUNT: 'Manage your Account',
       SETTINGS: 'Settings',
       HELP: 'Help and feedback',
@@ -725,6 +737,16 @@ export const translations: any = {
       BTN_WAIT: 'Please wait...',
       ERR_DATES: 'Please enter both dates to proceed/save.',
       SUCCESS_OP: 'Operation successfully recorded!',
+      INSERT_DATES_TITLE: '📅 Insert Dates',
+      INSERT_DATES_DESC:
+        'The professor accepted your draft. Enter your expected arrival and departure dates to submit the Learning Agreement request for official evaluation.',
+      BTN_SEND_TO_DOCENT: 'Send to Lecturer',
+      IN_EVALUATION_TITLE: '⏳ Under Evaluation',
+      IN_EVALUATION_DESC:
+        'You have successfully entered the dates. The lecturer is now evaluating your Learning Agreement.',
+      LA_APPROVED_TITLE: '✅ L.A. Approved!',
+      LA_APPROVED_DESC:
+        'Your Learning Agreement has been approved by the lecturer. The Overseas Office will shortly verify the file to officially activate your mobility.',
     },
     LECTURER: {
       GREETING: 'Hello',

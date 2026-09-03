@@ -160,8 +160,17 @@ export class StaffDashboardComponent implements OnInit {
           actionType === 'pre-departure' ? 'LEARNING_AGREEMENT' : 'TRANSCRIPT_OF_RECORDS';
 
         const pendingDoc = details.documents.find((d: any) => d.document_type === dbDocType);
-
         const fallbackText = this.translationService.translate('STAFF.NO_DOC_FOUND');
+
+        // Formatta le date per mostrarle allo staff
+        const formatData = (dataStr: string) => {
+          if (!dataStr) return '';
+          return new Date(dataStr).toLocaleDateString('it-IT');
+        };
+        const datesText =
+          details.actual_arrival_date && details.actual_departure_date
+            ? `Dal ${formatData(details.actual_arrival_date)} al ${formatData(details.actual_departure_date)}`
+            : 'Date mancanti';
 
         this.reviewData = {
           appId: app.id,
@@ -170,6 +179,7 @@ export class StaffDashboardComponent implements OnInit {
           docName: pendingDoc ? pendingDoc.file_name : fallbackText,
           docUrl: pendingDoc ? `http://localhost:3000${pendingDoc.file_path}` : '#',
           profName: app.teacher,
+          datesText: datesText, // Passo le date all'HTML
         };
 
         this.modalStep = 'read';

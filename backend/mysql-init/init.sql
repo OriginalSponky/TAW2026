@@ -43,6 +43,7 @@ CREATE TABLE Applications (
                                   'MOBILITY_IN_PROGRESS',
                                   'AWAITING_MODIFICATION_APPROVAL',
                                   'WAITING_FOR_EXAM_SCORE_APPROVAL',
+                                  'EXAM_SCORES_APPROVED',
                                   'CLOSED',
                                   'CANCELED'
                                   ) DEFAULT 'CREATED',

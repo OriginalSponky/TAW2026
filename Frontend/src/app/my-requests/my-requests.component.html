@@ -1,5 +1,5 @@
 <header>
-  <div class="logo-area">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
+  <div class="logo-area" (click)="tornaIndietro($event)">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
 
   <div class="header-actions">
     <button class="lang-btn" (click)="translationService.toggleLanguage()" title="Cambia lingua">
@@ -79,7 +79,6 @@
                   <button class="btn-outline" (click)="apriDettaglio(richiesta.id)">{{ 'MY_REQ.BTN_EDIT_DRAFT' | translate }}</button>
                 }
                 @else if (richiesta.status === 'PRE_DEPARTURE_COMPLETED' || richiesta.status === 'MOBILITY_IN_PROGRESS' || richiesta.status === 'AWAITING_MODIFICATION_APPROVAL' || richiesta.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL') {
-                  <button class="btn-primary" (click)="modificaRichiesta(richiesta.id)">{{ 'MY_REQ.BTN_MANAGE' | translate }}</button>
                   <button class="btn-outline" (click)="apriDettaglio(richiesta.id)">{{ 'MY_REQ.BTN_DETAILS' | translate }}</button>
                 }
                 @else {

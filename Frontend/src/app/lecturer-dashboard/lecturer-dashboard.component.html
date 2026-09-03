@@ -1,5 +1,5 @@
 <header>
-  <div class="logo-area">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
+  <div class="logo-area" (click)="switchView('homeView')">{{ 'HEADER.LECTURER_TITLE' | translate }}</div>
 
   <div class="header-actions">
     <button class="lang-btn" (click)="translationService.toggleLanguage()">
@@ -71,16 +71,35 @@
       }
 
       @for (app of pendingLAs; track app.id) {
-        <div class="request-card" [ngClass]="app.status === 'AWAITING_FOR_APPROVAL' ? 'border-warning' : 'border-info'">
+        <div class="request-card" [ngClass]="{
+          'border-created': app.status === 'CREATED',
+          'border-warning': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
+          'border-info': app.status !== 'CREATED' && app.status !== 'AWAITING_FOR_APPROVAL' && app.status !== 'AWAITING_MODIFICATION_APPROVAL'
+        }">
           <div class="request-info">
             <div class="student-name">🧑‍🎓 {{ 'LECTURER.STUDENT' | translate }} {{ app.student_first_name }} {{ app.student_last_name }} ({{app.matricola}})</div>
-            <div class="details">🌍 {{ 'LECTURER.DESTINATION' | translate }} {{ app.institution_name }} ({{ app.country }}) | 📅 {{ 'LECTURER.ACADEMIC_YEAR' | translate }} {{ app.academic_year }}</div>
-            <div class="status-badge" [ngClass]="app.status === 'AWAITING_FOR_APPROVAL' ? 'badge-warning' : 'badge-info'">
+            <div class="details">
+              🌍 {{ 'LECTURER.DESTINATION' | translate }} {{ app.institution_name }} ({{ app.country }}) | 📅 {{ 'LECTURER.ACADEMIC_YEAR' | translate }} {{ app.academic_year }}
+              @if (app.actual_arrival_date && app.actual_departure_date) {
+                <span style="display: block; margin-top: 6px; color: var(--primary); font-weight: 600;">
+                  ⏱️ Date di soggiorno: dal {{ app.actual_arrival_date | date:'dd/MM/yyyy' }} al {{ app.actual_departure_date | date:'dd/MM/yyyy' }}
+                </span>
+              }
+            </div>
+            <div class="status-badge" [ngClass]="{
+              'status-created': app.status === 'CREATED',
+              'badge-warning': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
+              'badge-info': app.status !== 'CREATED' && app.status !== 'AWAITING_FOR_APPROVAL' && app.status !== 'AWAITING_MODIFICATION_APPROVAL'
+            }" style="margin-top: 8px;">
               {{ app.status }}
             </div>
           </div>
           <div class="actions">
-            <button class="btn-primary" (click)="startReview(app, 'LEARNING_AGREEMENT')">{{ 'LECTURER.BTN_EVAL_LA' | translate }}</button>
+            @if (app.status === 'CREATED') {
+              <button class="btn-primary" (click)="valutaBozza(app)">{{ 'LECTURER.BTN_EVAL_LA' | translate }}</button>
+            } @else {
+              <button class="btn-primary" (click)="startReview(app, 'LEARNING_AGREEMENT')">{{ 'LECTURER.BTN_EVAL_LA' | translate }}</button>
+            }
           </div>
         </div>
       }
@@ -102,7 +121,7 @@
           <div class="request-info">
             <div class="student-name">🧑‍🎓 {{ 'LECTURER.STUDENT' | translate }} {{ app.student_first_name }} {{ app.student_last_name }} ({{app.matricola}})</div>
             <div class="details">🌍 {{ 'LECTURER.DESTINATION' | translate }} {{ app.institution_name }} ({{ app.country }}) | 📅 {{ 'LECTURER.ACADEMIC_YEAR' | translate }} {{ app.academic_year }}</div>
-            <div class="status-badge badge-purple">
+            <div class="status-badge badge-purple" style="margin-top: 8px;">
               {{ app.status }}
             </div>
           </div>
@@ -126,6 +145,8 @@
 
         <select [(ngModel)]="filtri.stato" (change)="applicaFiltri()">
           <option value="">{{ 'LECTURER.ALL_STATUSES' | translate }}</option>
+          <option value="CREATED">CREATED</option>
+          <option value="AWAITING_FOR_APPROVAL">AWAITING_FOR_APPROVAL</option>
           <option value="PRE_DEPARTURE_COMPLETED">PRE_DEPARTURE_COMPLETED</option>
           <option value="MOBILITY_IN_PROGRESS">MOBILITY_IN_PROGRESS</option>
           <option value="WAITING_FOR_EXAM_SCORE_APPROVAL">WAITING_FOR_EXAM_SCORE_APPROVAL</option>
@@ -178,11 +199,14 @@
                 'status-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
                 'status-closed': app.status === 'CLOSED',
                 'status-canceled': app.status === 'CANCELED'
-              }">
+              }" style="margin-top: 8px;">
               {{ app.status }}
             </div>
           </div>
           <div class="actions">
+            @if (app.status === 'CREATED') {
+              <button class="btn-success" (click)="valutaBozza(app)">{{ 'LECTURER.BTN_APPROVE' | translate }}</button>
+            }
             <button class="btn-outline" (click)="openHistoricalDetails(app)">{{ 'LECTURER.BTN_DETAILS' | translate }}</button>
           </div>
         </div>
@@ -196,8 +220,8 @@
     <div class="modal" (click)="$event.stopPropagation()">
 
       @if (modalStep === 'read' || modalStep === 'reject-reason') {
-        <h3>🧑‍🎓 {{ 'LECTURER.STUDENT' | translate }} {{ reviewData.studentName }}</h3>
-        <p style="color: var(--text-muted); margin-bottom: 24px;">{{ reviewData.actionTypeKey | translate }}</p>
+        <h3 style="margin-top: 0; margin-bottom: 8px;">🧑‍🎓 {{ 'LECTURER.STUDENT' | translate }} {{ reviewData.studentName }}</h3>
+        <p style="color: var(--text-muted); margin-bottom: 24px; font-weight: 500;">{{ reviewData.actionTypeKey | translate }}</p>
       }
 
       @if (modalStep === 'read') {
@@ -208,7 +232,20 @@
           </div>
         }
 
-        <a [href]="reviewData.docUrl" class="doc-link" target="_blank">{{ 'LECTURER.OPEN_FILE' | translate }} {{ reviewData.docName }}</a>
+        @if (reviewData.datesText) {
+          <div style="margin-bottom: 20px; padding: 12px; background: var(--primary-light); border: 1px solid #bfdbfe; border-radius: var(--radius-md); text-align: left;">
+            <strong style="color: var(--primary); font-size: 14px; display: block; margin-bottom: 4px;">📅 Date di Soggiorno Previste:</strong>
+            <span style="color: var(--text-main); font-size: 14px; font-weight: 500;">{{ reviewData.datesText }}</span>
+          </div>
+        }
+
+        @if (reviewData.docUrl) {
+          <a [href]="reviewData.docUrl" class="doc-link" target="_blank">{{ 'LECTURER.OPEN_FILE' | translate }} {{ reviewData.docName }}</a>
+        } @else {
+          <div style="padding: 16px; background: var(--warning-light); border: 1px solid var(--warning); border-radius: var(--radius-md); color: var(--warning); font-weight: 600; margin: 20px 0; text-align: center; font-size: 14px;">
+            ⚠️ Nessun documento caricato (Valutazione Bozza)
+          </div>
+        }
 
         <p style="font-size: 14px; font-weight: 600; text-align: left; margin-bottom: 8px; color: var(--text-main);">{{ 'LECTURER.MAPPING_DATA' | translate }}</p>
         <div class="exam-data-box" [innerHTML]="reviewData.examsHtml"></div>

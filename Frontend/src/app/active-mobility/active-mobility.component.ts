@@ -35,7 +35,6 @@ export class ActiveMobilityComponent implements OnInit {
   historyDropdownAperto: boolean = false;
 
   mostraModale: boolean = false;
-  // Aggiunto l'uso di "Key" per passare la chiave di traduzione all'HTML
   modalConfig: any = { icon: '', titleKey: '', textKey: '', action: '', btnClass: '', btnKey: '' };
   appInModifica: any = null;
   motivoRinuncia: string = '';
@@ -228,6 +227,7 @@ export class ActiveMobilityComponent implements OnInit {
   rimuoviEsameLA(app: any, indice: number) {
     app.nuoviEsamiLA.splice(indice, 1);
   }
+
   aggiungiEsameToR(app: any) {
     app.esamiToR.push({
       foreignCode: '',
@@ -258,7 +258,6 @@ export class ActiveMobilityComponent implements OnInit {
     if (event.target.files.length > 0) app.fileCorrection = event.target.files[0];
   }
 
-  // LOGICA MODALE CONFERMA AGGIORNATA PER LA TRADUZIONE
   apriModaleConferma(azione: string, app: any) {
     this.appInModifica = app;
     this.modalConfig.action = azione;
@@ -266,23 +265,8 @@ export class ActiveMobilityComponent implements OnInit {
 
     switch (azione) {
       case 'start_mobility':
-        if (!app.arrival_date || !app.departure_date) {
-          this.mostraFeedback(
-            'error',
-            this.translationService.translate('ACTIVE_MOBILITY.ERR_DATES'),
-          );
-          return;
-        }
-        this.modalConfig = {
-          action: azione,
-          icon: '🌍',
-          titleKey: 'ACTIVE_MOBILITY.MODAL_START_TITLE',
-          textKey: 'ACTIVE_MOBILITY.MODAL_START_TEXT',
-          btnClass: 'btn-primary',
-          btnKey: 'ACTIVE_MOBILITY.BTN_START_CONFIRM',
-        };
-        break;
       case 'update_dates':
+      case 'save_dates': // NUOVA AZIONE
         if (!app.arrival_date || !app.departure_date) {
           this.mostraFeedback(
             'error',
@@ -290,13 +274,28 @@ export class ActiveMobilityComponent implements OnInit {
           );
           return;
         }
+
+        let titleKey = 'ACTIVE_MOBILITY.MODAL_DATES_TITLE';
+        let textKey = 'Vuoi salvare le date e inviare la richiesta di approvazione al docente?';
+        let btnKey = 'Invia al Docente';
+
+        if (azione === 'start_mobility') {
+          titleKey = 'ACTIVE_MOBILITY.MODAL_START_TITLE';
+          textKey = 'ACTIVE_MOBILITY.MODAL_START_TEXT';
+          btnKey = 'ACTIVE_MOBILITY.BTN_START_CONFIRM';
+        } else if (azione === 'update_dates') {
+          titleKey = 'ACTIVE_MOBILITY.MODAL_DATES_TITLE';
+          textKey = 'ACTIVE_MOBILITY.MODAL_DATES_TEXT';
+          btnKey = 'ACTIVE_MOBILITY.BTN_DATES_CONFIRM';
+        }
+
         this.modalConfig = {
           action: azione,
           icon: '📅',
-          titleKey: 'ACTIVE_MOBILITY.MODAL_DATES_TITLE',
-          textKey: 'ACTIVE_MOBILITY.MODAL_DATES_TEXT',
+          titleKey: titleKey,
+          textKey: textKey,
           btnClass: 'btn-primary',
-          btnKey: 'ACTIVE_MOBILITY.BTN_DATES_CONFIRM',
+          btnKey: btnKey,
         };
         break;
       case 'reject_mobility':
@@ -358,15 +357,29 @@ export class ActiveMobilityComponent implements OnInit {
 
     if (
       this.modalConfig.action === 'start_mobility' ||
-      this.modalConfig.action === 'update_dates'
+      this.modalConfig.action === 'update_dates' ||
+      this.modalConfig.action === 'save_dates'
     ) {
       const isStart = this.modalConfig.action === 'start_mobility';
+
+      // Assicuriamoci che le date siano nel formato YYYY-MM-DD
+      const formattaDataForDB = (dateObj: Date | string | null) => {
+        if (!dateObj) return null;
+        const d = new Date(dateObj);
+        if (isNaN(d.getTime())) return null; // data non valida
+        const month = '' + (d.getMonth() + 1);
+        const day = '' + d.getDate();
+        const year = d.getFullYear();
+
+        return [year, month.padStart(2, '0'), day.padStart(2, '0')].join('-');
+      };
+
       fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/dates`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          arrival_date: app.arrival_date,
-          departure_date: app.departure_date,
+          arrival_date: formattaDataForDB(app.arrival_date),
+          departure_date: formattaDataForDB(app.departure_date),
           start_mobility: isStart,
         }),
       });

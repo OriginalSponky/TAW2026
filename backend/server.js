@@ -253,15 +253,15 @@ app.get('/api/applications', async (req, res) => {
 
     try {
         const [rows] = await dbPool.query(`
-            SELECT 
-                a.id, 
-                a.academic_year, 
-                a.mobility_period, 
-                a.status, 
-                i.name AS institution_name 
+            SELECT
+                a.id,
+                a.academic_year,
+                a.mobility_period,
+                a.status,
+                i.name AS institution_name
             FROM Applications a
-            JOIN Institutions i ON a.institution_id = i.id
-            JOIN Users student ON a.student_id = student.id
+                     JOIN Institutions i ON a.institution_id = i.id
+                     JOIN Users student ON a.student_id = student.id
             WHERE student.email = ?
             ORDER BY a.created_at DESC
         `, [studentEmail]);
@@ -334,8 +334,8 @@ app.put('/api/applications/:id', upload.single('learning_agreement_file'), async
         await connection.beginTransaction();
 
         await connection.query(
-            `UPDATE Applications 
-             SET institution_id = ?, lecturer_id = ?, academic_year = ?, mobility_period = ? 
+            `UPDATE Applications
+             SET institution_id = ?, lecturer_id = ?, academic_year = ?, mobility_period = ?
              WHERE id = ?`,
             [institution_id, lecturer_id, academic_year, mobility_period, appId]
         );
@@ -344,8 +344,8 @@ app.put('/api/applications/:id', upload.single('learning_agreement_file'), async
 
         for (const exam of parsedExams) {
             await connection.query(
-                `INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
                 [appId, exam.foreignCode, exam.foreignName, exam.foreignCredits, exam.localCode, exam.localName, exam.localCredits]
             );
         }
@@ -392,7 +392,6 @@ app.put('/api/applications/:id/dates', async (req, res) => {
         // Se start_mobility è VERO (L'utente ha cliccato "Avvia Erasmus" nella fase di pre-partenza)
         if (start_mobility) {
             await connection.query(
-                // USIAMO I NOMI CORRETTI DEL DATABASE: actual_arrival_date e actual_departure_date
                 `UPDATE Applications
                  SET actual_arrival_date = ?, actual_departure_date = ?, status = 'MOBILITY_IN_PROGRESS'
                  WHERE id = ?`,
@@ -489,7 +488,7 @@ app.post('/api/applications/:id/tor', upload.single('tor_file'), async (req, res
 
         for (const exam of parsedExams) {
             await connection.query(
-                `INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits, score_obtained, exam_date) 
+                `INSERT INTO ExamsMapping (application_id, foreign_course_code, foreign_course_name, foreign_course_credits, unive_course_code, unive_course_title, unive_course_credits, score_obtained, exam_date)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [appId, exam.foreignCode, exam.foreignName, exam.foreignCredits, exam.localCode, exam.localName, exam.localCredits, exam.score, exam.date]
             );
@@ -497,7 +496,7 @@ app.post('/api/applications/:id/tor', upload.single('tor_file'), async (req, res
 
         if (file) {
             await connection.query(
-                `INSERT INTO Documents (application_id, document_type, file_name, file_path, status) 
+                `INSERT INTO Documents (application_id, document_type, file_name, file_path, status)
                  VALUES (?, 'TRANSCRIPT_OF_RECORDS', ?, ?, 'PENDING')`,
                 [appId, file.originalname, '/uploads/' + file.filename]
             );
@@ -590,6 +589,7 @@ app.get('/api/lecturer/applications', async (req, res) => {
         const [rows] = await dbPool.query(`
             SELECT
                 a.id, a.academic_year, a.mobility_period, a.status,
+                a.actual_arrival_date, a.actual_departure_date,
                 i.name AS institution_name, i.country,
                 s.first_name AS student_first_name, s.last_name AS student_last_name,
                 s.matriculation_number AS matricola,
@@ -620,42 +620,53 @@ app.put('/api/lecturer/applications/:id/review', async (req, res) => {
 
         // 1. Aggiorna lo stato del singolo documento in sospeso
         await connection.query(`
-            UPDATE Documents 
-            SET status = ?, decision_date = CURDATE(), rejection_reason = ? 
+            UPDATE Documents
+            SET status = ?, decision_date = CURDATE(), rejection_reason = ?
             WHERE application_id = ? AND document_type = ? AND status = 'PENDING'
-            ORDER BY upload_date DESC LIMIT 1
+                ORDER BY upload_date DESC LIMIT 1
         `, [action === 'APPROVE' ? 'APPROVED' : 'REJECTED', rejection_reason || null, appId, document_type]);
 
-        // 2. Se APPROVATO, fa progredire lo stato dell'intera pratica
+        // Recuperiamo lo stato attuale della pratica per sapere se stiamo gestendo una modifica in corso
+        const [app] = await connection.query(`SELECT status FROM Applications WHERE id = ?`, [appId]);
+        const currentStatus = app[0].status;
+
+        // 2. Gestione Logica Esami in base all'esito
         if (action === 'APPROVE') {
-            if (document_type === 'LEARNING_AGREEMENT') {
-                // Verifichiamo se era un LA iniziale o una modifica
+            if (document_type === 'LEARning_AGREEMENT' || document_type === 'LEARNING_AGREEMENT') {
                 const [app] = await connection.query(`SELECT status FROM Applications WHERE id = ?`, [appId]);
                 const currentStatus = app[0].status;
+
+                // Se è una modifica in corso va in MOBILITY_IN_PROGRESS, altrimenti (se viene da AWAITING_FOR_APPROVAL) va in PRE_DEPARTURE_COMPLETED!
                 const newStatus = (currentStatus === 'AWAITING_MODIFICATION_APPROVAL')
                     ? 'MOBILITY_IN_PROGRESS'
                     : 'PRE_DEPARTURE_COMPLETED';
 
                 await connection.query(`
-                    UPDATE Applications 
-                    SET status = ?, is_la_approved = TRUE, la_decision_date = CURDATE(), la_rejection_reason = NULL 
+                    UPDATE Applications
+                    SET status = ?, is_la_approved = TRUE, la_decision_date = CURDATE(), la_rejection_reason = NULL
                     WHERE id = ?`, [newStatus, appId]);
 
-                // Consolida gli esami
                 await connection.query(`
-                    UPDATE ExamsMapping 
-                    SET is_approved_by_lecturer = TRUE, is_proposed_change = FALSE 
+                    UPDATE ExamsMapping
+                    SET is_approved_by_lecturer = TRUE, is_proposed_change = FALSE
                     WHERE application_id = ?`, [appId]);
             }
             else if (document_type === 'TRANSCRIPT_OF_RECORDS') {
-                // Chiude la pratica con successo
                 await connection.query(`
-                    UPDATE Applications 
-                    SET status = 'CLOSED', are_exams_approved = TRUE 
+                    UPDATE Applications
+                    SET status = 'CLOSED', are_exams_approved = TRUE
                     WHERE id = ?`, [appId]);
             }
         }
-        // Se RIFIUTATO, il documento risulta REJECTED e lo studente lo vedrà, abilitando il tasto di reinvio.
+        else if (action === 'REJECT') {
+            if (document_type === 'LEARNING_AGREEMENT') {
+                if (currentStatus === 'AWAITING_MODIFICATION_APPROVAL') {
+                    // Il prof ha rifiutato la modifica: eliminiamo dal DB i corsi proposti (is_proposed_change = TRUE)
+                    // I vecchi corsi originali (is_proposed_change = FALSE) rimarranno intatti nel DB!
+                    await connection.query(`DELETE FROM ExamsMapping WHERE application_id = ? AND is_proposed_change = TRUE`, [appId]);
+                }
+            }
+        }
 
         await connection.commit();
         res.json({ message: "Revisione completata con successo" });
@@ -668,21 +679,46 @@ app.put('/api/lecturer/applications/:id/review', async (req, res) => {
     }
 });
 
+// 3. Valuta la richiesta in bozza di uno studente (CREATED -> AWAITING_FOR_APPROVAL o CANCELED)
+app.put('/api/lecturer/applications/:id/draft-review', async (req, res) => {
+    const { action, rejection_reason } = req.body;
+    try {
+        if (action === 'APPROVE') {
+            await dbPool.query(
+                `UPDATE Applications SET status = 'AWAITING_FOR_APPROVAL' WHERE id = ?`,
+                [req.params.id]
+            );
+            res.json({ message: 'Richiesta accettata e passata in attesa di L.A.' });
+        } else if (action === 'REJECT') {
+            await dbPool.query(
+                `UPDATE Applications SET status = 'CANCELED', la_rejection_reason = ? WHERE id = ?`,
+                [rejection_reason, req.params.id]
+            );
+            res.json({ message: 'Bozza rifiutata' });
+        } else {
+            res.status(400).send("Azione non valida");
+        }
+    } catch (error) {
+        console.error("Errore valutazione bozza:", error);
+        res.status(500).send("Errore server");
+    }
+});
+
 // ROTTE PER LO STAFF (UFFICIO OVERSEAS)
 // 1. L'ufficio recupera l'intero archivio di tutte le pratiche
 app.get('/api/staff/applications', async (req, res) => {
     try {
         const [rows] = await dbPool.query(`
-            SELECT 
-                a.id, a.academic_year, a.mobility_period, a.status, 
+            SELECT
+                a.id, a.academic_year, a.mobility_period, a.status,
                 i.name AS institution, i.country,
                 s.first_name AS student_first_name, s.last_name AS student_last_name, s.matriculation_number AS matricola,
                 l.email AS teacher,
                 (SELECT COUNT(*) FROM Documents d WHERE d.application_id = a.id AND d.status = 'PENDING') AS pending_docs
             FROM Applications a
-            JOIN Institutions i ON a.institution_id = i.id
-            JOIN Users s ON a.student_id = s.id
-            JOIN Users l ON a.lecturer_id = l.id
+                     JOIN Institutions i ON a.institution_id = i.id
+                     JOIN Users s ON a.student_id = s.id
+                     JOIN Users l ON a.lecturer_id = l.id
             ORDER BY a.updated_at DESC
         `);
         res.json(rows);

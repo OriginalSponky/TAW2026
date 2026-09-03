@@ -61,23 +61,35 @@ export class LecturerDashboardComponent implements OnInit {
     fetch(`http://localhost:3000/api/lecturer/applications?email=${this.utente.email}`)
       .then((res) => res.json())
       .then((data) => {
-        const praticheVisibili = data.filter((a: any) => a.status !== 'CREATED');
+        const praticheVisibili = data;
 
+        // FILTRO AGGIORNATO: AWAITING_FOR_APPROVAL richiede date E un documento caricato
         this.pendingLAs = praticheVisibili.filter(
           (a: any) =>
-            (a.status === 'AWAITING_FOR_APPROVAL' ||
-              a.status === 'AWAITING_MODIFICATION_APPROVAL') &&
-            a.pending_docs > 0,
+            a.status === 'CREATED' ||
+            (a.status === 'AWAITING_FOR_APPROVAL' &&
+              a.actual_arrival_date &&
+              a.actual_departure_date &&
+              a.pending_docs > 0) ||
+            (a.status === 'AWAITING_MODIFICATION_APPROVAL' && a.pending_docs > 0),
         );
+
         this.pendingToRs = praticheVisibili.filter(
           (a: any) => a.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' && a.pending_docs > 0,
         );
+
+        // Nello storico ci finisce solo quello che NON rispetta i rigidi criteri qui sopra
         this.handledApps = praticheVisibili.filter((a: any) => {
           const isPendingLA =
-            (a.status === 'AWAITING_FOR_APPROVAL' ||
-              a.status === 'AWAITING_MODIFICATION_APPROVAL') &&
-            a.pending_docs > 0;
+            a.status === 'CREATED' ||
+            (a.status === 'AWAITING_FOR_APPROVAL' &&
+              a.actual_arrival_date &&
+              a.actual_departure_date &&
+              a.pending_docs > 0) ||
+            (a.status === 'AWAITING_MODIFICATION_APPROVAL' && a.pending_docs > 0);
+
           const isPendingToR = a.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' && a.pending_docs > 0;
+
           return !isPendingLA && !isPendingToR;
         });
 
@@ -140,6 +152,69 @@ export class LecturerDashboardComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  chiediConfermaAccettazione(app: any) {
+    this.reviewData = {
+      appId: app.id,
+      studentName: `${app.student_first_name} ${app.student_last_name} (${app.matricola || 'N/A'})`,
+      isAcceptingDraft: true,
+    };
+    this.pendingAction = 'approve';
+    this.modalStep = 'confirm';
+    this.mostraModaleReview = true;
+    this.cdr.detectChanges();
+  }
+
+  valutaBozza(app: any) {
+    fetch(`http://localhost:3000/api/applications/${app.id}`)
+      .then((res) => res.json())
+      .then((details) => {
+        let examsHtml = '<ul style="list-style-type: none; padding: 0; margin: 0;">';
+
+        if (details.exams && details.exams.length > 0) {
+          details.exams.forEach((e: any) => {
+            examsHtml += `
+              <li style="border-bottom: 1px dashed var(--border); padding-bottom: 12px; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                  <strong style="color: var(--text-main); font-size: 14px;">✈️ ${e.foreign_course_name} [${e.foreign_course_code}] (${e.foreign_course_credits} CFU)</strong>
+                </div>
+                <div style="color: var(--text-muted); font-size: 13px;">
+                  🏛️ ${e.unive_course_title} [${e.unive_course_code}] (${e.unive_course_credits} CFU)
+                </div>
+              </li>`;
+          });
+        } else {
+          examsHtml +=
+            '<li style="color: var(--text-muted); font-size: 13px;">Nessun esame inserito in bozza</li>';
+        }
+        examsHtml += '</ul>';
+
+        const pendingDoc =
+          details.documents && details.documents.length > 0
+            ? details.documents[details.documents.length - 1]
+            : null;
+
+        this.reviewData = {
+          appId: app.id,
+          docType: 'DRAFT',
+          studentName: `${app.student_first_name} ${app.student_last_name} (${app.matricola || 'N/A'})`,
+          actionTypeKey: 'LECTURER.ACTION_INIT_LA',
+          studentNote: null,
+          docName: pendingDoc ? pendingDoc.file_name : null,
+          docUrl: pendingDoc ? `http://localhost:3000${pendingDoc.file_path}` : null,
+          examsHtml: examsHtml,
+          isAcceptingDraft: true,
+          datesText: null,
+        };
+
+        this.modalStep = 'read';
+        this.motivoRifiuto = '';
+        this.pendingAction = null;
+        this.mostraModaleReview = true;
+        this.cdr.detectChanges();
+      })
+      .catch((err) => console.error('Errore recupero dettagli bozza:', err));
+  }
+
   startReview(app: any, docType: 'LEARNING_AGREEMENT' | 'TRANSCRIPT_OF_RECORDS') {
     const actionTypeKey =
       docType === 'LEARNING_AGREEMENT'
@@ -191,6 +266,16 @@ export class LecturerDashboardComponent implements OnInit {
         }
         examsHtml += '</ul>';
 
+        // Estrazione e formattazione delle date
+        const formatData = (dataStr: string) => {
+          if (!dataStr) return '';
+          return new Date(dataStr).toLocaleDateString('it-IT');
+        };
+        const datesText =
+          details.actual_arrival_date && details.actual_departure_date
+            ? `Dal ${formatData(details.actual_arrival_date)} al ${formatData(details.actual_departure_date)}`
+            : null;
+
         this.reviewData = {
           appId: app.id,
           docType: docType,
@@ -198,8 +283,10 @@ export class LecturerDashboardComponent implements OnInit {
           actionTypeKey: actionTypeKey,
           studentNote: pendingDoc ? pendingDoc.modification_description : null,
           docName: pendingDoc ? pendingDoc.file_name : 'N/A',
-          docUrl: pendingDoc ? `http://localhost:3000${pendingDoc.file_path}` : '#',
+          docUrl: pendingDoc ? `http://localhost:3000${pendingDoc.file_path}` : null,
           examsHtml: examsHtml,
+          isAcceptingDraft: false,
+          datesText: datesText,
         };
 
         this.modalStep = 'read';
@@ -225,6 +312,29 @@ export class LecturerDashboardComponent implements OnInit {
   }
 
   eseguiAzione() {
+    if (this.reviewData.isAcceptingDraft) {
+      fetch(
+        `http://localhost:3000/api/lecturer/applications/${this.reviewData.appId}/draft-review`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: this.pendingAction === 'approve' ? 'APPROVE' : 'REJECT',
+            rejection_reason: this.pendingAction === 'reject' ? this.motivoRifiuto : null,
+          }),
+        },
+      )
+        .then((res) => {
+          if (!res.ok) throw new Error('Errore server');
+          this.modalStep = 'success';
+          this.caricaPratiche();
+          this.cdr.detectChanges();
+        })
+        .catch((err) => console.error(err));
+
+      return;
+    }
+
     fetch(`http://localhost:3000/api/lecturer/applications/${this.reviewData.appId}/review`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

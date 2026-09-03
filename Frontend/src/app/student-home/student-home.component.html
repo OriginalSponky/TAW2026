@@ -1,6 +1,6 @@
 @if (vistaAttiva === 'dashboard') {
   <header>
-    <div class="logo-area">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
+    <div class="logo-area" (click)="tornaAllaDashboard()">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
 
     <div class="header-actions">
       <button class="lang-btn" (click)="translationService.toggleLanguage()" title="Cambia lingua">

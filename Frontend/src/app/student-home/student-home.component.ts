@@ -12,7 +12,6 @@ import { NewRequestComponent } from '../new-request/new-request.component';
 import { MyRequestsComponent } from '../my-requests/my-requests.component';
 import { ActiveMobilityComponent } from '../active-mobility/active-mobility.component';
 
-// Servizi e i18n
 import { ThemeService } from '../services/theme.service';
 import { TranslationService } from '../services/translation.service';
 import { TranslatePipe } from '../translate.pipe';
@@ -51,7 +50,10 @@ export class StudentHomeComponent implements OnInit {
       fetch(`http://localhost:3000/api/applications?email=${emailSicura}`)
         .then((res) => res.json())
         .then((data) => {
+          // AGGIUNTO AWAITING_FOR_APPROVAL PER FAR INSERIRE LE DATE!
           const activeStatuses = [
+            'AWAITING_FOR_APPROVAL',
+            'AWAITING_MODIFICATION_APPROVAL',
             'PRE_DEPARTURE_COMPLETED',
             'MOBILITY_IN_PROGRESS',
             'WAITING_FOR_EXAM_SCORE_APPROVAL',

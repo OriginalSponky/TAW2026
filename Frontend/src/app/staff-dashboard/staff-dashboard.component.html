@@ -1,5 +1,5 @@
 <header>
-  <div class="logo-area">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
+  <div class="logo-area" (click)="switchView('homeView')">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
 
   <div class="header-actions">
     <button class="lang-btn" (click)="translationService.toggleLanguage()">
@@ -218,7 +218,7 @@
           <strong>{{ 'STAFF.SYSTEM_CHECKS' | translate }}</strong>
           <ul>
             @if (reviewData.actionType === 'pre-departure') {
-              <li>{{ 'STAFF.CHECK_ESSENTIALS' | translate }}</li>
+              <li>{{ 'STAFF.CHECK_ESSENTIALS' | translate }} <strong style="color: var(--primary);">({{ reviewData.datesText }})</strong></li>
               <li>{{ 'STAFF.CHECK_LA_UPLOADED' | translate }}</li>
               <li>{{ 'STAFF.CHECK_LA_APPROVED' | translate }} <strong style="color: var(--success);">{{ reviewData.profName }}</strong></li>
             } @else {

@@ -1,5 +1,5 @@
 <header>
-  <div class="logo-area">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
+  <div class="logo-area" (click)="tornaIndietro($event)">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
 
   <div class="header-actions">
     <button class="lang-btn" (click)="translationService.toggleLanguage()">

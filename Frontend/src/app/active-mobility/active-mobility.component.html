@@ -1,5 +1,5 @@
 <header>
-  <div class="logo-area">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
+  <div class="logo-area" (click)="tornaIndietro($event)">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
   <div class="header-actions">
     <button class="lang-btn" (click)="translationService.toggleLanguage()" title="Cambia lingua">
       {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
@@ -91,26 +91,47 @@
           </div>
         </div>
 
+        @if (app.status === 'AWAITING_FOR_APPROVAL') {
+          <div class="highlight-box" style="padding: 20px;">
+            @if (!app.actual_arrival_date || !app.actual_departure_date) {
+              <h3 style="color: var(--warning); margin-top: 0; margin-bottom: 12px; font-size: 1.15rem;">{{ 'ACTIVE_MOBILITY.INSERT_DATES_TITLE' | translate }}</h3>
+              <p style="font-size: 14px; margin-bottom: 20px; line-height: 1.5;">{{ 'ACTIVE_MOBILITY.INSERT_DATES_DESC' | translate }}</p>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>{{ 'ACTIVE_MOBILITY.ARRIVAL_DATE' | translate }}</label>
+                  <input type="date" [(ngModel)]="app.arrival_date">
+                </div>
+                <div class="form-group">
+                  <label>{{ 'ACTIVE_MOBILITY.DEPARTURE_DATE' | translate }}</label>
+                  <input type="date" [(ngModel)]="app.departure_date">
+                </div>
+              </div>
+
+              <div class="actions right" style="margin-top: 16px;">
+                <button class="btn-primary" (click)="apriModaleConferma('save_dates', app)">{{ 'ACTIVE_MOBILITY.BTN_SEND_TO_DOCENT' | translate }}</button>
+              </div>
+            } @else {
+              <!-- Nuova grafica per "In Valutazione" (Adatta alla Dark/Light mode) -->
+              <div style="padding: 16px; background-color: rgba(37, 99, 235, 0.1); border: 1px solid var(--primary); border-radius: var(--radius-md);">
+                <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 8px; font-size: 1.15rem;">{{ 'ACTIVE_MOBILITY.IN_EVALUATION_TITLE' | translate }}</h3>
+                <p style="font-size: 14px; color: var(--text-main); margin-bottom: 0; line-height: 1.5;">{{ 'ACTIVE_MOBILITY.IN_EVALUATION_DESC' | translate }}</p>
+              </div>
+            }
+          </div>
+        }
+
         @if (app.status === 'PRE_DEPARTURE_COMPLETED') {
-          <div class="highlight-box">
-            <h3 style="color: var(--warning); margin-bottom: 12px;">{{ 'ACTIVE_MOBILITY.OFFICE_APPROVED' | translate }}</h3>
-            <p style="font-size: 14px; margin-bottom: 16px;">{{ 'ACTIVE_MOBILITY.OFFICE_APPROVED_DESC' | translate }}</p>
+          <div class="highlight-box" style="border-color: var(--success); background-color: rgba(16, 185, 129, 0.1); padding: 16px; margin-top: 16px;">
+            <h3 style="color: var(--success); margin-top: 0; margin-bottom: 8px; font-size: 1.15rem;">{{ 'ACTIVE_MOBILITY.LA_APPROVED_TITLE' | translate }}</h3>
+            <p style="font-size: 14px; color: var(--text-main); margin-bottom: 0; line-height: 1.5;">{{ 'ACTIVE_MOBILITY.LA_APPROVED_DESC' | translate }}</p>
+          </div>
+        }
 
-            <div class="form-grid">
-              <div class="form-group">
-                <label>{{ 'ACTIVE_MOBILITY.ARRIVAL_DATE' | translate }}</label>
-                <input type="date" [(ngModel)]="app.arrival_date">
-              </div>
-              <div class="form-group">
-                <label>{{ 'ACTIVE_MOBILITY.DEPARTURE_DATE' | translate }}</label>
-                <input type="date" [(ngModel)]="app.departure_date">
-              </div>
-            </div>
-
-            <div class="actions right">
-              <button class="btn-danger-outline" (click)="apriModaleConferma('reject_mobility', app)">{{ 'ACTIVE_MOBILITY.BTN_REJECT' | translate }}</button>
-              <button class="btn-primary" (click)="apriModaleConferma('start_mobility', app)">{{ 'ACTIVE_MOBILITY.BTN_START' | translate }}</button>
-            </div>
+        @if (app.status === 'PRE_DEPARTURE_COMPLETED') {
+          <div class="highlight-box" style="border-color: var(--success); background-color: #dcfce7;">
+            <h3 style="color: var(--success); margin-bottom: 12px;">✅ L.A. Approvato!</h3>
+            <p style="font-size: 14px; color: var(--text-main); margin-bottom: 0;">Il tuo Learning Agreement è stato approvato dal docente. L'Ufficio Overseas verificherà a breve la pratica per attivare ufficialmente la tua mobilità.</p>
           </div>
         }
 
