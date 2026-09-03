@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <!-- Sfondo Cielo Notturno -->
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e3a8a" />
+    </linearGradient>
+
+    <!-- Onda Posteriore (Oceano Profondo) -->
+    <linearGradient id="waveBack" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1d4ed8" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+
+    <!-- Onda Anteriore (Acqua Cristallina Smeraldo) -->
+    <linearGradient id="waveFront" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+
+    <!-- Sole (Il nuovo Giallo del tema) -->
+    <linearGradient id="sunGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="100%" stop-color="#eab308" />
+    </linearGradient>
+
+    <!-- Ombre per dare un effetto 3D (Glassmorphism) -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000000" flood-opacity="0.4" />
+    </filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <!-- Maschera per arrotondare tutto (Squircle iOS style) -->
+    <clipPath id="squircle">
+      <rect width="256" height="256" rx="60" />
+    </clipPath>
+  </defs>
+
+  <!-- Contenitore Mascherato -->
+  <g clip-path="url(#squircle)">
+    <!-- 1. Cielo -->
+    <rect width="256" height="256" fill="url(#sky)" />
+
+    <!-- 2. Sole / Destinazione -->
+    <circle cx="128" cy="110" r="50" fill="url(#sunGrad)" filter="url(#glow)" />
+
+    <!-- 3. Mare - Onda Posteriore -->
+    <path d="M -20 160 Q 64 120 140 150 T 276 130 L 276 256 L -20 256 Z" fill="url(#waveBack)" filter="url(#shadow)" />
+
+    <!-- 4. Mare - Onda Anteriore -->
+    <path d="M -20 200 Q 80 150 160 190 T 276 160 L 276 256 L -20 256 Z" fill="url(#waveFront)" filter="url(#shadow)" />
+
+    <!-- 5. Aereo di Carta (Documenti + Viaggio) -->
+    <g transform="translate(10, -10) scale(0.95)" filter="url(#shadow)">
+      <!-- Ala Sinistra (Luminosa) -->
+      <polygon points="216,40 40,104 112,136 216,40" fill="#ffffff" />
+      <!-- Ala Destra (In ombra) -->
+      <polygon points="216,40 112,136 152,216 216,40" fill="#cbd5e1" />
+      <!-- Piega Inferiore della coda -->
+      <polygon points="112,136 104,184 136,152" fill="#94a3b8" />
+    </g>
+  </g>
+</svg>
