@@ -307,7 +307,17 @@
 
       <div style="background: var(--bg-color); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px;">
         <p style="margin: 0; font-size: 14px; color: var(--text-main);"><strong>🌍 {{ 'STAFF.DESTINATION' | translate }}</strong> {{ appSelezionata.institution }} ({{ appSelezionata.country }})</p>
-        <p style="margin: 0; font-size: 14px; color: var(--text-main);"><strong>📅 {{ 'STAFF.PERIOD' | translate }}</strong> {{ appSelezionata.academic_year }}</p>
+
+        <p style="margin: 0; font-size: 14px; color: var(--text-main);">
+          <strong>📅 {{ 'STAFF.PERIOD' | translate }}</strong> {{ appSelezionata.academic_year }} • {{ appSelezionata.mobility_period?.replace('_', ' ') }}
+        </p>
+
+        @if (appSelezionata.actual_arrival_date && appSelezionata.actual_departure_date) {
+          <p style="margin: 0; font-size: 14px; color: var(--primary); font-weight: 600;">
+            <strong>⏱️ Date di Soggiorno:</strong> dal {{ appSelezionata.actual_arrival_date | date:'dd/MM/yyyy' }} al {{ appSelezionata.actual_departure_date | date:'dd/MM/yyyy' }}
+          </p>
+        }
+
         <p style="margin: 0; font-size: 14px; color: var(--text-main);"><strong>✉️ {{ 'STAFF.TEACHER_REF' | translate }}</strong> {{ appSelezionata.teacher }}</p>
       </div>
 

@@ -147,6 +147,7 @@ export class StaffDashboardComponent implements OnInit {
       .then((details) => {
         this.appSelezionata = {
           ...basicApp,
+          ...details,
           documents: details.documents,
         };
         this.mostraModaleDettagli = true;
