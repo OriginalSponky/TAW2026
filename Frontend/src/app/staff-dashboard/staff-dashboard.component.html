@@ -18,6 +18,7 @@
             <button class="swatch bg-purple" (click)="themeService.setThemeColor('purple')" [class.active]="themeService.currentColor === 'purple'"></button>
             <button class="swatch bg-emerald" (click)="themeService.setThemeColor('emerald')" [class.active]="themeService.currentColor === 'emerald'"></button>
             <button class="swatch bg-rose" (click)="themeService.setThemeColor('rose')" [class.active]="themeService.currentColor === 'rose'"></button>
+            <button class="swatch bg-yellow" (click)="themeService.setThemeColor('yellow')" [class.active]="themeService.currentColor === 'yellow'"></button>
           </div>
         </div>
 
@@ -188,11 +189,6 @@
                 <span style="display: block; margin-top: 6px; color: var(--text-main); font-weight: 500;">
                   📅 Anno Accademico: {{ app.academic_year }} • {{ app.mobility_period.replace('_', ' ') }}
                 </span>
-                @if (app.actual_arrival_date && app.actual_departure_date) {
-                  <span style="display: block; margin-top: 4px; color: var(--primary); font-weight: 600;">
-                    ⏱️ Date di soggiorno: dal {{ app.actual_arrival_date | date:'dd/MM/yyyy' }} al {{ app.actual_departure_date | date:'dd/MM/yyyy' }}
-                  </span>
-                }
               </div>
               <div class="status-badge" [ngClass]="{
                 'status-created': app.status === 'CREATED',

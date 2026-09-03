@@ -157,52 +157,51 @@ INSERT INTO Applications (
     student_id, institution_id, lecturer_id, academic_year, mobility_period,
     actual_arrival_date, actual_departure_date, status, is_la_approved, la_decision_date, la_rejection_reason, are_exams_approved
 ) VALUES
--- App 1: MOBILITY_IN_PROGRESS
-(1, 1, 2, '2025/2026', 'FIRST_SEMESTER', '2025-09-01', NULL, 'MOBILITY_IN_PROGRESS', TRUE, '2025-06-15', NULL, FALSE),
--- App 2: CREATED (Nessun documento inserito ancora, solo creata)
+-- App 1: MOBILITY_IN_PROGRESS (Tutto approvato, in corso)
+(1, 1, 2, '2025/2026', 'FIRST_SEMESTER', '2025-09-01', '2026-02-15', 'MOBILITY_IN_PROGRESS', TRUE, '2025-06-15', NULL, FALSE),
+-- App 2: CREATED (Bozza iniziale, nessun documento)
 (1, 2, 2, '2025/2026', 'FULL_YEAR', NULL, NULL, 'CREATED', FALSE, NULL, NULL, FALSE),
--- App 3: AWAITING_FOR_APPROVAL (In attesa che il Lecturer approvi il LA)
-(1, 3, 2, '2025/2026', 'SECOND_SEMESTER', NULL, NULL, 'AWAITING_FOR_APPROVAL', FALSE, NULL, NULL, FALSE),
--- App 4: PRE_DEPARTURE_COMPLETED (LA approvato, Staff lo vede nella sua dashboard pre-departure)
-(1, 4, 2, '2025/2026', 'FIRST_SEMESTER', NULL, NULL, 'PRE_DEPARTURE_COMPLETED', TRUE, '2025-07-20', NULL, FALSE),
--- App 5: WAITING_FOR_EXAM_SCORE_APPROVAL (Studente tornato, aspetta ok ai voti dal Prof)
+-- App 3: AWAITING_FOR_APPROVAL (Ha le date e un LA caricato in attesa del Prof)
+(1, 3, 2, '2025/2026', 'SECOND_SEMESTER', '2026-02-01', '2026-07-15', 'AWAITING_FOR_APPROVAL', FALSE, NULL, NULL, FALSE),
+-- App 4: PRE_DEPARTURE_COMPLETED (LA approvato dal prof, Staff deve avviare)
+(1, 4, 2, '2025/2026', 'FIRST_SEMESTER', '2025-08-25', '2025-12-20', 'PRE_DEPARTURE_COMPLETED', TRUE, '2025-07-20', NULL, FALSE),
+-- App 5: WAITING_FOR_EXAM_SCORE_APPROVAL (Studente ha inviato il ToR, attende il Prof)
 (1, 5, 2, '2025/2026', 'FIRST_SEMESTER', '2025-08-28', '2026-01-20', 'WAITING_FOR_EXAM_SCORE_APPROVAL', TRUE, '2025-06-10', NULL, FALSE),
--- App 6: CLOSED (Tutto finito)
+-- App 6: CLOSED (Tutto finito e approvato)
 (1, 6, 2, '2024/2025', 'FULL_YEAR', '2024-09-05', '2025-06-30', 'CLOSED', TRUE, '2024-05-15', NULL, TRUE),
--- App 7: AWAITING_MODIFICATION_APPROVAL (In mobilità, proposta modifica L.A.)
-(1, 7, 2, '2025/2026', 'FULL_YEAR', '2025-09-10', NULL, 'AWAITING_MODIFICATION_APPROVAL', TRUE, '2025-06-01', NULL, FALSE),
--- App 8: CANCELED (LA rifiutato/annullata)
-(1, 8, 2, '2025/2026', 'SECOND_SEMESTER', NULL, NULL, 'CANCELED', FALSE, '2025-10-12', 'Mancanza di requisiti linguistici', FALSE),
+-- App 7: AWAITING_MODIFICATION_APPROVAL (In mobilità, proposta modifica L.A. inviata)
+(1, 7, 2, '2025/2026', 'FULL_YEAR', '2025-09-10', '2026-06-20', 'AWAITING_MODIFICATION_APPROVAL', TRUE, '2025-06-01', NULL, FALSE),
+-- App 8: EXAM_SCORES_APPROVED (Prof ha approvato i voti, Staff deve chiudere)
+(1, 8, 2, '2024/2025', 'SECOND_SEMESTER', '2025-02-15', '2025-07-10', 'EXAM_SCORES_APPROVED', TRUE, '2024-12-01', NULL, TRUE),
 
--- EXTRA TESTING APPS
+-- EXTRA TESTING APPS (Per altri studenti/docenti)
 -- App 9 (Student 4, Lecturer 6): AWAITING_FOR_APPROVAL per l'altro docente
-(4, 9, 6, '2025/2026', 'FIRST_SEMESTER', NULL, NULL, 'AWAITING_FOR_APPROVAL', FALSE, NULL, NULL, FALSE),
+(4, 9, 6, '2025/2026', 'FIRST_SEMESTER', '2025-09-15', '2026-01-30', 'AWAITING_FOR_APPROVAL', FALSE, NULL, NULL, FALSE),
 -- App 10 (Student 5, Lecturer 6): Mobilità in corso
-(5, 10, 6, '2025/2026', 'FULL_YEAR', '2025-09-01', NULL, 'MOBILITY_IN_PROGRESS', TRUE, '2025-06-25', NULL, FALSE),
+(5, 10, 6, '2025/2026', 'FULL_YEAR', '2025-09-01', '2026-07-01', 'MOBILITY_IN_PROGRESS', TRUE, '2025-06-25', NULL, FALSE),
 -- App 11 (Student 5, Lecturer 6): PRONTA PER LA CHIUSURA (Visibile allo Staff!)
-(5, 11, 6, '2024/2025', 'SECOND_SEMESTER', '2025-02-01', '2025-07-01', 'WAITING_FOR_EXAM_SCORE_APPROVAL', TRUE, '2025-01-10', NULL, TRUE);
+(5, 11, 6, '2024/2025', 'SECOND_SEMESTER', '2025-02-01', '2025-07-01', 'EXAM_SCORES_APPROVED', TRUE, '2025-01-10', NULL, TRUE);
 
 INSERT INTO ExamsMapping (
     application_id, foreign_course_code, foreign_course_name, foreign_course_credits,
     unive_course_code, unive_course_title, unive_course_credits, score_obtained, exam_date, is_proposed_change, is_approved_by_lecturer
 ) VALUES
-      (1, 'CS101', 'Intro to Computer Science', 5.0, 'CT010', 'Informatica Base', 6, NULL, NULL, FALSE, FALSE),
+      (1, 'CS101', 'Intro to Computer Science', 5.0, 'CT010', 'Informatica Base', 6, NULL, NULL, FALSE, TRUE),
       (2, 'ENG200', 'English Literature', 4.0, 'LT001', 'Letteratura Inglese', 6, NULL, NULL, FALSE, FALSE),
       (3, 'MATH300', 'Linear Algebra', 6.0, 'MAT01', 'Algebra Lineare', 6, NULL, NULL, FALSE, FALSE),
-      (4, 'PHY101', 'Physics I', 5.0, 'FIS01', 'Fisica Generale', 6, NULL, NULL, FALSE, FALSE),
-      (5, 'BIO101', 'Biology', 4.0, 'BIO01', 'Biologia', 6, 'A', '2025-12-15', FALSE, FALSE),
-      (5, 'BIO102', 'Genetics', 4.0, 'BIO02', 'Genetica', 6, 'B+', '2026-01-10', FALSE, FALSE),
+      (4, 'PHY101', 'Physics I', 5.0, 'FIS01', 'Fisica Generale', 6, NULL, NULL, FALSE, TRUE),
+      (5, 'BIO101', 'Biology', 4.0, 'BIO01', 'Biologia', 6, 'A', '2025-12-15', FALSE, TRUE),
+      (5, 'BIO102', 'Genetics', 4.0, 'BIO02', 'Genetica', 6, 'B+', '2026-01-10', FALSE, TRUE),
       (6, 'ECO101', 'Microeconomics', 6.0, 'ECO01', 'Microeconomia', 9, '30/30', '2025-01-20', FALSE, TRUE),
-      (7, 'ART101', 'Art History', 4.0, 'ART01', 'Storia dell Arte', 6, NULL, NULL, FALSE, FALSE),
+      (7, 'ART101', 'Art History', 4.0, 'ART01', 'Storia dell Arte', 6, NULL, NULL, FALSE, TRUE),
       (7, 'ART201', 'Modern Art', 4.0, 'ART02', 'Arte Moderna', 6, NULL, NULL, TRUE, FALSE),
-      (8, 'HIS101', 'World History', 5.0, 'STO01', 'Storia Globale', 6, NULL, NULL, FALSE, FALSE),
+      (8, 'HIS101', 'World History', 5.0, 'STO01', 'Storia Globale', 6, '30/30L', '2025-06-25', FALSE, TRUE),
       (9, 'CHEM101', 'Chemistry', 5.0, 'CHI01', 'Chimica', 6, NULL, NULL, FALSE, FALSE),
       (11, 'FIN201', 'Corporate Finance', 6.0, 'FIN01', 'Finanza Aziendale', 6, 'A+', '2025-06-15', FALSE, TRUE);
 
 INSERT INTO Documents (application_id, document_type, file_name, file_path, status, decision_date, rejection_reason, modification_description) VALUES
 -- App 1
-(1, 'LEARNING_AGREEMENT', 'LA_Bianchi_Filippo_Signed.pdf', '/uploads/test.pdf', 'APPROVED', NULL, NULL, NULL),
-(1, 'LEARNING_AGREEMENT', 'LA_Test_Errato.pdf', '/uploads/test.pdf', 'REJECTED', '2026-12-15', 'TARDO!! SEI TARDO!, modifica il secondo campo!!', NULL),
+(1, 'LEARNING_AGREEMENT', 'LA_Bianchi_Filippo_Signed.pdf', '/uploads/test.pdf', 'APPROVED', '2025-06-15', NULL, NULL),
 -- App 3
 (3, 'LEARNING_AGREEMENT', 'LA_Test_Awaiting.pdf', '/uploads/test.pdf', 'PENDING', NULL, NULL, NULL),
 -- App 4
@@ -214,9 +213,15 @@ INSERT INTO Documents (application_id, document_type, file_name, file_path, stat
 (6, 'LEARNING_AGREEMENT', 'LA_Test_Closed.pdf', '/uploads/test.pdf', 'APPROVED', '2024-05-15', NULL, NULL),
 (6, 'TRANSCRIPT_OF_RECORDS', 'ToR_Test_Closed.pdf', '/uploads/test.pdf', 'APPROVED', '2025-07-05', NULL, NULL),
 -- App 7
+(7, 'LEARNING_AGREEMENT', 'LA_Test_Original.pdf', '/uploads/test.pdf', 'APPROVED', '2025-06-01', NULL, NULL),
 (7, 'LEARNING_AGREEMENT', 'LA_Test_Modificato.pdf', '/uploads/test.pdf', 'PENDING', NULL, NULL, 'Sostituzione Storia dell Arte con Arte Moderna'),
--- App 9 (Per il Lecturer Mario Rossi)
+-- App 8
+(8, 'LEARNING_AGREEMENT', 'LA_Approved.pdf', '/uploads/test.pdf', 'APPROVED', '2024-12-01', NULL, NULL),
+(8, 'TRANSCRIPT_OF_RECORDS', 'ToR_Scores_Approved.pdf', '/uploads/test.pdf', 'APPROVED', '2025-07-15', NULL, NULL),
+-- App 9
 (9, 'LEARNING_AGREEMENT', 'LA_Alice_Meraviglia.pdf', '/uploads/test.pdf', 'PENDING', NULL, NULL, NULL),
--- App 11 (Per testare la chiusura da parte dello Staff)
+-- App 10
+(10, 'LEARNING_AGREEMENT', 'LA_Bob_InProgress.pdf', '/uploads/test.pdf', 'APPROVED', '2025-06-25', NULL, NULL),
+-- App 11
 (11, 'LEARNING_AGREEMENT', 'LA_Bob.pdf', '/uploads/test.pdf', 'APPROVED', '2025-01-10', NULL, NULL),
-(11, 'TRANSCRIPT_OF_RECORDS', 'ToR_Bob_Approved.pdf', '/uploads/test.pdf', 'APPROVED', '2025-08-05', NULL, NULL);
+(11, 'TRANSCRIPT_OF_RECORDS', 'ToR_Bob_Approved.pdf', '/uploads/test.pdf', 'APPROVED', '2025-08-05', NULL, NULL); 'TRANSCRIPT_OF_RECORDS', 'ToR_Bob_Approved.pdf', '/uploads/test.pdf', 'APPROVED', '2025-08-05', NULL, NULL);

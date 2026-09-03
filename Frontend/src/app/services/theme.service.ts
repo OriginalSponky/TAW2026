@@ -7,7 +7,7 @@ export class ThemeService {
   isDark = false;
   currentColor = 'blue';
 
-  // Definiamo i nostri 4 colori primari
+  // Aggiunto il nuovo colore Giallo (yellow) ai temi
   private themes: any = {
     blue: {
       primary: '#2563eb',
@@ -32,6 +32,12 @@ export class ThemeService {
       primaryHover: '#be123c',
       primaryLight: '#fff1f2',
       primaryLightDark: 'rgba(225, 29, 72, 0.2)',
+    },
+    yellow: {
+      primary: '#eab308',
+      primaryHover: '#d97706',
+      primaryLight: '#fef9c3',
+      primaryLightDark: 'rgba(234, 179, 8, 0.2)',
     },
   };
 
@@ -62,7 +68,7 @@ export class ThemeService {
     this.applyCurrentColorLightDark(); // Aggiorna i contrasti se cambia il tema
   }
 
-  // NUOVO: Funzione per cambiare il colore primario ovunque
+  // Funzione per cambiare il colore primario ovunque
   setThemeColor(colorName: string) {
     if (!this.themes[colorName]) return;
 

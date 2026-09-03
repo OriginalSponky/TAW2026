@@ -6,9 +6,10 @@ import { LecturerDashboardComponent } from './lecturer-dashboard/lecturer-dashbo
 import { StaffDashboardComponent } from './staff-dashboard/staff-dashboard.component';
 import { Subscription } from 'rxjs';
 
-// --- i18n Imports ---
+// --- i18n e Theme Imports ---
 import { TranslatePipe } from './translate.pipe';
 import { TranslationService } from './services/translation.service';
+import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -41,6 +42,7 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     private cdr: ChangeDetectorRef,
     public translationService: TranslationService,
+    public themeService: ThemeService, // INIETTATO QUI PER L'HTML
   ) {}
 
   ngOnInit() {
@@ -212,15 +214,14 @@ export class AppComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       if ((window as any).google) {
         const container = document.getElementById('google-btn-container');
-        if (container) container.innerHTML = ''; // Pulisce il vecchio iframe di google per renderizzarne uno nuovo!
+        if (container) container.innerHTML = '';
 
-        // Prende la lingua corrente e la mappa sul formato atteso da Google (es. "it-IT")
         const currentLanguage = this.translationService.getLanguage() === 'it' ? 'it-IT' : 'en-US';
 
         (window as any).google.accounts.id.initialize({
           client_id: '815258409239-ud52hl573eknubjouh7j6v0id12bh55j.apps.googleusercontent.com',
           callback: this.gestisciRispostaGoogle.bind(this),
-          locale: currentLanguage, // FORZA LA LINGUA NEL BOTTONE DI GOOGLE
+          locale: currentLanguage,
         });
 
         (window as any).google.accounts.id.renderButton(

@@ -1,8 +1,12 @@
 @if (!utenteLoggato && !inRegistrazione) {
   <div class="login-wrapper">
+    <!-- CONTENITORE AZIONI (Lingua + Tema) -->
     <div class="lang-switch-container">
       <button class="lang-btn" (click)="translationService.toggleLanguage()">
         {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
+      </button>
+      <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
+        {{ themeService.isDark ? '☀️' : '🌙' }}
       </button>
     </div>
 
@@ -49,9 +53,13 @@
 
 @else if (inRegistrazione) {
   <div class="login-wrapper">
+    <!-- CONTENITORE AZIONI (Lingua + Tema) -->
     <div class="lang-switch-container">
       <button class="lang-btn" (click)="translationService.toggleLanguage()">
         {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
+      </button>
+      <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
+        {{ themeService.isDark ? '☀️' : '🌙' }}
       </button>
     </div>
 

@@ -318,7 +318,7 @@ input[type="file"]::file-selector-button:hover {
 .btn-danger-outline:hover { background: var(--danger-light); }
 
 /* --------------------------------------------------------------------------
-   6. COMPONENTI HEADER (Menu, Profilo, Temi, Lingue)
+   6. COMPONENTI HEADER E MENU (Profilo, Temi, Lingue)
    -------------------------------------------------------------------------- */
 header {
   background-color: var(--surface);
@@ -337,6 +337,17 @@ header {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+/* Contenitore nella pagina di Login assoluto in alto a destra */
+.lang-switch-container {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 10;
 }
 
 /* Pulsanti Tondi Header (Lingua / Dark Mode) */
@@ -430,7 +441,7 @@ header {
 .bg-purple { background-color: #9333ea; }
 .bg-emerald { background-color: #10b981; }
 .bg-rose { background-color: #e11d48; }
-
+.bg-yellow { background-color: #eab308; } /* Aggiunto colore giallo */
 
 /* --------------------------------------------------------------------------
    7. MODALI E OVERLAY (Popup)
@@ -494,18 +505,6 @@ header {
 .status-canceled, .badge-danger { background-color: var(--danger-light); color: var(--danger); border: 1px solid #fecaca; }
 .badge-neutral { background-color: var(--bg-color); color: var(--text-muted); border: 1px solid var(--border); }
 
-/* Badge Generici / Documenti */
-.badge-warning { background-color: var(--warning-light); color: var(--warning); border: 1px solid #fde68a; }
-.badge-danger { background-color: var(--danger-light); color: var(--danger); border: 1px solid #fecaca; }
-
-/* Badge Generici / Documenti / Staff */
-.badge-neutral { background-color: var(--bg-color); color: var(--text-muted); border: 1px solid var(--border); }
-.badge-info { background-color: var(--primary-light); color: var(--primary); border: 1px solid #bfdbfe; }
-.badge-purple { background-color: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid #d8b4fe; }
-.badge-success { background-color: #dcfce7; color: var(--success); border: 1px solid #bbf7d0; }
-.badge-warning { background-color: var(--warning-light); color: var(--warning); border: 1px solid #fde68a; }
-.badge-danger { background-color: var(--danger-light); color: var(--danger); border: 1px solid #fecaca; }
-
 /* Aura Laterale Sinistra sulle Request Cards */
 .card.border-created, .request-card.border-created { border-left: 6px solid #94a3b8 !important; }
 .card.border-awaiting, .request-card.border-awaiting { border-left: 6px solid #f59e0b !important; }
@@ -519,7 +518,7 @@ header {
 .document-title,
 .request-card .student-name,
 .modal .doc-link {
-  font-size: 14px; /* Dimensione standard unificata */
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-main);
 }
@@ -571,12 +570,9 @@ header {
   to { transform: translateX(0); opacity: 1; }
 }
 
-
 /* ==========================================================
    10. AMBIENT GLOW - SFONDO DINAMICO ANIMATO (Enhanced)
    ========================================================== */
-
-/* Creiamo due grandi sfere di colore fisse sullo sfondo */
 body::before,
 body::after {
   content: '';
@@ -588,7 +584,6 @@ body::after {
   transition: background-color 0.5s ease;
 }
 
-/* Sfera 1: In alto a sinistra (Colore Principale) */
 body::before {
   width: 700px;
   height: 700px;
@@ -599,7 +594,6 @@ body::before {
   animation: floatGlow 20s infinite ease-in-out alternate;
 }
 
-/* Sfera 2: In basso a destra (Colore Secondario) */
 body::after {
   width: 800px;
   height: 800px;
@@ -610,7 +604,6 @@ body::after {
   animation: floatGlow 25s infinite ease-in-out alternate-reverse;
 }
 
-/* Animazione "Respiro": movimenti più ampi */
 @keyframes floatGlow {
   0%   { transform: translate(0, 0) scale(1); }
   33%  { transform: translate(60px, -60px) scale(1.15); }
@@ -618,11 +611,9 @@ body::after {
   100% { transform: translate(0, 0) scale(1); }
 }
 
-/* Adattamento per la Dark Mode: Aloni più vividi effetto Neon */
 body.dark-mode::before {
   opacity: 0.25;
 }
-
 body.dark-mode::after {
   opacity: 0.15;
   background-color: var(--primary);
