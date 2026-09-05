@@ -1,15 +1,27 @@
+<!-- ==========================================================================
+     ACTIVE MOBILITY COMPONENT - TEMPLATE HTML
+     Gestisce l'area "In Erasmus" dello studente: inserimento date effettive,
+     proposta variazioni Learning Agreement, caricamento voti ToR e storico file.
+     ========================================================================== -->
+
+<!-- HEADER DI NAVIGAZIONE -->
 <header>
   <div class="logo-area" (click)="tornaIndietro($event)">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
   <div class="header-actions">
+    <!-- Pulsante Cambio Lingua -->
     <button class="lang-btn" (click)="translationService.toggleLanguage()" title="Cambia lingua">
       {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
     </button>
+    <!-- Pulsante Cambio Tema -->
     <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
       {{ themeService.isDark ? '☀️' : '🌙' }}
     </button>
+    <!-- Profilo Utente e Menu a Tendina -->
     <div class="profile-container">
       <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
       <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
+
+        <!-- Selezione Colore d'Accento -->
         <div class="color-picker-menu">
           <span class="color-picker-title">{{ 'HEADER.CHOOSE_COLOR' | translate }}</span>
           <div class="color-swatches">
@@ -36,6 +48,7 @@
     <p class="page-subtitle">{{ 'ACTIVE_MOBILITY.SUBTITLE' | translate }}</p>
   </div>
 
+  <!-- Box di Selezione Vista (Gestione Mobilità vs Stato Modifiche) -->
   <div class="boxes-container">
     <div class="home-box" [class.box-active]="activeView === 'activeMobility'" (click)="cambiaVista('activeMobility')">
       <div class="box-icon">🌍</div>
@@ -52,6 +65,7 @@
     </div>
   </div>
 
+  <!-- VISTA 1: GESTIONE MOBILITÀ ATTIVA -->
   @if (activeView === 'activeMobility') {
 
     @if (richiesteAttive.length === 0) {
@@ -94,6 +108,7 @@
           </div>
         </div>
 
+        <!-- Box inserimento date se l'ufficio ha sbloccato la partenza -->
         @if (app.status === 'AWAITING_FOR_APPROVAL') {
           <div class="highlight-box" style="padding: 20px;">
             @if (!app.actual_arrival_date || !app.actual_departure_date) {
@@ -137,6 +152,7 @@
           </div>
         }
 
+        <!-- Pannello di controllo azioni mobilità in corso -->
         @if (app.status === 'MOBILITY_IN_PROGRESS' || app.status === 'AWAITING_MODIFICATION_APPROVAL' || app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL') {
           <div class="actions" style="border-top: 1px solid var(--border); padding-top: 24px;">
             <p style="width: 100%; font-size: 15px; color: var(--primary); font-weight: 600; margin-bottom: 12px; margin-top: 0;">
@@ -147,6 +163,7 @@
             <button class="btn-success" [class.btn-active]="app.activePanel === 'tor'" (click)="togglePanel(app, 'tor')">{{ 'ACTIVE_MOBILITY.BTN_CLOSE_ERASMUS' | translate }}</button>
           </div>
 
+          <!-- Pannello: Proposta Modifica Learning Agreement -->
           @if (app.activePanel === 'la') {
             <div class="collapsible-panel">
               <div class="form-group full-width" style="margin-bottom: 24px;">
@@ -179,6 +196,7 @@
 
               <button class="btn-outline" style="margin-bottom: 24px;" (click)="aggiungiEsameLA(app)">{{ 'ACTIVE_MOBILITY.ADD_EXAM' | translate }}</button>
 
+              <!-- Upload Nuovo file L.A. -->
               <div class="form-group full-width">
                 <label style="font-weight: 600; display: block; margin-bottom: 8px;">{{ 'ACTIVE_MOBILITY.UPLOAD_NEW_LA' | translate }}</label>
 
@@ -207,6 +225,7 @@
             </div>
           }
 
+          <!-- Pannello: Aggiornamento Date -->
           @if (app.activePanel === 'dates') {
             <div class="collapsible-panel">
               <h3 style="color: var(--primary); margin-top: 0;">{{ 'ACTIVE_MOBILITY.UPDATE_DATES_TITLE' | translate }}</h3>
@@ -230,6 +249,7 @@
             </div>
           }
 
+          <!-- Pannello: Chiusura Erasmus (Transcript of Records & Voti) -->
           @if (app.activePanel === 'tor') {
             <div class="collapsible-panel" style="border: 2px solid var(--success);">
               <h3 style="color: var(--success); margin-top: 0;">{{ 'ACTIVE_MOBILITY.TOR_TITLE' | translate }}</h3>
@@ -295,6 +315,7 @@
             </div>
           }
 
+          <!-- Pannello: Correzione di una Proposta Rifiutata -->
           @if (app.activePanel === 'correction') {
             <div class="collapsible-panel" style="border: 2px solid var(--danger); border-radius: 8px; padding: 24px;">
               <h3 style="color: var(--danger); margin-top: 0; font-size: 1.25rem;">{{ 'ACTIVE_MOBILITY.CORRECTION_TITLE' | translate }}</h3>
@@ -352,6 +373,7 @@
           }
         }
 
+        <!-- Sezione Esami Convalidati e Documenti Ufficiali se la pratica è Chiusa -->
         @if (app.status === 'CLOSED') {
 
           @if (app.exams && app.exams.length > 0) {
@@ -404,7 +426,8 @@
     }
   }
 
-  @if (activeView === 'modifications') {
+  @else if (activeView === 'modifications') {
+    <!-- VISTA 2: CRONOLOGIA E STATO MODIFICHE (History & Rejections) -->
     <div class="card">
       <div class="card-header-flex" style="border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; position: relative;">
         <h2 style="font-size: 1.25rem; display: flex; align-items: center; gap: 8px; margin: 0;">
@@ -449,6 +472,7 @@
                 </div>
               </div>
 
+              <!-- Se il documento è stato rifiutato, mostra la motivazione e il bottone per correggere e reinviare -->
               @if (doc.status === 'REJECTED') {
                 <div style="padding: 20px; background-color: var(--danger-light); border-top: 1px solid var(--danger);">
                   <strong style="color: var(--danger); font-size: 14px; display: block; margin-bottom: 8px;">{{ 'ACTIVE_MOBILITY.REJECT_MOTIVATION' | translate }}</strong>
@@ -477,6 +501,7 @@
   }
 </main>
 
+<!-- Modale di Conferma Azioni In Itinere -->
 @if (mostraModale) {
   <div class="modal-overlay" (click)="chiudiModale()">
     <div class="modal" (click)="$event.stopPropagation()">
@@ -501,6 +526,7 @@
   </div>
 }
 
+<!-- Notifiche Toast di Feedback -->
 @if (mostraAlert) {
   <div class="custom-alert" [ngClass]="alertType === 'success' ? 'alert-success' : 'alert-error'">
     <div class="alert-icon">{{ alertType === 'success' ? '✅' : '❌' }}</div>

@@ -1,8 +1,14 @@
+/* ==========================================================================
+   REQUEST DETAIL COMPONENT - TYPESCRIPT LOGIC
+   Gestisce il caricamento dettagliato di una pratica, la logica di editing
+   delle bozze, il drag-and-drop dei documenti PDF e il salvataggio dei dati.
+   ========================================================================== */
+
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-// i18n
+// Internazionalizzazione
 import { TranslatePipe } from '../translate.pipe';
 import { TranslationService } from '../services/translation.service';
 
@@ -19,15 +25,17 @@ export class RequestDetailComponent implements OnInit {
   @Output() onBack = new EventEmitter<void>();
 
   dettagli: any = null;
-  dettagliBackup: any = null;
+  dettagliBackup: any = null; // Usato per ripristinare i dati in caso di annullamento modifica
   isEditing: boolean = false;
   mostraModale: boolean = false;
   isSubmitting: boolean = false;
 
+  // Gestione Toast di Feedback
   mostraAlert: boolean = false;
   alertType: 'success' | 'error' = 'success';
   alertMessage: string = '';
 
+  // Gestione Drag & Drop file PDF
   isDragging: boolean = false;
   fileSelezionato: File | null = null;
 
@@ -40,6 +48,9 @@ export class RequestDetailComponent implements OnInit {
     this.caricaDettagli();
   }
 
+  /**
+   * Recupera i dettagli completi della pratica dal backend.
+   */
   caricaDettagli() {
     fetch(`http://localhost:3000/api/applications/${this.requestId}`)
       .then((res) => res.json())
@@ -47,7 +58,7 @@ export class RequestDetailComponent implements OnInit {
         this.dettagli = data;
         this.cdr.detectChanges();
       })
-      .catch((err) => console.error('Errore fetch dettagli:', err));
+      .catch((err) => console.error('Errore fetch dettagli pratica:', err));
   }
 
   mostraFeedback(tipo: 'success' | 'error', messaggio: string) {
@@ -63,7 +74,9 @@ export class RequestDetailComponent implements OnInit {
     this.mostraAlert = false;
   }
 
-  // AGGIORNATO: Ora accetta il tipo di documento in ingresso!
+  /**
+   * Restituisce il nome del file associato al tipo di documento richiesto.
+   */
   getNomeDocumento(tipo: string = 'LEARNING_AGREEMENT'): string {
     if (!this.dettagli || !this.dettagli.documents)
       return this.translationService.translate('REQ_DETAIL.NOT_ENTERED');
@@ -76,7 +89,9 @@ export class RequestDetailComponent implements OnInit {
     return doc ? doc.file_name : this.translationService.translate('REQ_DETAIL.NOT_ENTERED');
   }
 
-  // AGGIORNATO: Ora accetta il tipo di documento per il download!
+  /**
+   * Gestisce l'apertura o il download del documento ufficiale.
+   */
   scaricaDocumento(event: Event, tipo: string = 'LEARNING_AGREEMENT') {
     event.preventDefault();
     const doc =
@@ -129,6 +144,9 @@ export class RequestDetailComponent implements OnInit {
     this.mostraModale = false;
   }
 
+  /**
+   * Invia le modifiche apportate alla bozza tramite richiesta PUT con FormData.
+   */
   confermaSalvataggio() {
     if (this.isSubmitting) return;
     this.isSubmitting = true;
@@ -206,7 +224,7 @@ export class RequestDetailComponent implements OnInit {
       case 'WAITING_FOR_EXAM_SCORE_APPROVAL':
         return this.translationService.translate('MY_REQ.STATUS_AW_SCORE');
       case 'EXAM_SCORES_APPROVED':
-        return this.translationService.translate('MY_REQ.STATUS_EXAM_APP'); // NUOVO STATO!
+        return this.translationService.translate('MY_REQ.STATUS_EXAM_APP');
       case 'CLOSED':
         return this.translationService.translate('MY_REQ.STATUS_CLOSED');
       case 'CANCELED':

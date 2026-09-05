@@ -1,61 +1,67 @@
 /* ==========================================================================
    OVERSEAS PROGRAM - GLOBAL STYLESHEET
-   Questo file gestisce l'intero design system dell'applicazione, inclusi
-   colori (Light/Dark mode), tipografia, bottoni, modali e notifiche (Toasts).
+   Questo file costituisce il Design System dell'applicazione.
+   Definisce variabili colore (con supporto nativo a Light/Dark Mode),
+   tipografia globale, componenti UI riutilizzabili (bottoni, modali, alert)
+   e la palette semantica degli stati della mobilità.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   1. FONT E TYPOGRAPHY
+   1. FONT E TIPOGRAFIA
+   - Inter: Font principale (sans-serif moderno e leggibile) per la UI.
+   - Montserrat: Font secondario (heavy) per loghi e avatar.
    -------------------------------------------------------------------------- */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap');
 
 /* --------------------------------------------------------------------------
-   2. VARIABILI E TEMI (LIGHT & DARK MODE)
+   2. VARIABILI CSS E TEMI (LIGHT & DARK MODE)
+   Gestione centralizzata della palette colori, spaziature e ombre.
    -------------------------------------------------------------------------- */
-/* TEMA CHIARO (Default) */
+
+/* --- TEMA CHIARO (Default) --- */
 :root {
-  /* Sfondi */
+  /* Sfondi e Superfici */
   --bg-color: #f8fafc;
   --surface: #ffffff;
 
-  /* Testi */
+  /* Colori Testo */
   --text-main: #1e293b;
   --text-muted: #64748b;
 
-  /* Bordi */
+  /* Elementi UI strutturali */
   --border: #e2e8f0;
 
-  /* Smussature (Border Radius) */
+  /* Border Radius (Smussature standardizzate) */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
 
-  /* Colore Primario (Sovrascrivibile tramite ThemeService TS) */
+  /* Colori del Brand (Primario) - Dinamici tramite ThemeService */
   --primary: #2563eb;
   --primary-hover: #1d4ed8;
   --primary-light: #eff6ff;
 
-  /* Colori di Stato */
+  /* Colori Semantici (Feedback di sistema) */
   --success: #10b981;
   --danger: #ef4444;
   --danger-light: #fee2e2;
   --warning: #f59e0b;
   --warning-light: #fef3c7;
 
-  /* Ombre Standard */
+  /* Ombre (Elevazione dei componenti) */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-/* Transizioni Fluide Globali per Cambio Tema */
+/* Transizioni globali per un cambio tema fluido senza scatti visivi */
 body, header, .card, .request-card, .form-section-clean, .modal, .main-form-container, input, select, textarea, .dropdown {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* TEMA SCURO (Attivato tramite class 'dark-mode' sul body) */
+/* --- TEMA SCURO (attivato tramite la classe .dark-mode sul body) --- */
 body.dark-mode {
   --bg-color: #0f172a;
   --surface: #1e293b;
@@ -63,22 +69,22 @@ body.dark-mode {
   --text-muted: #94a3b8;
   --border: #334155;
 
-  /* Colori d'Accento opacizzati per evitare abbagliamento su sfondi scuri */
+  /* Varianti cromatiche ottimizzate per contrasto su sfondo scuro */
   --primary-light: rgba(37, 99, 235, 0.2);
   --danger-light: rgba(239, 68, 68, 0.15);
   --warning-light: rgba(245, 158, 11, 0.15);
 
-  /* Ombre modificate (più ampie e scure per compensare l'assenza di luce) */
+  /* Ombre intensificate per mantenere profondità senza l'uso di ombre chiare */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
 }
 
-/* Reset specifici Dark Mode per input e contenitori bianchi */
+/* Adattamenti specifici di elementi UI nativi per la Dark Mode */
 body.dark-mode input,
 body.dark-mode select,
 body.dark-mode textarea {
-  color-scheme: dark; /* Forza l'UI del browser (es. calendari nativi) a diventare scura */
+  color-scheme: dark; /* Forza i controlli nativi (es. calendari) ad usare il tema scuro */
 }
 
 body.dark-mode .drag-drop-zone,
@@ -90,37 +96,9 @@ body.dark-mode .home-box:hover {
   background-color: #334155;
 }
 
-/* ==========================================================
-   BOTTONE GLOBALE "TORNA ALLA HOME" (.back-header-btn)
-   ========================================================== */
-.back-header-btn {
-  margin-bottom: 24px;
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  padding: 10px 20px;
-  border-radius: 50px; /* Stile pillola super moderno */
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
-}
-
-.back-header-btn:hover {
-  background-color: var(--primary-light);
-  color: var(--primary);
-  border-color: var(--primary);
-  transform: translateX(-4px); /* Leggero movimento a sinistra per indicare l'azione "indietro" */
-  box-shadow: var(--shadow-md);
-}
 
 /* --------------------------------------------------------------------------
-   3. BASE E RESET
+   3. RESET E STRUTTURA BASE
    -------------------------------------------------------------------------- */
 body {
   background-color: var(--bg-color);
@@ -128,23 +106,24 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: 'Inter', sans-serif;
-  position: relative; /* Necessario per l'Ambient Glow */
-  overflow-x: hidden; /* Evita barre di scorrimento orizzontali causate dai blur */
+  position: relative; /* Necessario per il posizionamento dell'Ambient Glow */
+  overflow-x: hidden; /* Previene scrolling orizzontale anomalo */
 }
 
+/* Tipografia Intestazioni */
 h1, h2, h3, h4, h5, h6, .page-title, .page-subtitle {
   color: var(--text-main);
 }
 
 .page-title {
-  font-size: 2rem; /* Dimensione unificata per tutte le dashboard */
+  font-size: 2rem;
   font-weight: 800;
   color: var(--text-main);
   margin: 0 0 8px 0;
   letter-spacing: -0.5px;
 }
 
-/* Logo Testuale Header (Ufficio Overseas / Overseas Program) */
+/* Logo nell'Header Nav */
 .logo-area {
   font-size: 1.4rem;
   font-weight: 800;
@@ -154,18 +133,15 @@ h1, h2, h3, h4, h5, h6, .page-title, .page-subtitle {
   transition: all 0.3s ease;
   cursor: pointer;
 }
-
 .logo-area:hover {
   opacity: 0.7;
   transform: scale(0.98);
 }
 
-/* ==========================================================
-   TITOLI HERO (Uniforma Student, Staff e Lecturer)
-   ========================================================== */
+/* Stili Hero per le Home Pages (Studente, Staff, Docente) */
 .hero h1,
 .hero .page-title {
-  font-size: 3rem !important; /* Forza la grandezza grande per tutte le home */
+  font-size: 3rem !important;
   font-weight: 700 !important;
   color: var(--text-main);
   margin: 0 0 12px 0 !important;
@@ -179,8 +155,9 @@ h1, h2, h3, h4, h5, h6, .page-title, .page-subtitle {
   margin: 0;
 }
 
+
 /* --------------------------------------------------------------------------
-   4. FORM INPUTS (Stile universale per input, textarea e select)
+   4. ELEMENTI FORM (Input, Select, Textarea)
    -------------------------------------------------------------------------- */
 input[type="text"],
 input[type="number"],
@@ -229,7 +206,7 @@ input[type="file"]::file-selector-button:hover {
   color: white;
 }
 
-/* Errori Input */
+/* Feedback visivo per validazione Form (Errori) */
 .is-invalid {
   border-color: var(--danger) !important;
   background-color: var(--danger-light) !important;
@@ -238,9 +215,35 @@ input[type="file"]::file-selector-button:hover {
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
 }
 
+
 /* --------------------------------------------------------------------------
-   5. BOTTONI GLOBALI
+   5. BOTTONI GLOBALI (UI Kit)
    -------------------------------------------------------------------------- */
+.back-header-btn {
+  margin-bottom: 24px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.back-header-btn:hover {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: translateX(-4px);
+  box-shadow: var(--shadow-md);
+}
+
 .btn-primary {
   background-color: var(--primary);
   color: white;
@@ -317,8 +320,9 @@ input[type="file"]::file-selector-button:hover {
 }
 .btn-danger-outline:hover { background: var(--danger-light); }
 
+
 /* --------------------------------------------------------------------------
-   6. COMPONENTI HEADER E MENU (Profilo, Temi, Lingue)
+   6. HEADER E NAVIGAZIONE (Controlli Utente)
    -------------------------------------------------------------------------- */
 header {
   background-color: var(--surface);
@@ -333,13 +337,9 @@ header {
   border-bottom: 1px solid var(--border);
 }
 
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
+.header-actions { display: flex; align-items: center; gap: 16px; }
 
-/* Contenitore nella pagina di Login assoluto in alto a destra */
+/* Controlli lingua (Utilizzato anche in schermata di Login) */
 .lang-switch-container {
   position: absolute;
   top: 24px;
@@ -350,7 +350,7 @@ header {
   z-index: 10;
 }
 
-/* Pulsanti Tondi Header (Lingua / Dark Mode) */
+/* Pulsanti Toggle (Lingua e Tema) */
 .lang-btn, .theme-toggle-btn {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -361,20 +361,9 @@ header {
   box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
 }
-.lang-btn {
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-size: 14px;
-}
-.theme-toggle-btn {
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+.lang-btn { border-radius: 20px; padding: 8px 16px; font-size: 14px; }
+.theme-toggle-btn { border-radius: 50%; width: 44px; height: 44px; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+
 .lang-btn:hover, .theme-toggle-btn:hover {
   background: var(--bg-color);
   box-shadow: var(--shadow-md);
@@ -383,7 +372,7 @@ header {
 }
 .theme-toggle-btn:hover { transform: rotate(15deg) scale(1.05); }
 
-/* Profilo Utente (Iniziali) */
+/* Avatar Profilo (Iniziali) */
 .profile-container { position: relative; }
 .profile-btn {
   background-color: var(--primary-light);
@@ -393,7 +382,7 @@ header {
   width: 46px;
   height: 46px;
   font-size: 17px;
-  font-weight: 800; /* Font bold per Iniziali */
+  font-weight: 800;
   font-family: 'Montserrat', 'Inter', sans-serif;
   letter-spacing: 1px;
   cursor: pointer;
@@ -409,7 +398,7 @@ header {
   box-shadow: 0 4px 12px var(--primary-light);
 }
 
-/* Dropdown Menu (Profilo & Colori) */
+/* Dropdown Menu (Logout e Scelta Colore) */
 .dropdown {
   position: absolute;
   top: 60px;
@@ -430,26 +419,28 @@ header {
 .dropdown .divider { height: 1px; background-color: var(--border); margin: 4px 0; }
 .dropdown .logout { color: var(--danger); font-weight: 600; }
 
-/* Theme Color Picker nel Dropdown */
+/* Palette Colori ThemeService */
 .color-picker-menu { padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
 .color-picker-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 .color-swatches { display: flex; gap: 12px; }
 .swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; padding: 0; }
 .swatch:hover { transform: scale(1.15); }
 .swatch.active { border-color: var(--text-main); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text-main); transform: scale(1.1); }
+
 .bg-blue { background-color: #2563eb; }
 .bg-purple { background-color: #9333ea; }
 .bg-emerald { background-color: #10b981; }
 .bg-rose { background-color: #e11d48; }
-.bg-yellow { background-color: #eab308; } /* Aggiunto colore giallo */
+.bg-yellow { background-color: #eab308; }
+
 
 /* --------------------------------------------------------------------------
-   7. MODALI E OVERLAY (Popup)
+   7. MODALI E OVERLAY
    -------------------------------------------------------------------------- */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* Semitrasparenza Sfondo */
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -480,7 +471,8 @@ header {
 
 
 /* --------------------------------------------------------------------------
-   8. BADGE DI STATO & EFFETTI BORDI AURA (Pratiche Erasmus)
+   8. COMPONENTI DI STATO (Badge e Card Aura)
+   Definisce i codici colore univoci per l'intera State Machine dell'app.
    -------------------------------------------------------------------------- */
 .status-badge {
   display: inline-block;
@@ -494,19 +486,19 @@ header {
   line-height: 1.4;
 }
 
-/* Colori Base Stati */
+/* Badge Colori */
 .status-created { background-color: var(--bg-color); color: var(--text-muted); border: 1px solid var(--border); }
 .status-awaiting-la, .badge-warning { background-color: var(--warning-light); color: var(--warning); border: 1px solid #fde68a; }
 .status-pre-departure { background-color: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
 .status-in-progress, .badge-info { background-color: var(--primary-light); color: var(--primary); border: 1px solid #bfdbfe; }
 .status-awaiting-modification { background-color: var(--warning-light); color: var(--warning); border: 1px solid #fde68a; }
 .status-waiting-score, .badge-purple { background-color: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid #d8b4fe; }
-.status-exam-approved { background-color: rgba(14, 165, 233, 0.15); color: #0ea5e9; border: 1px solid #7dd3fc; }
+.status-exam-approved { background-color: rgba(14, 165, 233, 0.15); color: #0ea5e9; border: 1px solid #7dd3fc; } /* Ciano */
 .status-closed, .badge-success { background-color: #dcfce7; color: var(--success); border: 1px solid #bbf7d0; }
 .status-canceled, .badge-danger { background-color: var(--danger-light); color: var(--danger); border: 1px solid #fecaca; }
 .badge-neutral { background-color: var(--bg-color); color: var(--text-muted); border: 1px solid var(--border); }
 
-/* Aura Laterale Sinistra sulle Request Cards */
+/* Aura (Bordo spessorato a sinistra per le request-card) */
 .card.border-created, .request-card.border-created { border-left: 6px solid #94a3b8 !important; }
 .card.border-awaiting, .request-card.border-awaiting { border-left: 6px solid #f59e0b !important; }
 .card.border-pre-departure, .request-card.border-pre-departure { border-left: 6px solid #fde68a !important; }
@@ -514,9 +506,9 @@ header {
 .card.border-closed, .request-card.border-closed { border-left: 6px solid #10b981 !important; }
 .card.border-canceled, .request-card.border-canceled { border-left: 6px solid #ef4444 !important; }
 .card.border-waiting-score, .request-card.border-waiting-score { border-left: 6px solid #a855f7 !important; }
-.card.border-exam-approved, .request-card.border-exam-approved { border-left: 6px solid #0ea5e9 !important; }
+.card.border-exam-approved, .request-card.border-exam-approved { border-left: 6px solid #0ea5e9 !important; } /* Ciano */
 
-/* Stile unificato per i titoli dei documenti e delle card in tutte le dashboard (Student, Lecturer, Staff) */
+/* Titoli delle liste e delle viste riepilogative */
 .document-title,
 .request-card .student-name,
 .modal .doc-link {
@@ -525,8 +517,9 @@ header {
   color: var(--text-main);
 }
 
+
 /* --------------------------------------------------------------------------
-   9. TOAST NOTIFICATIONS (Alert di sistema)
+   9. TOAST NOTIFICATIONS (Alerts in overlay)
    -------------------------------------------------------------------------- */
 .custom-alert {
   position: fixed;
@@ -572,8 +565,10 @@ header {
   to { transform: translateX(0); opacity: 1; }
 }
 
+
 /* ==========================================================
-   10. AMBIENT GLOW - SFONDO DINAMICO ANIMATO (Enhanced)
+   10. AMBIENT GLOW (Sfondo Dinamico Animato)
+   Aggiunge un effetto di alone in movimento dietro la UI.
    ========================================================== */
 body::before,
 body::after {
@@ -613,10 +608,6 @@ body::after {
   100% { transform: translate(0, 0) scale(1); }
 }
 
-body.dark-mode::before {
-  opacity: 0.25;
-}
-body.dark-mode::after {
-  opacity: 0.15;
-  background-color: var(--primary);
-}
+/* Riduzione opacità in Dark Mode per non accecare l'utente */
+body.dark-mode::before { opacity: 0.25; }
+body.dark-mode::after { opacity: 0.15; background-color: var(--primary); }

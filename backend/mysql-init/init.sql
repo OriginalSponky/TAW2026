@@ -1,18 +1,34 @@
+/* ==========================================================================
+   OVERSEAS PROGRAM - DATABASE INITIALIZATION SCRIPT
+   Questo script costruisce la struttura relazionale (Schema) del database
+   MySQL e lo popola con dati fittizi (Seeding) per testare l'applicazione
+   attraverso tutte le fasi della State Machine (da Bozza a Chiusura).
+   ========================================================================== */
+
 DROP DATABASE IF EXISTS app_database;
 CREATE DATABASE app_database;
 USE app_database;
 
+/* --------------------------------------------------------------------------
+   TABELLA: Users
+   Contiene tutti gli attori del sistema. Il campo 'role' definisce i permessi
+   (STUDENT = Richiedente, LECTURER = Approvatore L.A./ToR, STAFF = Ufficio).
+   -------------------------------------------------------------------------- */
 CREATE TABLE Users (
                        id INT AUTO_INCREMENT PRIMARY KEY,
                        role ENUM('STUDENT', 'LECTURER', 'STAFF') NOT NULL,
                        first_name VARCHAR(100) NOT NULL,
                        last_name VARCHAR(100) NOT NULL,
-                       matriculation_number VARCHAR(20) UNIQUE,
+                       matriculation_number VARCHAR(20) UNIQUE, -- NULL per LECTURER e STAFF
                        email VARCHAR(150) NOT NULL UNIQUE,
                        password_hash VARCHAR(255) NOT NULL,
                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+/* --------------------------------------------------------------------------
+   TABELLA: Institutions
+   Anagrafica delle Università Partner Estere.
+   -------------------------------------------------------------------------- */
 CREATE TABLE Institutions (
                               id INT AUTO_INCREMENT PRIMARY KEY,
                               name VARCHAR(255) NOT NULL,
@@ -21,48 +37,59 @@ CREATE TABLE Institutions (
                               website_url VARCHAR(255)
 );
 
+/* --------------------------------------------------------------------------
+   TABELLA: Applications (Cuore del Sistema - State Machine)
+   Rappresenta una singola pratica di mobilità. Il campo 'status' guida
+   l'intera logica di visualizzazione sui Frontend (Student, Lecturer, Staff).
+   -------------------------------------------------------------------------- */
 CREATE TABLE Applications (
                               id INT AUTO_INCREMENT PRIMARY KEY,
                               student_id INT NOT NULL,
                               institution_id INT NOT NULL,
                               lecturer_id INT NOT NULL,
 
-    -- DATI ESSENZIALI
+    -- DATI ESSENZIALI DI PARTENZA
                               academic_year VARCHAR(9) NOT NULL,
                               mobility_period ENUM('FIRST_SEMESTER', 'SECOND_SEMESTER', 'FULL_YEAR') NOT NULL,
 
-    -- DATE EFFETTIVE
+    -- DATE EFFETTIVE (Aggiunte dallo studente in fase di pre-partenza o modifica)
                               actual_arrival_date DATE NULL,
                               actual_departure_date DATE NULL,
 
-    -- STATO DELLA RICHIESTA
+    -- MACCHINA A STATI DELLA PRATICA (Lifecycle)
                               status ENUM(
-                                  'CREATED',
-                                  'AWAITING_FOR_APPROVAL',
-                                  'PRE_DEPARTURE_COMPLETED',
-                                  'MOBILITY_IN_PROGRESS',
-                                  'AWAITING_MODIFICATION_APPROVAL',
-                                  'WAITING_FOR_EXAM_SCORE_APPROVAL',
-                                  'EXAM_SCORES_APPROVED',
-                                  'CLOSED',
-                                  'CANCELED'
+                                  'CREATED',                           -- 1. Bozza studente
+                                  'AWAITING_FOR_APPROVAL',             -- 2. In attesa del Prof (L.A.)
+                                  'PRE_DEPARTURE_COMPLETED',           -- 3. Prof approva, attesa Staff
+                                  'MOBILITY_IN_PROGRESS',              -- 4. Staff o Studente avvia mobilità
+                                  'AWAITING_MODIFICATION_APPROVAL',    -- 5. Studente propone cambio L.A. in itinere
+                                  'WAITING_FOR_EXAM_SCORE_APPROVAL',   -- 6. Rientro: attesa Prof (ToR)
+                                  'EXAM_SCORES_APPROVED',              -- 7. Prof approva ToR, attesa Staff
+                                  'CLOSED',                            -- 8. Chiusa con successo dallo Staff
+                                  'CANCELED'                           -- X. Annullata / Rifiutata definitivamente
                                   ) DEFAULT 'CREATED',
 
-    -- APPROVAZIONI DEL LEARNING AGREEMENT E DEI VOTI
+    -- FLAG DI APPROVAZIONE (Storico decisioni)
                               is_la_approved BOOLEAN DEFAULT FALSE,
                               la_decision_date DATE NULL,
                               la_rejection_reason TEXT NULL,
                               are_exams_approved BOOLEAN DEFAULT FALSE,
 
-    -- DATE DI SISTEMA
+    -- TIMESTAMP DI SISTEMA
                               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                               updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+    -- VINCOLI DI INTEGRITA'
                               FOREIGN KEY (student_id) REFERENCES Users(id) ON DELETE CASCADE,
                               FOREIGN KEY (institution_id) REFERENCES Institutions(id) ON DELETE RESTRICT,
                               FOREIGN KEY (lecturer_id) REFERENCES Users(id) ON DELETE RESTRICT
 );
 
+/* --------------------------------------------------------------------------
+   TABELLA: ExamsMapping
+   Rappresenta la corrispondenza 1:1 tra un corso all'estero e uno a Ca' Foscari.
+   Viene riutilizzata sia per il Learning Agreement che per il Transcript of Records.
+   -------------------------------------------------------------------------- */
 CREATE TABLE ExamsMapping (
                               id INT AUTO_INCREMENT PRIMARY KEY,
                               application_id INT NOT NULL,
@@ -72,34 +99,44 @@ CREATE TABLE ExamsMapping (
                               foreign_course_name VARCHAR(255) NOT NULL,
                               foreign_course_credits INT NOT NULL,
 
-    -- DATI DEL CORSO A CA' FOSCARI
+    -- DATI DEL CORSO LOCALE (Ca' Foscari)
                               unive_course_code VARCHAR(50) NOT NULL,
                               unive_course_title VARCHAR(255) NOT NULL,
                               unive_course_credits INT NOT NULL,
 
+    -- DATI DI RIENTRO (Popolati solo nella fase ToR)
                               score_obtained VARCHAR(10) NULL,
                               exam_date DATE NULL,
+
+    -- FLAG MODIFICA (Vero se è un corso aggiunto in fase 'AWAITING_MODIFICATION_APPROVAL')
                               is_proposed_change BOOLEAN DEFAULT FALSE,
 
-    -- APPROVAZIONE DEL SINGOLO ESAME
+    -- FLAG APPROVAZIONE DOCENTE
                               is_approved_by_lecturer BOOLEAN DEFAULT FALSE,
 
                               FOREIGN KEY (application_id) REFERENCES Applications(id) ON DELETE CASCADE
 );
 
+/* --------------------------------------------------------------------------
+   TABELLA: Documents
+   Sistema di versioning dei file PDF. Permette di tenere traccia di documenti
+   rifiutati e sostituiti senza perdere lo storico.
+   -------------------------------------------------------------------------- */
 CREATE TABLE Documents (
                            id INT AUTO_INCREMENT PRIMARY KEY,
                            application_id INT NOT NULL,
 
-    -- Tipo di documento
+    -- TIPO DI FILE
                            document_type ENUM('LEARNING_AGREEMENT', 'TRANSCRIPT_OF_RECORDS') NOT NULL,
 
-    -- Dati del file fisico salvato sul server
+    -- DATI FISICI DEL FILE
                            file_name VARCHAR(255) NOT NULL,
                            file_path VARCHAR(255) NOT NULL,
+
+    -- NOTA STUDENTE (Es. motivo della variazione)
                            modification_description TEXT NULL,
 
-    -- Tracciamento per ogni singola versione del documento
+    -- TRACCIAMENTO ESITO
                            status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
                            decision_date DATE NULL,
                            rejection_reason TEXT NULL,
@@ -109,20 +146,25 @@ CREATE TABLE Documents (
 );
 
 
--- ---------------------------------------------------------
--- INSERIMENTO DATI DI ESEMPIO (SEEDING)
--- ---------------------------------------------------------
+/* ==========================================================================
+   SEEDING: INSERIMENTO DATI DI ESEMPIO
+   Questi dati sono studiati per far figurare almeno una pratica in ogni
+   singolo stato della macchina a stati, permettendo di testare l'UI completa.
+   ========================================================================== */
 
+-- 1. UTENTI
 INSERT INTO Users (role, first_name, last_name, matriculation_number, email, password_hash) VALUES
--- Profili di TEST (ID 1, 2, 3)
+-- Utenti Principali per i Test (Password visibile per bypassare il login crittografato in dev)
 ('STUDENT', 'Student', 'Test', '000067', '000067@stud.unive.it', 'student_test'),
 ('LECTURER', 'Lecturer', 'Test', NULL, 'lecturer.test@unive.it', 'lecturer_test'),
 ('STAFF', 'Overseas', 'Office', NULL, 'overseasout@unive.it', 'staff_test'),
--- Altri utenti per verificare che i dati non si accavallino (ID 4, 5, 6)
+
+-- Utenti Secondari (Per testare che i profili vedano solo i propri dati)
 ('STUDENT', 'Alice', 'Meraviglia', '845001', '845001@stud.unive.it', 'student_test'),
 ('STUDENT', 'Bob', 'Aggiustatutto', '845002', '845002@stud.unive.it', 'student_test'),
 ('LECTURER', 'Mario', 'Rossi', NULL, 'm.rossi@unive.it', 'lecturer_test');
 
+-- 2. UNIVERSITÀ PARTNER
 INSERT INTO Institutions (name, country, city, website_url) VALUES
                                                                 ('Columbia University', 'USA', 'New York', 'https://www.columbia.edu'),
                                                                 ('University of California, Berkeley', 'USA', 'Berkeley', 'https://www.berkeley.edu'),
@@ -153,35 +195,34 @@ INSERT INTO Institutions (name, country, city, website_url) VALUES
                                                                 ('Universidade de São Paulo (USP)', 'Brazil', 'São Paulo', 'https://www5.usp.br'),
                                                                 ('Universidad de Buenos Aires (UBA)', 'Argentina', 'Buenos Aires', 'https://www.uba.ar');
 
+-- 3. APPLICAZIONI (Una per ogni possibile 'status')
 INSERT INTO Applications (
     student_id, institution_id, lecturer_id, academic_year, mobility_period,
     actual_arrival_date, actual_departure_date, status, is_la_approved, la_decision_date, la_rejection_reason, are_exams_approved
 ) VALUES
--- App 1: MOBILITY_IN_PROGRESS (Tutto approvato, in corso)
+-- App 1: MOBILITY_IN_PROGRESS (L.A. Approvato, date inserite, studente attualmente all'estero)
 (1, 1, 2, '2025/2026', 'FIRST_SEMESTER', '2025-09-01', '2026-02-15', 'MOBILITY_IN_PROGRESS', TRUE, '2025-06-15', NULL, FALSE),
--- App 2: CREATED (Bozza iniziale)
+-- App 2: CREATED (Bozza studente, file caricato ma non ancora sottomesso)
 (1, 2, 2, '2025/2026', 'FULL_YEAR', NULL, NULL, 'CREATED', FALSE, NULL, NULL, FALSE),
--- App 3: AWAITING_FOR_APPROVAL (Ha le date e un LA caricato in attesa del Prof)
+-- App 3: AWAITING_FOR_APPROVAL (L.A. inviato, in attesa di decisione del Docente)
 (1, 3, 2, '2025/2026', 'SECOND_SEMESTER', '2026-02-01', '2026-07-15', 'AWAITING_FOR_APPROVAL', FALSE, NULL, NULL, FALSE),
--- App 4: PRE_DEPARTURE_COMPLETED (LA approvato dal prof, Staff deve avviare)
+-- App 4: PRE_DEPARTURE_COMPLETED (L.A. Approvato dal Docente, visibile in dashboard Staff)
 (1, 4, 2, '2025/2026', 'FIRST_SEMESTER', '2025-08-25', '2025-12-20', 'PRE_DEPARTURE_COMPLETED', TRUE, '2025-07-20', NULL, FALSE),
--- App 5: WAITING_FOR_EXAM_SCORE_APPROVAL (Studente ha inviato il ToR, attende il Prof)
+-- App 5: WAITING_FOR_EXAM_SCORE_APPROVAL (Studente tornato, ToR caricato, attesa validazione voti)
 (1, 5, 2, '2025/2026', 'FIRST_SEMESTER', '2025-08-28', '2026-01-20', 'WAITING_FOR_EXAM_SCORE_APPROVAL', TRUE, '2025-06-10', NULL, FALSE),
--- App 6: CLOSED (Tutto finito e approvato)
+-- App 6: CLOSED (Ciclo concluso: L.A. e Voti approvati, pratica archiviata dallo Staff)
 (1, 6, 2, '2024/2025', 'FULL_YEAR', '2024-09-05', '2025-06-30', 'CLOSED', TRUE, '2024-05-15', NULL, TRUE),
--- App 7: AWAITING_MODIFICATION_APPROVAL (In mobilità, proposta modifica L.A. inviata)
+-- App 7: AWAITING_MODIFICATION_APPROVAL (Studente all'estero propone cambio piano di studi)
 (1, 7, 2, '2025/2026', 'FULL_YEAR', '2025-09-10', '2026-06-20', 'AWAITING_MODIFICATION_APPROVAL', TRUE, '2025-06-01', NULL, FALSE),
--- App 8: EXAM_SCORES_APPROVED (Prof ha approvato i voti, Staff deve chiudere)
+-- App 8: EXAM_SCORES_APPROVED (Voti approvati dal Docente, attesa chiusura definitiva Staff)
 (1, 8, 2, '2024/2025', 'SECOND_SEMESTER', '2025-02-15', '2025-07-10', 'EXAM_SCORES_APPROVED', TRUE, '2024-12-01', NULL, TRUE),
 
--- EXTRA TESTING APPS (Per altri studenti/docenti)
--- App 9 (Student 4, Lecturer 6): AWAITING_FOR_APPROVAL per l'altro docente
+-- Applicazioni Extra per gli utenti secondari (Bob e Alice)
 (4, 9, 6, '2025/2026', 'FIRST_SEMESTER', '2025-09-15', '2026-01-30', 'AWAITING_FOR_APPROVAL', FALSE, NULL, NULL, FALSE),
--- App 10 (Student 5, Lecturer 6): Mobilità in corso
 (5, 10, 6, '2025/2026', 'FULL_YEAR', '2025-09-01', '2026-07-01', 'MOBILITY_IN_PROGRESS', TRUE, '2025-06-25', NULL, FALSE),
--- App 11 (Student 5, Lecturer 6): PRONTA PER LA CHIUSURA (Visibile allo Staff!)
 (5, 11, 6, '2024/2025', 'SECOND_SEMESTER', '2025-02-01', '2025-07-01', 'EXAM_SCORES_APPROVED', TRUE, '2025-01-10', NULL, TRUE);
 
+-- 4. ESAMI (Mappature)
 INSERT INTO ExamsMapping (
     application_id, foreign_course_code, foreign_course_name, foreign_course_credits,
     unive_course_code, unive_course_title, unive_course_credits, score_obtained, exam_date, is_proposed_change, is_approved_by_lecturer
@@ -194,52 +235,48 @@ INSERT INTO ExamsMapping (
       (5, 'BIO102', 'Genetics', 4.0, 'BIO02', 'Genetica', 6, 'B+', '2026-01-10', FALSE, TRUE),
       (6, 'ECO101', 'Microeconomics', 6.0, 'ECO01', 'Microeconomia', 9, '30/30', '2025-01-20', FALSE, TRUE),
       (7, 'ART101', 'Art History', 4.0, 'ART01', 'Storia dell Arte', 6, NULL, NULL, FALSE, TRUE),
-      (7, 'ART201', 'Modern Art', 4.0, 'ART02', 'Arte Moderna', 6, NULL, NULL, TRUE, FALSE),
+      (7, 'ART201', 'Modern Art', 4.0, 'ART02', 'Arte Moderna', 6, NULL, NULL, TRUE, FALSE), -- Esame in modifica
       (8, 'HIS101', 'World History', 5.0, 'STO01', 'Storia Globale', 6, '30/30L', '2025-06-25', FALSE, TRUE),
       (9, 'CHEM101', 'Chemistry', 5.0, 'CHI01', 'Chimica', 6, NULL, NULL, FALSE, FALSE),
       (10, 'ENG101', 'Engineering', 6.0, 'ING01', 'Ingegneria', 6, NULL, NULL, FALSE, TRUE),
       (11, 'FIN201', 'Corporate Finance', 6.0, 'FIN01', 'Finanza Aziendale', 6, 'A+', '2025-06-15', FALSE, TRUE);
 
-
+-- 5. DOCUMENTI E STORICO (Versioning dei file PDF fittizi)
 INSERT INTO Documents (application_id, document_type, file_name, file_path, status, decision_date, rejection_reason, modification_description) VALUES
--- App 1 (In Progress): Ha uno storico con un LA rifiutato e quello attuale approvato
+-- App 1: Storico reale con un L.A. prima rifiutato, poi corretto e approvato
 (1, 'LEARNING_AGREEMENT', 'LA_Bianchi_Errato.pdf', '/uploads/test.pdf', 'REJECTED', '2025-06-10', 'Il corso CS101 ha un numero di crediti errato. Per favore correggi.', NULL),
 (1, 'LEARNING_AGREEMENT', 'LA_Bianchi_Filippo_Signed.pdf', '/uploads/test.pdf', 'APPROVED', '2025-06-15', NULL, NULL),
 
--- App 2 (Created): Aggiunto un file test.pdf come bozza caricata ma non ancora inviata
+-- App 2: Bozza salvata ma non inviata
 (2, 'LEARNING_AGREEMENT', 'LA_Draft_Student.pdf', '/uploads/test.pdf', 'PENDING', NULL, NULL, NULL),
 
--- App 3 (Awaiting Approval): Ha uno storico con un LA rifiutato e uno nuovo in attesa
+-- App 3: L.A. inviato, attesa Docente (Con un rifiuto precedente)
 (3, 'LEARNING_AGREEMENT', 'LA_Test_Old_Rejected.pdf', '/uploads/test.pdf', 'REJECTED', '2026-02-10', 'Manca la firma nell\'ultima pagina.', NULL),
 (3, 'LEARNING_AGREEMENT', 'LA_Test_Awaiting.pdf', '/uploads/test.pdf', 'PENDING', NULL, NULL, NULL),
 
--- App 4 (Pre-Departure)
+-- App 4: L.A. Approvato
 (4, 'LEARNING_AGREEMENT', 'LA_Test_PreDep.pdf', '/uploads/test.pdf', 'APPROVED', '2025-07-20', NULL, NULL),
 
--- App 5 (Waiting for Exam Score Approval)
+-- App 5: Attesa Voti (L.A. Approvato in passato, ToR in pending)
 (5, 'LEARNING_AGREEMENT', 'LA_Test_Waiting.pdf', '/uploads/test.pdf', 'APPROVED', '2025-06-10', NULL, NULL),
 (5, 'TRANSCRIPT_OF_RECORDS', 'ToR_Test_Waiting.pdf', '/uploads/test.pdf', 'PENDING', NULL, NULL, NULL),
 
--- App 6 (Closed)
+-- App 6: Completamente chiusa (Entrambi i documenti approvati)
 (6, 'LEARNING_AGREEMENT', 'LA_Test_Closed.pdf', '/uploads/test.pdf', 'APPROVED', '2024-05-15', NULL, NULL),
 (6, 'TRANSCRIPT_OF_RECORDS', 'ToR_Test_Closed.pdf', '/uploads/test.pdf', 'APPROVED', '2025-07-05', NULL, NULL),
 
--- App 7 (Awaiting Modification): LA originale approvato + Prima modifica rifiutata + Seconda modifica in attesa
+-- App 7: Modifica in Itinere (L.A. base approvato, prima proposta rifiutata, seconda proposta pending)
 (7, 'LEARNING_AGREEMENT', 'LA_Test_Original.pdf', '/uploads/test.pdf', 'APPROVED', '2025-06-01', NULL, NULL),
 (7, 'LEARNING_AGREEMENT', 'LA_Test_Mod_Rifiutata.pdf', '/uploads/test.pdf', 'REJECTED', '2025-10-15', 'I crediti per Arte Moderna non sono sufficienti per la conversione.', 'Sostituzione Storia dell Arte con Arte Moderna (Primo tentativo)'),
 (7, 'LEARNING_AGREEMENT', 'LA_Test_Modificato.pdf', '/uploads/test.pdf', 'PENDING', NULL, NULL, 'Sostituzione Storia dell Arte con Arte Moderna (Corretto)'),
 
--- App 8 (Exam Scores Approved)
+-- App 8: Voti approvati, attesa Staff
 (8, 'LEARNING_AGREEMENT', 'LA_Approved.pdf', '/uploads/test.pdf', 'APPROVED', '2024-12-01', NULL, NULL),
 (8, 'TRANSCRIPT_OF_RECORDS', 'ToR_Scores_Approved.pdf', '/uploads/test.pdf', 'APPROVED', '2025-07-15', NULL, NULL),
 
--- App 9 (Altro Docente - In attesa)
+-- Applicazioni Extra
 (9, 'LEARNING_AGREEMENT', 'LA_Alice_Meraviglia.pdf', '/uploads/test.pdf', 'PENDING', NULL, NULL, NULL),
-
--- App 10 (Mobility In Progress): MODIFICA RIFIUTATA DAL PROFESSORE!
 (10, 'LEARNING_AGREEMENT', 'LA_Bob_InProgress.pdf', '/uploads/test.pdf', 'APPROVED', '2025-06-25', NULL, NULL),
 (10, 'LEARNING_AGREEMENT', 'LA_Bob_Mod_Rifiutata.pdf', '/uploads/test.pdf', 'REJECTED', '2025-11-10', 'Non puoi rimuovere l\'esame obbligatorio dal Learning Agreement. Proposta respinta.', 'Rimozione esame per sovrapposizione orari'),
-
--- App 11 (Pronta per chiusura)
 (11, 'LEARNING_AGREEMENT', 'LA_Bob.pdf', '/uploads/test.pdf', 'APPROVED', '2025-01-10', NULL, NULL),
 (11, 'TRANSCRIPT_OF_RECORDS', 'ToR_Bob_Approved.pdf', '/uploads/test.pdf', 'APPROVED', '2025-08-05', NULL, NULL);

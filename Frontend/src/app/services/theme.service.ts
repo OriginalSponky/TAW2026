@@ -1,3 +1,9 @@
+/* ==========================================================================
+   THEME SERVICE - GESTIONE TEMI E COLORI DINAMICI
+   Gestisce la Dark Mode (attivazione/disattivazione e persistenza)
+   e la modifica dinamica delle variabili CSS globali per i colori del brand.
+   ========================================================================== */
+
 import { Injectable } from '@angular/core';
 
 @Injectable({
@@ -7,7 +13,7 @@ export class ThemeService {
   isDark = false;
   currentColor = 'blue';
 
-  // Aggiunto il nuovo colore Giallo (yellow) ai temi
+  // Palette dei temi disponibili con relative varianti cromatiche
   private themes: any = {
     blue: {
       primary: '#2563eb',
@@ -42,20 +48,23 @@ export class ThemeService {
   };
 
   constructor() {
-    // 1. Ripristina Dark Mode
+    // 1. Ripristina lo stato della Dark Mode salvato
     const savedTheme = localStorage.getItem('app_theme');
     if (savedTheme === 'dark') {
       this.isDark = true;
       document.body.classList.add('dark-mode');
     }
 
-    // 2. Ripristina Colore Scelto
+    // 2. Ripristina il colore primario scelto dall'utente
     const savedColor = localStorage.getItem('app_color');
     if (savedColor && this.themes[savedColor]) {
       this.setThemeColor(savedColor);
     }
   }
 
+  /**
+   * Attiva o disattiva la modalità scura (Dark Mode).
+   */
   toggleTheme() {
     this.isDark = !this.isDark;
     if (this.isDark) {
@@ -65,10 +74,12 @@ export class ThemeService {
       document.body.classList.remove('dark-mode');
       localStorage.setItem('app_theme', 'light');
     }
-    this.applyCurrentColorLightDark(); // Aggiorna i contrasti se cambia il tema
+    this.applyCurrentColorLightDark(); // Aggiorna i contrasti dei sfondi chiari/scuri
   }
 
-  // Funzione per cambiare il colore primario ovunque
+  /**
+   * Cambia dinamicamente il colore primario dell'applicazione sovrascrivendo le variabili CSS root.
+   */
   setThemeColor(colorName: string) {
     if (!this.themes[colorName]) return;
 
@@ -76,20 +87,22 @@ export class ThemeService {
     localStorage.setItem('app_color', colorName);
 
     const theme = this.themes[colorName];
-    const root = document.documentElement; // Intercetta il tag <html> base
+    const root = document.documentElement; // Intercetta il tag HTML principale
 
-    // Sovrascrive le variabili CSS globali
+    // Inietta i valori direttamente nelle Custom Properties del CSS globale
     root.style.setProperty('--primary', theme.primary);
     root.style.setProperty('--primary-hover', theme.primaryHover);
 
     this.applyCurrentColorLightDark();
   }
 
+  /**
+   * Configura la variante chiara o semitrasparenza del colore primario in base al tema attivo.
+   */
   private applyCurrentColorLightDark() {
     const theme = this.themes[this.currentColor];
     const root = document.documentElement;
 
-    // Assicura che i background semitrasparenti siano corretti in base a dark/light mode
     if (this.isDark) {
       root.style.setProperty('--primary-light', theme.primaryLightDark);
     } else {

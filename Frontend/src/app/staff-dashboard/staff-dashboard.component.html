@@ -1,16 +1,31 @@
+<!-- ==========================================================================
+     STAFF DASHBOARD COMPONENT - TEMPLATE HTML
+     Pannello di controllo dell'Ufficio Mobilità Internazionale (Staff).
+     Gestisce la navigazione tra le code operative e la visualizzazione dei modali.
+     ========================================================================== -->
+
+<!-- HEADER PRINCIPALE -->
 <header>
+  <!-- Logo testuale: cliccando riporta alla vista principale (homeView) -->
   <div class="logo-area" (click)="switchView('homeView')">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
 
   <div class="header-actions">
+    <!-- Pulsante di cambio lingua (IT / EN) -->
     <button class="lang-btn" (click)="translationService.toggleLanguage()">
       {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
     </button>
+
+    <!-- Pulsante di cambio tema (Light / Dark Mode) -->
     <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
       {{ themeService.isDark ? '☀️' : '🌙' }}
     </button>
+
+    <!-- Menu a tendina del profilo utente -->
     <div class="profile-container">
       <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
       <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
+
+        <!-- Selezione dinamica del colore d'accento del brand -->
         <div class="color-picker-menu">
           <span class="color-picker-title">{{ 'HEADER.CHOOSE_COLOR' | translate }}</span>
           <div class="color-swatches">
@@ -31,6 +46,9 @@
 
 <main (click)="menuAperto = false">
 
+  <!-- ==========================================================================
+       VISTA 1: HOME PRINCIPALE (BOX DI ACCESSO RAPIDO ALLE CODE)
+       ========================================================================== -->
   @if (activeView === 'homeView') {
     <div class="hero">
       <h1 class="page-title">{{ 'STAFF.GREETING' | translate }} {{ utente.first_name }} {{ utente.last_name }}</h1>
@@ -38,6 +56,7 @@
     </div>
 
     <div class="boxes-container">
+      <!-- Box 1: Coda Verifiche Pre-Partenza -->
       <div class="home-box" (click)="switchView('preDepartureView')">
         <div class="box-icon">🛫</div>
         <h2>{{ 'STAFF.BOX_PRE_DEP_TITLE' | translate }}</h2>
@@ -45,6 +64,7 @@
         @if (preDepartureApps.length > 0) { <div class="badge-count">{{ preDepartureApps.length }} {{ 'STAFF.IN_QUEUE' | translate }}</div> }
       </div>
 
+      <!-- Box 2: Coda Chiusura Pratiche -->
       <div class="home-box" (click)="switchView('closureView')">
         <div class="box-icon">🏁</div>
         <h2>{{ 'STAFF.BOX_CLOSURE_TITLE' | translate }}</h2>
@@ -52,6 +72,7 @@
         @if (closureApps.length > 0) { <div class="badge-count badge-count-purple">{{ closureApps.length }} {{ 'STAFF.IN_QUEUE' | translate }}</div> }
       </div>
 
+      <!-- Box 3: Archivio Globale Pratiche -->
       <div class="home-box" (click)="switchView('allAppsView')">
         <div class="box-icon">🗂️</div>
         <h2>{{ 'STAFF.BOX_ARCHIVE_TITLE' | translate }}</h2>
@@ -61,6 +82,9 @@
   }
 
   @else if (activeView === 'preDepartureView') {
+    <!-- ==========================================================================
+       VISTA 2: CODA VERIFICHE PRE-PARTENZA
+       ========================================================================== -->
     <button class="back-header-btn" (click)="switchView('homeView')">{{ 'STAFF.BTN_BACK' | translate }}</button>
     <h1 class="page-title" style="text-align: left;">🛫 {{ 'STAFF.BOX_PRE_DEP_TITLE' | translate }}</h1>
     <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">{{ 'STAFF.STUDENTS_READY' | translate }}</p>
@@ -88,6 +112,9 @@
   }
 
   @else if (activeView === 'closureView') {
+    <!-- ==========================================================================
+       VISTA 3: CODA CHIUSURA PRATICHE (Voti Approvati)
+       ========================================================================== -->
     <button class="back-header-btn" (click)="switchView('homeView')">{{ 'STAFF.BTN_BACK' | translate }}</button>
     <h1 class="page-title" style="text-align: left;">🏁 {{ 'STAFF.BOX_CLOSURE_TITLE' | translate }}</h1>
     <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">{{ 'STAFF.CLOSURE_READY_DESC' | translate }}</p>
@@ -115,14 +142,20 @@
   }
 
   @else if (activeView === 'allAppsView') {
+    <!-- ==========================================================================
+       VISTA 4: ARCHIVIO GLOBALE E FILTRI AVANZATI
+       ========================================================================== -->
     <button class="back-header-btn" (click)="switchView('homeView')">{{ 'STAFF.BTN_BACK' | translate }}</button>
     <h1 class="page-title" style="text-align: left;">🗂️ {{ 'STAFF.BOX_ARCHIVE_TITLE' | translate }}</h1>
 
+    <!-- Sezione filtri di ricerca -->
     <div class="filter-container">
       <div class="filter-title">{{ 'STAFF.SEARCH_TITLE' | translate }}</div>
       <div class="filter-grid">
         <input type="text" [(ngModel)]="filtri.studente" [placeholder]="'STAFF.PLACE_STUDENT' | translate" (input)="applicaFiltri()">
         <input type="text" [(ngModel)]="filtri.docente" [placeholder]="'STAFF.PLACE_PROF' | translate" (input)="applicaFiltri()">
+
+        <!-- Filtro per Stato Pratica -->
         <select [(ngModel)]="filtri.stato" (change)="applicaFiltri()">
           <option value="">{{ 'STAFF.ALL_STATUSES' | translate }}</option>
           <option value="CREATED">{{ 'MY_REQ.STATUS_CREATED' | translate }}</option>
@@ -136,12 +169,15 @@
           <option value="CANCELED">{{ 'MY_REQ.STATUS_CANCELED' | translate }}</option>
         </select>
 
+        <!-- Filtro per Nazione -->
         <select [(ngModel)]="filtri.nazione" (change)="applicaFiltri()">
           <option value="">{{ 'STAFF.ALL_COUNTRIES' | translate }}</option>
           @for (nazione of uniqueNazioni; track nazione) {
             <option [value]="nazione">{{ nazione }}</option>
           }
         </select>
+
+        <!-- Filtro per Istituzione Partner -->
         <select [(ngModel)]="filtri.istituzione" (change)="applicaFiltri()">
           <option value="">{{ 'STAFF.ALL_UNIS' | translate }}</option>
           @for (ist of uniqueIstituzioni; track ist) {
@@ -154,6 +190,7 @@
       </div>
     </div>
 
+    <!-- Lista risultanze archivio -->
     <div class="requests-list">
       @if (praticheFiltrate.length === 0) {
         <p style="color: var(--text-muted); padding: 20px; text-align: center; background: var(--surface); border-radius: 8px;">
@@ -161,8 +198,6 @@
         </p>
       } @else {
         @for (app of praticheFiltrate; track app.id) {
-
-          <!-- CORREZIONE AURA QUI: Tornato al formato border-* ! -->
           <div class="request-card" [ngClass]="{
             'border-created': app.status === 'CREATED',
             'border-awaiting': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
@@ -175,8 +210,6 @@
           }">
             <div class="request-info">
               <div class="student-name">🧑‍🎓 {{ app.name }} (Mat. {{ app.matricola }})</div>
-
-              <!-- CORREZIONE FORMATO PERIODO QUI! -->
               <div class="details">
                 🌍 {{ 'STAFF.DESTINATION' | translate }} {{ app.institution }} ({{ app.country }}) | ✉️ {{ 'STAFF.TEACHER_REF' | translate }} {{ app.teacher }}
                 <span style="display: block; margin-top: 6px; color: var(--text-main); font-weight: 500;">
@@ -196,9 +229,14 @@
   }
 </main>
 
+<!-- ==========================================================================
+     MODALE 1: REVISIONE E APPROVAZIONE PRATICA (Workflow Staff)
+     ========================================================================== -->
 @if (mostraModaleReview) {
   <div class="modal-overlay" (click)="chiudiReviewModal()">
     <div class="modal" (click)="$event.stopPropagation()">
+
+      <!-- Step 1 & 2: Intestazione e lettura documento -->
       @if (modalStep === 'read' || modalStep === 'reject-reason') {
         <h3 style="margin-bottom: 8px;">{{ reviewData.studentName }}</h3>
         <p style="color: var(--text-muted); margin-bottom: 24px;">{{ reviewData.actionType === 'pre-departure' ? ('STAFF.VERIFY_PRE_DEP' | translate) : ('STAFF.VERIFY_CLOSURE' | translate) }}</p>
@@ -209,6 +247,7 @@
           📄 {{ 'STAFF.VIEW_DOWNLOAD' | translate }} {{ reviewData.docName }}
         </a>
 
+        <!-- Checklist dei controlli di sistema richiesti -->
         <div class="checklist" style="text-align: left;">
           <strong>{{ 'STAFF.SYSTEM_CHECKS' | translate }}</strong>
           <ul>
@@ -231,6 +270,7 @@
       }
 
       @else if (modalStep === 'reject-reason') {
+        <!-- Step di Inserimento Motivazione Rifiuto -->
         <p style="font-weight: 600; text-align: left; margin-bottom: 4px; color: var(--text-main);">{{ 'STAFF.REJECT_REASON_TITLE' | translate }}</p>
         <p style="font-size: 13px; color: var(--text-muted); text-align: left; margin-bottom: 12px;">{{ 'STAFF.REJECT_REASON_DESC' | translate }}</p>
         <textarea class="reject-textarea" [(ngModel)]="motivoRifiuto" [placeholder]="'STAFF.REJECT_PLACEHOLDER' | translate"></textarea>
@@ -242,6 +282,7 @@
       }
 
       @else if (modalStep === 'confirm') {
+        <!-- Step di Conferma Finale -->
         <div style="text-align: center; margin-bottom: 24px; padding-top: 16px;">
           <h2 style="font-size: 64px; margin-top: 0; margin-bottom: 16px; line-height: 1;">{{ pendingAction === 'approve' ? '✅' : '❓' }}</h2>
           <h3 style="margin-bottom: 8px;">{{ pendingAction === 'approve' ? (reviewData.actionType === 'pre-departure' ? ('STAFF.CONFIRM_APPROVE_TITLE' | translate) : ('STAFF.CONFIRM_CLOSURE_TITLE' | translate)) : ('STAFF.CONFIRM_REJECT_TITLE' | translate) }}</h3>
@@ -258,6 +299,7 @@
       }
 
       @else if (modalStep === 'success') {
+        <!-- Step di Successo -->
         <div style="text-align: center; margin-bottom: 24px; padding-top: 16px;">
           <h2 style="font-size: 64px; margin-top: 0; margin-bottom: 16px; line-height: 1;">🎉</h2>
           <h3 style="margin-bottom: 8px; color: var(--success);">{{ 'STAFF.SUCCESS_TITLE' | translate }}</h3>
@@ -273,6 +315,9 @@
   </div>
 }
 
+<!-- ==========================================================================
+     MODALE 2: DETTAGLI DI UNA PRATICA (Visualizzazione Storico File)
+     ========================================================================== -->
 @if (mostraModaleDettagli && appSelezionata) {
   <div class="modal-overlay" (click)="mostraModaleDettagli = false">
     <div class="modal" style="text-align: left; max-width: 600px;" (click)="$event.stopPropagation()">
@@ -283,6 +328,7 @@
         {{ getTestoStato(appSelezionata.status) }}
       </div>
 
+      <!-- Box riepilogo dati essenziali della mobilità -->
       <div style="background: var(--bg-color); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px;">
         <p style="margin: 0; font-size: 14px; color: var(--text-main);"><strong>🌍 {{ 'STAFF.DESTINATION' | translate }}</strong> {{ appSelezionata.institution }} ({{ appSelezionata.country }})</p>
 
@@ -299,6 +345,7 @@
         <p style="margin: 0; font-size: 14px; color: var(--text-main);"><strong>✉️ {{ 'STAFF.TEACHER_REF' | translate }}</strong> {{ appSelezionata.teacher }}</p>
       </div>
 
+      <!-- Elenco dei documenti caricati nel sistema -->
       <h4 style="color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0;">📄 {{ 'STAFF.UPLOADED_DOCS' | translate }}</h4>
       <div style="max-height: 250px; overflow-y: auto; margin-bottom: 24px;">
         @if (appSelezionata.documents && appSelezionata.documents.length > 0) {

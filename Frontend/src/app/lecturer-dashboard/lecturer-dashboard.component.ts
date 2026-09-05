@@ -1,3 +1,10 @@
+/* ==========================================================================
+   LECTURER DASHBOARD COMPONENT - TYPESCRIPT LOGIC
+   Gestisce il pannello di controllo dei docenti referenti (Lecturer).
+   Permette la valutazione dei Learning Agreement, la conversione/approvazione
+   dei voti esteri (Transcript of Records) e la consultazione dello storico.
+   ========================================================================== */
+
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -18,14 +25,17 @@ export class LecturerDashboardComponent implements OnInit {
   @Input() utente: any;
   @Output() onLogout = new EventEmitter<void>();
 
+  // Stati di navigazione e viste interne
   menuAperto: boolean = false;
   activeView: 'homeView' | 'laView' | 'torView' | 'handledView' = 'homeView';
 
+  // Code operative specifiche per il docente
   pendingLAs: any[] = [];
   pendingToRs: any[] = [];
   handledApps: any[] = [];
   praticheFiltrate: any[] = [];
 
+  // Parametri di filtro per lo storico
   uniqueIstituzioni: string[] = [];
   uniqueAnni: string[] = [];
 
@@ -36,6 +46,7 @@ export class LecturerDashboardComponent implements OnInit {
     istituzione: '',
   };
 
+  // Stati di controllo per i modali di revisione e dettagli storici
   mostraModaleReview: boolean = false;
   modalStep: 'read' | 'reject-reason' | 'confirm' | 'success' = 'read';
   reviewData: any = {};
@@ -55,6 +66,9 @@ export class LecturerDashboardComponent implements OnInit {
     this.caricaPratiche();
   }
 
+  /**
+   * Mappa lo stato grezzo del database con le chiavi di traduzione dei badge.
+   */
   formattaStato(status: string): string {
     if (!status) return '';
     switch (status) {
@@ -81,6 +95,9 @@ export class LecturerDashboardComponent implements OnInit {
     }
   }
 
+  /**
+   * Traduce dinamicamente il periodo di mobilità (es. Primo Semestre).
+   */
   formattaPeriodo(periodo: string): string {
     if (!periodo) return '';
     switch (periodo) {
@@ -95,6 +112,9 @@ export class LecturerDashboardComponent implements OnInit {
     }
   }
 
+  /**
+   * Recupera dal server tutte le pratiche assegnate al docente loggato.
+   */
   caricaPratiche() {
     if (!this.utente || !this.utente.email) return;
 
@@ -103,6 +123,7 @@ export class LecturerDashboardComponent implements OnInit {
       .then((data) => {
         const praticheVisibili = data;
 
+        // Coda 1: Learning Agreement in attesa di valutazione iniziale o modifica
         this.pendingLAs = praticheVisibili.filter(
           (a: any) =>
             a.status === 'CREATED' ||
@@ -113,10 +134,12 @@ export class LecturerDashboardComponent implements OnInit {
             a.status === 'AWAITING_MODIFICATION_APPROVAL',
         );
 
+        // Coda 2: Transcript of Records in attesa di approvazione voti al rientro
         this.pendingToRs = praticheVisibili.filter(
           (a: any) => a.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' && a.pending_docs > 0,
         );
 
+        // Coda 3: Storico pratiche già valutate o archiviate
         this.handledApps = praticheVisibili.filter((a: any) => {
           const isPendingLA =
             a.status === 'CREATED' ||
@@ -131,6 +154,7 @@ export class LecturerDashboardComponent implements OnInit {
           return !isPendingLA && !isPendingToR;
         });
 
+        // Estrae liste uniche per popolare le tendine dei filtri storici
         this.uniqueIstituzioni = [...new Set(this.handledApps.map((a) => a.institution_name))]
           .filter(Boolean)
           .sort() as string[];
@@ -141,7 +165,7 @@ export class LecturerDashboardComponent implements OnInit {
         this.praticheFiltrate = [...this.handledApps];
         this.cdr.detectChanges();
       })
-      .catch((err) => console.error('Errore recupero pratiche:', err));
+      .catch((err) => console.error('Errore recupero pratiche docente:', err));
   }
 
   get iniziali(): string {
@@ -165,6 +189,9 @@ export class LecturerDashboardComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  /**
+   * Filtra lo storico delle pratiche gestite in base ai criteri selezionati.
+   */
   applicaFiltri() {
     this.praticheFiltrate = this.handledApps.filter((app) => {
       const nomeCompleto = `${app.student_first_name} ${app.student_last_name}`.toLowerCase();
@@ -202,6 +229,9 @@ export class LecturerDashboardComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  /**
+   * Prepara la visualizzazione per valutare una pratica in stato di bozza (CREATED).
+   */
   valutaBozza(app: any) {
     fetch(`http://localhost:3000/api/applications/${app.id}`)
       .then((res) => res.json())
@@ -253,6 +283,9 @@ export class LecturerDashboardComponent implements OnInit {
       .catch((err) => console.error('Errore recupero dettagli bozza:', err));
   }
 
+  /**
+   * Avvia il modale di revisione ufficiale per un documento (Learning Agreement o ToR).
+   */
   startReview(app: any, docType: 'LEARNING_AGREEMENT' | 'TRANSCRIPT_OF_RECORDS') {
     const actionTypeKey =
       docType === 'LEARNING_AGREEMENT'
@@ -362,6 +395,9 @@ export class LecturerDashboardComponent implements OnInit {
     this.modalStep = 'confirm';
   }
 
+  /**
+   * Invia al server l'esito della revisione del docente (Approva o Rifiuta).
+   */
   eseguiAzione() {
     if (this.reviewData.isAcceptingDraft) {
       fetch(

@@ -1,3 +1,9 @@
+/* ==========================================================================
+   MY REQUESTS COMPONENT - TYPESCRIPT LOGIC
+   Gestisce il caricamento dell'elenco delle richieste dell'utente loggato,
+   le operazioni di cancellazione/annullamento e l'apertura dei dettagli.
+   ========================================================================== */
+
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RequestDetailComponent } from '../request-detail/request-detail.component';
@@ -25,10 +31,12 @@ export class MyRequestsComponent implements OnInit {
   richiestaSelezionata: number | null = null;
   menuAperto: boolean = false;
 
+  // Gestione Toast di Feedback
   mostraAlert: boolean = false;
   alertType: 'success' | 'error' = 'success';
   alertMessage: string = '';
 
+  // Gestione eliminazione pratica
   confermaEliminazioneId: number | null = null;
   isDeleting: boolean = false;
 
@@ -44,6 +52,7 @@ export class MyRequestsComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Al caricamento, recupera dal server tutte le pratiche associate all'email dello studente
     const emailSicura = encodeURIComponent(this.utente.email);
     fetch(`http://localhost:3000/api/applications?email=${emailSicura}`)
       .then((res) => {
@@ -80,6 +89,9 @@ export class MyRequestsComponent implements OnInit {
     this.onNewRequest.emit();
   }
 
+  /**
+   * Traduce il periodo di mobilità salvato nel database.
+   */
   formattaPeriodo(periodo: string): string {
     if (periodo === 'FIRST_SEMESTER')
       return this.translationService.translate('REQ_DETAIL.FIRST_SEM');
@@ -89,6 +101,9 @@ export class MyRequestsComponent implements OnInit {
     return periodo;
   }
 
+  /**
+   * Restituisce la classe CSS per l'aura e il bordo della card in base allo stato.
+   */
   getClasseStato(stato: string): string {
     switch (stato) {
       case 'CREATED':
@@ -104,7 +119,7 @@ export class MyRequestsComponent implements OnInit {
       case 'WAITING_FOR_EXAM_SCORE_APPROVAL':
         return 'status-waiting-score';
       case 'EXAM_SCORES_APPROVED':
-        return 'status-exam-approved'; // NUOVO COLORE CIANO
+        return 'status-exam-approved';
       case 'CLOSED':
         return 'status-closed';
       case 'CANCELED':
@@ -114,6 +129,9 @@ export class MyRequestsComponent implements OnInit {
     }
   }
 
+  /**
+   * Restituisce il testo tradotto per il badge dello stato.
+   */
   getTestoStato(stato: string): string {
     switch (stato) {
       case 'CREATED':
@@ -169,6 +187,9 @@ export class MyRequestsComponent implements OnInit {
     this.confermaEliminazioneId = null;
   }
 
+  /**
+   * Invia la richiesta DELETE al server per rimuovere definitivamente la pratica.
+   */
   confermaEliminazioneDefinitiva(id: number) {
     if (this.isDeleting) return;
     this.isDeleting = true;

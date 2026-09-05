@@ -1,21 +1,31 @@
+<!-- ==========================================================================
+     STUDENT HOME COMPONENT - TEMPLATE HTML (Gateway & Router di Vista)
+     ========================================================================== -->
+
+<!-- VISTA PRINCIPALE: DASHBOARD STUDENTE -->
 @if (vistaAttiva === 'dashboard') {
   <header>
     <div class="logo-area" (click)="tornaAllaDashboard()">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
 
     <div class="header-actions">
+      <!-- Pulsante cambio lingua (IT / EN) -->
       <button class="lang-btn" (click)="translationService.toggleLanguage()" title="Cambia lingua">
         {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
       </button>
 
+      <!-- Pulsante cambio tema (Light / Dark Mode) -->
       <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
         {{ themeService.isDark ? '☀️' : '🌙' }}
       </button>
 
+      <!-- Profilo utente con menu a tendina per colori e logout -->
       <div class="profile-container">
         <button class="profile-btn" (click)="toggleMenu($event)" aria-label="Menu profilo">
           {{ iniziali }}
         </button>
         <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
+
+          <!-- Selettore dinamico dei colori d'accento -->
           <div class="color-picker-menu">
             <span class="color-picker-title">{{ 'HEADER.CHOOSE_COLOR' | translate }}</span>
             <div class="color-swatches">
@@ -35,24 +45,29 @@
   </header>
 
   <main>
+    <!-- Sezione di benvenuto personalizzata -->
     <div class="hero">
       <h1>{{ 'STUDENT_HOME.GREETING' | translate }} {{ utente.first_name }} {{ utente.last_name }}</h1>
       <p class="page-subtitle">{{ 'STUDENT_HOME.SUBTITLE' | translate }}</p>
     </div>
 
+    <!-- Griglia dei moduli di accesso rapido -->
     <div class="cards-layout">
       <div class="cards-row top-row">
+        <!-- Card: Avvia Nuova Pratica -->
         <div class="card" (click)="apriNuovaRichiesta()">
           <h2>{{ 'STUDENT_HOME.NEW_REQ_TITLE' | translate }}</h2>
           <p>{{ 'STUDENT_HOME.NEW_REQ_DESC' | translate }}</p>
         </div>
 
+        <!-- Card: Visualizza Storico Pratiche -->
         <div class="card" (click)="apriLeMieRichieste()">
           <h2>{{ 'STUDENT_HOME.MY_REQ_TITLE' | translate }}</h2>
           <p>{{ 'STUDENT_HOME.MY_REQ_DESC' | translate }}</p>
         </div>
       </div>
 
+      <!-- Card condizionale: Appare solo se lo studente ha una mobilità attiva -->
       @if (praticaAttiva) {
         <div class="cards-row bottom-row">
           <div class="card card-highlight" (click)="apriGestioneErasmus()">
@@ -66,6 +81,7 @@
 }
 
 @else if (vistaAttiva === 'nuovaRichiesta') {
+  <!-- SOTTOMODULO: CREAZIONE O MODIFICA DI UNA RICHIESTA -->
   <app-new-request
     [utente]="utente"
     [editRequestId]="idRichiestaDaModificare"
@@ -76,6 +92,7 @@
 }
 
 @else if (vistaAttiva === 'leMieRichieste') {
+  <!-- SOTTOMODULO: ARCHIVIO E DETTAGLI PRATICHE -->
   <app-my-requests
     [utente]="utente"
     (onBack)="tornaAllaDashboard()"
@@ -86,6 +103,7 @@
 }
 
 @else if (vistaAttiva === 'gestioneErasmus') {
+  <!-- SOTTOMODULO: GESTIONE IN ITINERE (ACTIVE MOBILITY) -->
   <app-active-mobility
     [utente]="utente"
     [pratica]="praticaAttiva"

@@ -1,8 +1,15 @@
+/* ==========================================================================
+   STAFF DASHBOARD COMPONENT - TYPESCRIPT LOGIC
+   Gestisce il pannello di controllo dell'Ufficio Mobilità Overseas (Staff).
+   Permette di visionare le code di lavoro (Pre-partenza e Chiusura),
+   gestire l'archivio globale con filtri avanzati e validare/respingere le pratiche.
+   ========================================================================== */
+
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-// Servizi e i18n
+// Servizi e internazionalizzazione
 import { ThemeService } from '../services/theme.service';
 import { TranslationService } from '../services/translation.service';
 import { TranslatePipe } from '../translate.pipe';
@@ -18,14 +25,17 @@ export class StaffDashboardComponent implements OnInit {
   @Input() utente: any;
   @Output() onLogout = new EventEmitter<void>();
 
+  // Stati di navigazione e viste
   menuAperto: boolean = false;
   activeView: 'homeView' | 'preDepartureView' | 'closureView' | 'allAppsView' = 'homeView';
 
+  // Liste di smistamento pratiche
   allApps: any[] = [];
   preDepartureApps: any[] = [];
   closureApps: any[] = [];
   praticheFiltrate: any[] = [];
 
+  // Filtri e opzioni per le tendine di ricerca nell'archivio
   uniqueNazioni: string[] = [];
   uniqueIstituzioni: string[] = [];
 
@@ -37,6 +47,7 @@ export class StaffDashboardComponent implements OnInit {
     istituzione: '',
   };
 
+  // Stati di controllo per i modali di revisione e dettagli
   mostraModaleReview: boolean = false;
   modalStep: 'read' | 'reject-reason' | 'confirm' | 'success' = 'read';
   reviewData: any = {};
@@ -56,11 +67,17 @@ export class StaffDashboardComponent implements OnInit {
     this.caricaPratiche();
   }
 
+  /**
+   * Calcola le iniziali del nome utente per l'avatar nell'header.
+   */
   get iniziali(): string {
     if (!this.utente) return 'ST';
     return (this.utente.first_name.charAt(0) + this.utente.last_name.charAt(0)).toUpperCase();
   }
 
+  /**
+   * Recupera dal backend tutte le pratiche di mobilità dell'Ateneo.
+   */
   caricaPratiche() {
     fetch(`http://localhost:3000/api/staff/applications`)
       .then((res) => res.json())
@@ -70,6 +87,7 @@ export class StaffDashboardComponent implements OnInit {
           name: `${a.student_first_name} ${a.student_last_name}`,
         }));
 
+        // Estrae liste uniche per popolare i filtri a tendina
         this.uniqueNazioni = [...new Set(this.allApps.map((a) => a.country))]
           .filter(Boolean)
           .sort() as string[];
@@ -77,15 +95,19 @@ export class StaffDashboardComponent implements OnInit {
           .filter(Boolean)
           .sort() as string[];
 
+        // Suddivide le pratiche nelle rispettive code operative dell'Ufficio
         this.preDepartureApps = this.allApps.filter((a) => a.status === 'PRE_DEPARTURE_COMPLETED');
         this.closureApps = this.allApps.filter((a) => a.status === 'EXAM_SCORES_APPROVED');
 
         this.praticheFiltrate = [...this.allApps];
         this.cdr.detectChanges();
       })
-      .catch((err) => console.error('Errore recupero archivio:', err));
+      .catch((err) => console.error('Errore recupero archivio Staff:', err));
   }
 
+  /**
+   * Associa la classe CSS corretta (Aura / Colore) in base allo stato della pratica.
+   */
   getClasseStato(stato: string): string {
     switch (stato) {
       case 'CREATED':
@@ -111,6 +133,9 @@ export class StaffDashboardComponent implements OnInit {
     }
   }
 
+  /**
+   * Restituisce la chiave di traduzione per visualizzare il nome dello stato formattato.
+   */
   getTestoStato(stato: string): string {
     switch (stato) {
       case 'CREATED':
@@ -136,7 +161,9 @@ export class StaffDashboardComponent implements OnInit {
     }
   }
 
-  // --- NUOVA FUNZIONE: TRADUCE IL SEMESTRE ---
+  /**
+   * Traduce dinamicamente il periodo di mobilità (es. Primo Semestre / First Semester).
+   */
   formattaPeriodo(periodo: string): string {
     if (!periodo) return '';
     switch (periodo) {
@@ -151,6 +178,9 @@ export class StaffDashboardComponent implements OnInit {
     }
   }
 
+  /**
+   * Filtra l'archivio globale in base ai parametri inseriti nei campi di ricerca.
+   */
   applicaFiltri() {
     this.praticheFiltrate = this.allApps.filter((app) => {
       const matchStudente =
@@ -176,6 +206,9 @@ export class StaffDashboardComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  /**
+   * Apre il modale di dettaglio completo per una singola pratica dall'archivio.
+   */
   apriDettagli(id: number) {
     const basicApp = this.allApps.find((a) => a.id === id);
 
@@ -192,6 +225,9 @@ export class StaffDashboardComponent implements OnInit {
       });
   }
 
+  /**
+   * Avvia il processo di verifica (Pre-partenza o Chiusura) per una pratica in coda.
+   */
   startReview(app: any, actionType: 'pre-departure' | 'closure', docType: string) {
     fetch(`http://localhost:3000/api/applications/${app.id}`)
       .then((res) => res.json())
@@ -245,6 +281,9 @@ export class StaffDashboardComponent implements OnInit {
     this.modalStep = 'confirm';
   }
 
+  /**
+   * Invia al server l'esito della verifica dello Staff (Approva o Segnala/Rifiuta).
+   */
   eseguiAzione() {
     fetch(`http://localhost:3000/api/staff/applications/${this.reviewData.appId}/review`, {
       method: 'PUT',

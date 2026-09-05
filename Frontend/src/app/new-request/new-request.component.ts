@@ -1,3 +1,9 @@
+/* ==========================================================================
+   NEW REQUEST COMPONENT - TYPESCRIPT LOGIC
+   Gestisce la compilazione del form multi-step, il recupero delle anagrafiche
+   da API (università e professori), la validazione dei campi e l'invio via FormData.
+   ========================================================================== */
+
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -16,12 +22,12 @@ import { TranslatePipe } from '../translate.pipe';
 })
 export class NewRequestComponent implements OnInit {
   @Input() utente: any;
-  @Input() editRequestId: number | null = null;
+  @Input() editRequestId: number | null = null; // Valorizzato se siamo in modalità modifica bozza
   @Output() onBack = new EventEmitter<void>();
   @Output() onLogout = new EventEmitter<void>();
   @Output() onSuccess = new EventEmitter<void>();
 
-  // Modello Form
+  // Modello dati del form principale
   datiRichiesta: any = {
     academic_year: '',
     mobility_period: '',
@@ -32,6 +38,7 @@ export class NewRequestComponent implements OnInit {
   istituzioni: any[] = [];
   professori: any[] = [];
 
+  // Array dinamico dei corsi associati alla mobilità
   esami = [
     {
       foreignCode: '',
@@ -43,7 +50,7 @@ export class NewRequestComponent implements OnInit {
     },
   ];
 
-  // Stati UI
+  // Stati di controllo UI e modali
   menuAperto: boolean = false;
   mostraModale: boolean = false;
   richiestaCompletata: boolean = false;
@@ -53,7 +60,7 @@ export class NewRequestComponent implements OnInit {
   showErrorModal: boolean = false;
   isDragging: boolean = false;
 
-  // File e Toast
+  // Gestione file e Toast di feedback
   fileSelezionato: File | null = null;
   erroreSalvataggio: string = '';
   mostraAlert: boolean = false;
@@ -72,14 +79,17 @@ export class NewRequestComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Carica la lista delle università partner
     fetch('http://localhost:3000/api/institutions')
       .then((res) => res.json())
       .then((data) => (this.istituzioni = data));
 
+    // Carica la lista dei docenti referenti
     fetch('http://localhost:3000/api/lecturers')
       .then((res) => res.json())
       .then((data) => (this.professori = data));
 
+    // Se è presente un ID di modifica, pre-carica i dati della bozza esistente
     if (this.editRequestId) {
       fetch(`http://localhost:3000/api/applications/${this.editRequestId}`)
         .then((res) => res.json())
@@ -145,6 +155,9 @@ export class NewRequestComponent implements OnInit {
     this.esami.splice(indice, 1);
   }
 
+  /**
+   * Esegue la validazione formale di tutti i campi prima di aprire il modale di conferma.
+   */
   validaEApriModale() {
     const isValidBasic = !!(
       this.datiRichiesta.academic_year &&
@@ -180,6 +193,9 @@ export class NewRequestComponent implements OnInit {
     this.mostraModale = true;
   }
 
+  /**
+   * Invia i dati al server tramite FormData (gestisce sia POST creazione che PUT modifica).
+   */
   confermaInvio() {
     if (this.isSubmitting) return;
 
@@ -257,7 +273,7 @@ export class NewRequestComponent implements OnInit {
     window.open('/templates/LEARNING_AGREEMENT_TEMPLATE.pdf', '_blank');
   }
 
-  // --- Drag & Drop ---
+  /* --- Gestione Eventi Drag & Drop per il caricamento PDF --- */
   onDragOver(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();

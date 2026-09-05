@@ -1,6 +1,12 @@
+<!-- ==========================================================================
+     APP COMPONENT - TEMPLATE HTML (Gateway di Accesso & Smistamento)
+     ========================================================================== -->
+
+<!-- CASO 1: UTENTE NON LOGGATO E NON IN FASE DI REGISTRAZIONE -> MOSTRA LOGIN -->
 @if (!utenteLoggato && !inRegistrazione) {
   <div class="login-wrapper">
-    <!-- CONTENITORE AZIONI (Lingua + Tema) -->
+
+    <!-- Contenitore fluttuante in alto a destra per Cambio Lingua e Tema (Dark Mode) -->
     <div class="lang-switch-container">
       <button class="lang-btn" (click)="translationService.toggleLanguage()">
         {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
@@ -10,6 +16,7 @@
       </button>
     </div>
 
+    <!-- Sfondi decorativi dinamici (Ambient Glow) -->
     <div class="bg-shape shape-1"></div>
     <div class="bg-shape shape-2"></div>
 
@@ -20,6 +27,7 @@
         <p>{{ 'LOGIN.SUBTITLE' | translate }}</p>
       </div>
 
+      <!-- Form di autenticazione standard con email e password -->
       <form class="login-form">
         <div class="form-group">
           <label for="email">{{ 'LOGIN.EMAIL_LABEL' | translate }}</label>
@@ -35,6 +43,7 @@
           {{ 'LOGIN.BTN_LOGIN' | translate }}
         </button>
 
+        <!-- Messaggio di errore dinamico gestito tramite chiavi di traduzione -->
         @if (messaggioErrore) {
           <p class="error-message">{{ messaggioErrore | translate }}</p>
         }
@@ -45,6 +54,7 @@
           <div class="divider-line"></div>
         </div>
 
+        <!-- Contenitore in cui l'SDK di Google inietta automaticamente il bottone ufficiale Google SSO -->
         <div id="google-btn-container" class="google-btn-wrapper"></div>
       </form>
     </div>
@@ -52,8 +62,9 @@
 }
 
 @else if (inRegistrazione) {
+  <!-- CASO 2: UTENTE NON ANCORA REGISTRATO MA CON EMAIL VALIDA -> MODULO DI COMPLETAMENTO DATI -->
   <div class="login-wrapper">
-    <!-- CONTENITORE AZIONI (Lingua + Tema) -->
+
     <div class="lang-switch-container">
       <button class="lang-btn" (click)="translationService.toggleLanguage()">
         {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
@@ -72,6 +83,7 @@
         <p>{{ 'REGISTER.SUBTITLE' | translate }}</p>
       </div>
 
+      <!-- Box riepilogativo dei dati pre-compilati dall'email -->
       <div class="info-box">
         <p><strong>{{ 'REGISTER.EMAIL' | translate }}</strong> {{ datiRegistrazione.email }}</p>
         <p><strong>{{ 'REGISTER.ROLE' | translate }}</strong> {{ datiRegistrazione.role }}</p>
@@ -91,6 +103,7 @@
           <input type="text" name="lastName" [(ngModel)]="datiRegistrazione.last_name" [placeholder]="'REGISTER.LASTNAME_PLACE' | translate" required>
         </div>
 
+        <!-- Se si registra con email/password classica, richiede la conferma password -->
         @if (!registrazioneDaGoogle) {
           <div class="form-group">
             <label>{{ 'REGISTER.PWD_CONFIRM_LABEL' | translate }}</label>
@@ -114,6 +127,7 @@
 }
 
 @else {
+  <!-- CASO 3: UTENTE AUTENTICATO -> SMISTAMENTO AUTOMATICO ALLA DASHBOARD IN BASE AL RUOLO -->
   @if (utenteLoggato.role === 'LECTURER') {
     <app-lecturer-dashboard [utente]="utenteLoggato" (onLogout)="eseguiLogout()"></app-lecturer-dashboard>
   }

@@ -1,17 +1,29 @@
+<!-- ==========================================================================
+     NEW REQUEST COMPONENT - TEMPLATE HTML
+     Modulo multi-step per la creazione o la modifica di una pratica Overseas.
+     Include anagrafiche università, professori, tabella esami e upload file PDF.
+     ========================================================================== -->
+
+<!-- HEADER DI NAVIGAZIONE -->
 <header>
   <div class="logo-area" (click)="tornaIndietro($event)">{{ 'HEADER.OVERSEAS_TITLE' | translate }}</div>
 
   <div class="header-actions">
+    <!-- Pulsante Cambio Lingua -->
     <button class="lang-btn" (click)="translationService.toggleLanguage()">
       {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
     </button>
+    <!-- Pulsante Cambio Tema (Dark / Light) -->
     <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
       {{ themeService.isDark ? '☀️' : '🌙' }}
     </button>
 
+    <!-- Menu Utente e Profilo -->
     <div class="profile-container">
       <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
       <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
+
+        <!-- Palette di selezione del colore d'accento -->
         <div class="color-picker-menu">
           <span class="color-picker-title">{{ 'HEADER.CHOOSE_COLOR' | translate }}</span>
           <div class="color-swatches">
@@ -31,6 +43,7 @@
 </header>
 
 <main (click)="menuAperto = false">
+  <!-- Pulsante per tornare indietro in base al contesto (creazione vs modifica) -->
   <button class="back-header-btn" (click)="tornaIndietro($event)">
     {{ editRequestId ? ('NEW_REQ.BTN_BACK_REQ' | translate) : ('NEW_REQ.BTN_BACK_HOME' | translate) }}
   </button>
@@ -46,12 +59,15 @@
     </div>
   }
 
+  <!-- Form principale della richiesta -->
   <div class="main-form-container">
     <form>
+      <!-- SEZIONE 1: Dettagli Generali della Mobilità -->
       <div class="form-section-clean">
         <h2 style="color: var(--primary);">{{ 'NEW_REQ.STEP1_TITLE' | translate }}</h2>
         <div class="form-grid">
 
+          <!-- Selezione Anno Accademico -->
           <div class="form-group">
             <label>{{ 'NEW_REQ.ACADEMIC_YEAR' | translate }}</label>
             <select [(ngModel)]="datiRichiesta.academic_year" name="academic_year" [class.is-invalid]="showValidationErrors && !datiRichiesta.academic_year">
@@ -62,6 +78,7 @@
             </select>
           </div>
 
+          <!-- Selezione Periodo -->
           <div class="form-group">
             <label>{{ 'NEW_REQ.PERIOD' | translate }}</label>
             <select [(ngModel)]="datiRichiesta.mobility_period" name="mobility_period" [class.is-invalid]="showValidationErrors && !datiRichiesta.mobility_period">
@@ -72,6 +89,7 @@
             </select>
           </div>
 
+          <!-- Selezione Università Partner Estera -->
           <div class="form-group">
             <label>{{ 'NEW_REQ.INSTITUTION' | translate }}</label>
             <select [(ngModel)]="datiRichiesta.institution_id" name="institution_id" [class.is-invalid]="showValidationErrors && !datiRichiesta.institution_id">
@@ -82,6 +100,7 @@
             </select>
           </div>
 
+          <!-- Selezione Docente Referente -->
           <div class="form-group">
             <label>{{ 'NEW_REQ.TEACHER' | translate }}</label>
             <select [(ngModel)]="datiRichiesta.lecturer_id" name="lecturer_id" [class.is-invalid]="showValidationErrors && !datiRichiesta.lecturer_id">
@@ -94,16 +113,19 @@
         </div>
       </div>
 
+      <!-- SEZIONE 2: Mappatura Esami (Exam Mapping) -->
       <div class="form-section-clean">
         <h2 style="color: var(--primary);">{{ 'NEW_REQ.STEP2_TITLE' | translate }}</h2>
         <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">{{ 'NEW_REQ.STEP2_DESC' | translate }}</p>
 
         @for (esame of esami; track $index) {
           <div class="exam-mapping-container">
+            <!-- Pulsante per rimuovere l'esame (disponibile se ce n'è più di uno) -->
             @if ($index > 0) {
               <button type="button" class="remove-exam-btn" (click)="rimuoviEsame($index)">{{ 'NEW_REQ.REMOVE_EXAM' | translate }}</button>
             }
 
+            <!-- Dati Corso Estero -->
             <div class="exam-section-title">{{ 'NEW_REQ.FOREIGN_COURSE' | translate }}</div>
             <div class="form-grid">
               <div class="form-group">
@@ -122,6 +144,7 @@
               </div>
             </div>
 
+            <!-- Dati Corso Equivalente a Ca' Foscari -->
             <div class="exam-section-title">{{ 'NEW_REQ.LOCAL_COURSE' | translate }}</div>
             <div class="form-grid">
               <div class="form-group">
@@ -142,13 +165,16 @@
 
           </div>
         }
+        <!-- Pulsante per aggiungere un nuovo blocco esame -->
         <button type="button" class="btn btn-outline" (click)="aggiungiEsame()">{{ 'NEW_REQ.ADD_EXAM' | translate }}</button>
       </div>
 
+      <!-- SEZIONE 3: Upload Documenti e Template -->
       <div class="form-section-clean">
         <h2 style="color: var(--primary);">{{ 'NEW_REQ.STEP3_TITLE' | translate }}</h2>
         <div class="form-group full-width">
 
+          <!-- Box Download Template Learning Agreement -->
           <div class="template-download-section">
             <div class="template-info">
               <span class="icon" style="font-size: 28px;">📄</span>
@@ -162,6 +188,7 @@
             </button>
           </div>
 
+          <!-- Zona Drag & Drop per caricare il PDF compilato -->
           <div class="form-group full-width" style="margin-top: 32px;">
             <label style="display: block; margin-bottom: 12px; font-weight: 600; color: var(--text-main); font-size: 15px;">{{ 'NEW_REQ.UPLOAD_LABEL' | translate }}</label>
 
@@ -194,6 +221,7 @@
         </div>
       </div>
 
+      <!-- Pulsante principale di invio richiesta -->
       <div class="submit-container" style="margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--border);">
         <button type="button" class="btn-primary" (click)="validaEApriModale()" style="width: 100%; padding: 16px; font-size: 18px;">{{ 'NEW_REQ.BTN_SUBMIT' | translate }}</button>
       </div>
@@ -201,6 +229,7 @@
   </div>
 </main>
 
+<!-- Modale di Conferma Invio -->
 @if (mostraModale) {
   <div class="modal-overlay">
     <div class="modal">
@@ -224,6 +253,7 @@
   </div>
 }
 
+<!-- Modale di Errore Validazione Campi Vuoti -->
 @if (showErrorModal) {
   <div class="modal-overlay">
     <div class="modal">
@@ -240,6 +270,7 @@
   </div>
 }
 
+<!-- Notifiche Toast di Feedback -->
 @if (mostraAlert) {
   <div class="custom-alert" [ngClass]="alertType === 'success' ? 'alert-success' : 'alert-error'">
     <div class="alert-icon">{{ alertType === 'success' ? '✅' : '❌' }}</div>

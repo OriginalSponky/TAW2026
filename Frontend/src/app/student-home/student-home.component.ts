@@ -1,3 +1,9 @@
+/* ==========================================================================
+   STUDENT HOME COMPONENT - TYPESCRIPT LOGIC
+   Gestisce la navigazione interna dell'Area Studenti, il recupero asincrono
+   della mobilità attiva dal database e la gestione del menu utente.
+   ========================================================================== */
+
 import {
   Component,
   Input,
@@ -12,6 +18,7 @@ import { NewRequestComponent } from '../new-request/new-request.component';
 import { MyRequestsComponent } from '../my-requests/my-requests.component';
 import { ActiveMobilityComponent } from '../active-mobility/active-mobility.component';
 
+// Servizi di utilità e internazionalizzazione
 import { ThemeService } from '../services/theme.service';
 import { TranslationService } from '../services/translation.service';
 import { TranslatePipe } from '../translate.pipe';
@@ -33,6 +40,7 @@ export class StudentHomeComponent implements OnInit {
   @Input() utente: any;
   @Output() onLogout = new EventEmitter<void>();
 
+  // Stati di controllo interni per viste e menu
   menuAperto: boolean = false;
   vistaAttiva: string = 'dashboard';
   idRichiestaDaModificare: number | null = null;
@@ -45,12 +53,13 @@ export class StudentHomeComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    // Al caricamento, interroga il server per verificare se lo studente possiede una mobilità attiva
     if (this.utente && this.utente.email) {
       const emailSicura = encodeURIComponent(this.utente.email);
       fetch(`http://localhost:3000/api/applications?email=${emailSicura}`)
         .then((res) => res.json())
         .then((data) => {
-          // AGGIUNTO AWAITING_FOR_APPROVAL PER FAR INSERIRE LE DATE!
+          // Elenco degli stati che abilitano il box speciale "In Erasmus" nella home
           const activeStatuses = [
             'AWAITING_FOR_APPROVAL',
             'AWAITING_MODIFICATION_APPROVAL',
@@ -65,6 +74,9 @@ export class StudentHomeComponent implements OnInit {
     }
   }
 
+  /**
+   * Calcola le iniziali del nome utente per l'avatar circolare nell'header.
+   */
   get iniziali(): string {
     if (!this.utente) return '';
     return (this.utente.first_name.charAt(0) + this.utente.last_name.charAt(0)).toUpperCase();
@@ -75,6 +87,7 @@ export class StudentHomeComponent implements OnInit {
     this.menuAperto = !this.menuAperto;
   }
 
+  /* Chiude automaticamente il menu profilo cliccando in qualsiasi punto fuori dal dropdown */
   @HostListener('document:click')
   chiudiMenu() {
     this.menuAperto = false;
@@ -84,6 +97,8 @@ export class StudentHomeComponent implements OnInit {
     event.preventDefault();
     this.onLogout.emit();
   }
+
+  /* --- METODI DI ROUTING INTERNO --- */
 
   apriNuovaRichiesta(editId: number | null = null) {
     this.idRichiestaDaModificare = editId;

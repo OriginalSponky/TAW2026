@@ -1,13 +1,22 @@
+<!-- ==========================================================================
+     REQUEST DETAIL COMPONENT - TEMPLATE HTML
+     Visualizza i dettagli completi di una pratica, la mappatura degli esami,
+     i documenti ufficiali associati e permette la modifica delle bozze.
+     ========================================================================== -->
+
 @if (dettagli) {
   <main>
+    <!-- Pulsante per tornare alla lista delle richieste -->
     <button class="back-header-btn" (click)="tornaIndietro($event)">
       {{ 'REQ_DETAIL.BTN_BACK' | translate }}
     </button>
 
+    <!-- Card Principale: Informazioni Generali e Stato -->
     <div class="card" style="margin-bottom: 24px;">
       <div class="card-header-flex">
         <h2>{{ 'REQ_DETAIL.TITLE' | translate }}</h2>
 
+        <!-- Pulsante di modifica abilitato solo se la pratica è in stato 'CREATED' e non si è già in editing -->
         @if (dettagli.status === 'CREATED' && !isEditing) {
           <button class="btn-outline" (click)="attivaModifica()">{{ 'REQ_DETAIL.BTN_EDIT' | translate }}</button>
         }
@@ -48,6 +57,7 @@
       </div>
     </div>
 
+    <!-- Box Condizionale: Mostrato se la pratica è stata annullata o rifiutata -->
     @if (dettagli.status === 'CANCELED') {
       <div class="cancellation-box">
         <div class="cancellation-title">{{ 'REQ_DETAIL.REASON_TITLE' | translate }}</div>
@@ -57,11 +67,13 @@
       </div>
     }
 
+    <!-- Box Condizionale: Widget Calendario delle date di soggiorno effettive -->
     @if (dettagli.actual_arrival_date || dettagli.actual_departure_date) {
       <div class="card">
         <h2>{{ 'REQ_DETAIL.DATES_TITLE' | translate }}</h2>
 
         <div class="dates-calendar-grid">
+          <!-- Widget Data di Arrivo -->
           <div class="calendar-box">
             <span class="calendar-label">{{ 'REQ_DETAIL.ARRIVAL' | translate }}</span>
             @if (dettagli.actual_arrival_date) {
@@ -80,6 +92,7 @@
             }
           </div>
 
+          <!-- Widget Data di Partenza -->
           <div class="calendar-box">
             <span class="calendar-label">{{ 'REQ_DETAIL.DEPARTURE' | translate }}</span>
             @if (dettagli.actual_departure_date) {
@@ -101,6 +114,7 @@
       </div>
     }
 
+    <!-- Card: Mappatura Esami e Documentazione -->
     <div class="card">
       <h2>{{ 'REQ_DETAIL.DOCS_TITLE' | translate }}</h2>
 
@@ -108,6 +122,7 @@
         @for (esame of dettagli.exams; track esame.id) {
           <div class="exam-row">
 
+            <!-- Modalità di Visualizzazione Standard -->
             @if (!isEditing) {
               <div class="exam-half">
                 <h4>{{ 'REQ_DETAIL.FOREIGN_COURSE' | translate }}</h4>
@@ -127,6 +142,7 @@
               </div>
             }
 
+            <!-- Mostra il voto ottenuto se la pratica è chiusa o l'esame è valutato -->
             @if (dettagli.status === 'CLOSED' || esame.score_obtained) {
               <div class="exam-score-box">
                 <span class="score-label">{{ 'REQ_DETAIL.FINAL_SCORE' | translate }}</span>
@@ -134,6 +150,7 @@
               </div>
             }
 
+            <!-- Modalità di Modifica (Campi Input interattivi) -->
             @if (isEditing) {
               <div class="exam-half">
                 <h4>{{ 'REQ_DETAIL.FOREIGN_COURSE' | translate }}</h4>
@@ -164,7 +181,7 @@
         <p style="color: var(--text-muted); font-size: 14px;">{{ 'REQ_DETAIL.NO_EXAMS' | translate }}</p>
       }
 
-      <!-- AGGIORNATA: Sezione Documenti Multipli! -->
+      <!-- Sezione Gestione Documenti Ufficiali (Learning Agreement e ToR) -->
       <div class="document-section">
         <h4>{{ 'REQ_DETAIL.OFFICIAL_DOC' | translate }} (Learning Agreement)</h4>
 
@@ -179,6 +196,7 @@
               {{ 'REQ_DETAIL.REPLACE_DOC' | translate }}
             </label>
 
+            <!-- Zona Drag-and-Drop per caricare il nuovo PDF del Learning Agreement -->
             <div class="drag-drop-zone"
                  [class.active-glow]="isDragging"
                  (dragover)="onDragOver($event)"
@@ -205,6 +223,7 @@
           </div>
         }
 
+        <!-- Sezione Transcript of Records visibile solo a mobilità chiusa -->
         @if (dettagli.status === 'CLOSED') {
           <h4 style="margin-top: 24px;">{{ 'REQ_DETAIL.OFFICIAL_DOC' | translate }} (Transcript of Records)</h4>
           <div class="doc-view">
@@ -214,6 +233,7 @@
         }
       </div>
 
+      <!-- Pulsanti d'azione rapidi per la modalità di modifica -->
       @if (isEditing) {
         <div class="edit-actions">
           <button class="btn-outline" (click)="annullaModifica()">{{ 'REQ_DETAIL.BTN_CANCEL' | translate }}</button>
@@ -228,6 +248,7 @@
   </div>
 }
 
+<!-- Modale di Conferma Salvataggio Modifiche -->
 @if (mostraModale) {
   <div class="modal-overlay" (click)="chiudiModale()">
     <div class="modal" (click)="$event.stopPropagation()">
@@ -245,6 +266,7 @@
   </div>
 }
 
+<!-- Notifiche Toast di Feedback -->
 @if (mostraAlert) {
   <div class="custom-alert" [ngClass]="alertType === 'success' ? 'alert-success' : 'alert-error'">
     <div class="alert-icon">{{ alertType === 'success' ? '✅' : '❌' }}</div>

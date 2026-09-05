@@ -1,17 +1,31 @@
+<!-- ==========================================================================
+     LECTURER DASHBOARD COMPONENT - TEMPLATE HTML
+     Pannello di controllo dell'Area Docenti (Lecturer).
+     Gestisce le code di approvazione L.A., la conversione voti ToR e lo storico.
+     ========================================================================== -->
+
+<!-- HEADER PRINCIPALE -->
 <header>
+  <!-- Logo testuale: cliccando reindirizza alla vista principale (homeView) -->
   <div class="logo-area" (click)="switchView('homeView')">{{ 'HEADER.LECTURER_TITLE' | translate }}</div>
 
   <div class="header-actions">
+    <!-- Pulsante cambio lingua (IT / EN) -->
     <button class="lang-btn" (click)="translationService.toggleLanguage()">
       {{ translationService.getLanguage() === 'it' ? '🇬🇧 EN' : '🇮🇹 IT' }}
     </button>
+
+    <!-- Pulsante cambio tema (Light / Dark Mode) -->
     <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Cambia tema">
       {{ themeService.isDark ? '☀️' : '🌙' }}
     </button>
 
+    <!-- Menu a tendina del profilo utente -->
     <div class="profile-container">
       <button class="profile-btn" (click)="toggleMenu($event)">{{ iniziali }}</button>
       <div class="dropdown" [class.active]="menuAperto" (click)="$event.stopPropagation()">
+
+        <!-- Selezione dinamica del colore d'accento del brand -->
         <div class="color-picker-menu">
           <span class="color-picker-title">{{ 'HEADER.CHOOSE_COLOR' | translate }}</span>
           <div class="color-swatches">
@@ -32,6 +46,9 @@
 
 <main (click)="menuAperto = false">
 
+  <!-- ==========================================================================
+       VISTA 1: HOME PRINCIPALE (BOX DI ACCESSO RAPIDO ALLE CODE)
+       ========================================================================== -->
   @if (activeView === 'homeView') {
     <div class="hero">
       <h1 class="page-title">{{ 'LECTURER.GREETING' | translate }} {{ utente?.first_name }} {{ utente?.last_name }}</h1>
@@ -39,6 +56,7 @@
     </div>
 
     <div class="boxes-container">
+      <!-- Box 1: Coda Approvazioni Learning Agreement -->
       <div class="home-box" (click)="switchView('laView')">
         <div class="box-icon">📝</div>
         <h2>{{ 'LECTURER.BOX_LA_TITLE' | translate }}</h2>
@@ -46,6 +64,7 @@
         @if (pendingLAs.length > 0) { <div class="badge-count">{{ pendingLAs.length }} {{ 'LECTURER.IN_WAITING' | translate }}</div> }
       </div>
 
+      <!-- Box 2: Coda Valutazione Voti e ToR -->
       <div class="home-box" (click)="switchView('torView')">
         <div class="box-icon">🎓</div>
         <h2>{{ 'LECTURER.BOX_TOR_TITLE' | translate }}</h2>
@@ -53,6 +72,7 @@
         @if (pendingToRs.length > 0) { <div class="badge-count badge-count-purple">{{ pendingToRs.length }} {{ 'LECTURER.IN_WAITING' | translate }}</div> }
       </div>
 
+      <!-- Box 3: Storico Pratiche Gestite -->
       <div class="home-box" (click)="switchView('handledView')">
         <div class="box-icon">🗂️</div>
         <h2>{{ 'LECTURER.BOX_HISTORY_TITLE' | translate }}</h2>
@@ -62,6 +82,9 @@
   }
 
   @else if (activeView === 'laView') {
+    <!-- ==========================================================================
+       VISTA 2: CODA VALUTAZIONE LEARNING AGREEMENT
+       ========================================================================== -->
     <button class="back-header-btn" (click)="switchView('homeView')">{{ 'LECTURER.BTN_BACK' | translate }}</button>
     <h1 class="page-title" style="text-align: left;">{{ 'LECTURER.PAGE_LA_TITLE' | translate }}</h1>
     <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">{{ 'LECTURER.PAGE_LA_DESC' | translate }}</p>
@@ -108,6 +131,9 @@
   }
 
   @else if (activeView === 'torView') {
+    <!-- ==========================================================================
+       VISTA 3: CODA APPROVAZIONE VOTI (Transcript of Records)
+       ========================================================================== -->
     <button class="back-header-btn" (click)="switchView('homeView')">{{ 'LECTURER.BTN_BACK' | translate }}</button>
     <h1 class="page-title" style="text-align: left;">{{ 'LECTURER.PAGE_TOR_TITLE' | translate }}</h1>
     <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">{{ 'LECTURER.PAGE_TOR_DESC' | translate }}</p>
@@ -135,10 +161,14 @@
   }
 
   @else if (activeView === 'handledView') {
+    <!-- ==========================================================================
+       VISTA 4: STORICO PRATICHE GESTITE E FILTRI DI RICERCA
+       ========================================================================== -->
     <button class="back-header-btn" (click)="switchView('homeView')">{{ 'LECTURER.BTN_BACK' | translate }}</button>
     <h1 class="page-title" style="text-align: left;">{{ 'LECTURER.PAGE_HISTORY_TITLE' | translate }}</h1>
     <p class="page-subtitle" style="text-align: left; margin-bottom: 32px;">{{ 'LECTURER.PAGE_HISTORY_DESC' | translate }}</p>
 
+    <!-- Sezione filtri avanzati -->
     <div class="filter-container">
       <div class="filter-title">{{ 'LECTURER.SEARCH_TITLE' | translate }}</div>
       <div class="filter-grid">
@@ -176,6 +206,7 @@
       </div>
     </div>
 
+    <!-- Lista dello storico filtrato -->
     <div class="requests-list">
       @if (praticheFiltrate.length === 0) {
         <p style="text-align: center; color: var(--text-muted); background: var(--surface); padding: 20px; border-radius: 8px;">{{ 'LECTURER.NO_MATCH' | translate }}</p>
@@ -229,6 +260,9 @@
   }
 </main>
 
+<!-- ==========================================================================
+     MODALE 1: REVISIONE E VALUTAZIONE DOCUMENTO (L.A. o ToR)
+     ========================================================================== -->
 @if (mostraModaleReview) {
   <div class="modal-overlay" (click)="chiudiReviewModal()">
     <div class="modal" (click)="$event.stopPropagation()">
@@ -238,6 +272,7 @@
         <p style="color: var(--text-muted); margin-bottom: 24px; font-weight: 500;">{{ reviewData.actionTypeKey | translate }}</p>
       }
 
+      <!-- Step di Lettura e Verifica Contenuti -->
       @if (modalStep === 'read') {
         @if (reviewData.studentNote) {
           <div class="student-note-box">
@@ -272,6 +307,7 @@
       }
 
       @else if (modalStep === 'reject-reason') {
+        <!-- Step di Inserimento Motivazione Rifiuto -->
         <p style="font-weight: 600; text-align: left; margin-bottom: 8px; color: var(--text-main);">{{ 'LECTURER.REJECT_REASON_TITLE' | translate }}</p>
         <textarea class="reject-textarea" [(ngModel)]="motivoRifiuto" [placeholder]="'LECTURER.REJECT_REASON_PLACE' | translate"></textarea>
         <div class="modal-actions" style="margin-top: 24px;">
@@ -281,6 +317,7 @@
       }
 
       @else if (modalStep === 'confirm') {
+        <!-- Step di Conferma Decisione -->
         <div style="text-align: center; margin-bottom: 24px; padding-top: 16px;">
           <h2 style="font-size: 64px; margin-top: 0; margin-bottom: 16px; line-height: 1;">{{ pendingAction === 'approve' ? '✅' : '⚠️' }}</h2>
           <h3 style="margin-bottom: 8px;">{{ pendingAction === 'approve' ? ('LECTURER.CONFIRM_APPROVE' | translate) : ('LECTURER.CONFIRM_REJECT' | translate) }}</h3>
@@ -297,6 +334,7 @@
       }
 
       @else if (modalStep === 'success') {
+        <!-- Step di Successo Operazione -->
         <div style="text-align: center; margin-bottom: 24px; padding-top: 16px;">
           <h2 style="font-size: 64px; margin-top: 0; margin-bottom: 16px; line-height: 1;">🎉</h2>
           <h3 style="margin-bottom: 8px; color: var(--success);">{{ 'LECTURER.SUCCESS_TITLE' | translate }}</h3>
@@ -310,6 +348,9 @@
   </div>
 }
 
+<!-- ==========================================================================
+     MODALE 2: DETTAGLI STORICI DI UNA PRATICA GESTITA
+     ========================================================================== -->
 @if (mostraModaleStorico && historicalDetails) {
   <div class="modal-overlay" (click)="chiudiModaleStorico()">
     <div class="modal" style="max-width: 650px; text-align: left; padding: 32px;" (click)="$event.stopPropagation()">

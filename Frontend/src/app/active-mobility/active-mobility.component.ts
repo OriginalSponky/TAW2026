@@ -1,3 +1,10 @@
+/* ==========================================================================
+   ACTIVE MOBILITY COMPONENT - TYPESCRIPT LOGIC
+   Gestisce le azioni in itinere dello studente in Erasmus: avvio mobilità,
+   aggiornamento date, proposte di modifica Learning Agreement, caricamento ToR
+   e gestione dello storico delle revisioni con i relativi rifiuti.
+   ========================================================================== */
+
 import {
   Component,
   OnInit,
@@ -55,6 +62,9 @@ export class ActiveMobilityComponent implements OnInit {
     return (this.utente.first_name.charAt(0) + this.utente.last_name.charAt(0)).toUpperCase();
   }
 
+  /**
+   * Verifica se esiste almeno un documento rifiutato per mostrare il badge di notifica rossa.
+   */
   get hasNotifiche(): boolean {
     if (!this.richiesteAttive) return false;
     return this.richiesteAttive.some(
@@ -62,6 +72,9 @@ export class ActiveMobilityComponent implements OnInit {
     );
   }
 
+  /**
+   * Controlla se esiste già un documento dello stesso tipo in stato PENDING (in attesa di valutazione).
+   */
   hasPendingDocument(app: any, documentType: string): boolean {
     if (!app || !app.documents) return false;
     return app.documents.some(
@@ -99,12 +112,16 @@ export class ActiveMobilityComponent implements OnInit {
     this.caricaTutteLeAttive();
   }
 
+  /* Chiude i menu a tendina cliccando all'esterno */
   @HostListener('document:click')
   clickout() {
     this.menuAperto = false;
     this.historyDropdownAperto = false;
   }
 
+  /**
+   * Carica tutte le mobilità attive o in corso per l'utente loggato.
+   */
   caricaTutteLeAttive() {
     const emailSicura = encodeURIComponent(this.utente.email);
     fetch(`http://localhost:3000/api/applications?email=${emailSicura}`)
@@ -389,6 +406,9 @@ export class ActiveMobilityComponent implements OnInit {
     this.appInModifica = null;
   }
 
+  /**
+   * Esegue la chiamata HTTP al server in base all'azione confermata nel modale.
+   */
   eseguiAzione() {
     if (this.isSubmitting || !this.appInModifica) return;
     this.isSubmitting = true;

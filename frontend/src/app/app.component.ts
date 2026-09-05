@@ -1,3 +1,9 @@
+/* ==========================================================================
+   APP COMPONENT - TYPESCRIPT LOGIC
+   Gestisce lo stato di autenticazione globale, le chiamate API di login/registrazione,
+   l'integrazione con Google SSO (OAuth2) e il reindirizzamento dei ruoli.
+   ========================================================================== */
+
 import { Component, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,7 +12,7 @@ import { LecturerDashboardComponent } from './lecturer-dashboard/lecturer-dashbo
 import { StaffDashboardComponent } from './staff-dashboard/staff-dashboard.component';
 import { Subscription } from 'rxjs';
 
-// --- i18n e Theme Imports ---
+// Servizi globali di internazionalizzazione e temi
 import { TranslatePipe } from './translate.pipe';
 import { TranslationService } from './services/translation.service';
 import { ThemeService } from './services/theme.service';
@@ -26,12 +32,14 @@ import { ThemeService } from './services/theme.service';
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnInit, OnDestroy {
+  // Campi di input per il form di autenticazione
   emailInput: string = '';
   passwordInput: string = '';
 
   utenteLoggato: any = null;
   messaggioErrore: string = '';
 
+  // Stati di controllo per la registrazione di nuovi utenti
   inRegistrazione: boolean = false;
   registrazioneDaGoogle: boolean = false;
   datiRegistrazione: any = null;
@@ -42,15 +50,16 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     private cdr: ChangeDetectorRef,
     public translationService: TranslationService,
-    public themeService: ThemeService, // INIETTATO QUI PER L'HTML
+    public themeService: ThemeService,
   ) {}
 
   ngOnInit() {
+    // Controllo persistenza sessione al caricamento della pagina
     const utenteSalvato = localStorage.getItem('utenteLoggato');
     if (utenteSalvato) {
       this.utenteLoggato = JSON.parse(utenteSalvato);
     } else {
-      // Quando la lingua cambia, ricarica il bottone Google col testo corretto
+      // Inizializza il bottone Google e si mette in ascolto dei cambi lingua
       this.langSub = this.translationService.currentLang$.subscribe(() => {
         if (!this.utenteLoggato && !this.inRegistrazione) {
           this.inizializzaBottoneGoogle();
@@ -63,7 +72,10 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.langSub) this.langSub.unsubscribe();
   }
 
-  // --- STANDARD LOGIN ---
+  /**
+   * Esegue il login standard inviando credenziali al backend.
+   * Se l'utente non esiste ma l'email è istituzionale, apre il modulo di registrazione.
+   */
   eseguiLogin() {
     fetch('http://localhost:3000/api/login', {
       method: 'POST',
@@ -101,7 +113,9 @@ export class AppComponent implements OnInit, OnDestroy {
       });
   }
 
-  // --- REGISTRATION ---
+  /**
+   * Finalizza la registrazione di un nuovo utente salvandolo nel database.
+   */
   confermaRegistrazione() {
     if (!this.datiRegistrazione.first_name || !this.datiRegistrazione.last_name) {
       this.messaggioErrore = 'ERRORS.MISSING_NAMES';
@@ -111,6 +125,7 @@ export class AppComponent implements OnInit, OnDestroy {
     let passwordDaSalvare = '';
 
     if (this.registrazioneDaGoogle) {
+      // Genera una password casuale sicura per gli utenti autenticati via Google SSO
       passwordDaSalvare =
         Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     } else {
@@ -167,7 +182,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  // --- GOOGLE AUTH ---
+  /**
+   * Gestisce il token restituito dal login Google e verifica i permessi di ateneo.
+   */
   gestisciRispostaGoogle(response: any) {
     const token = response.credential;
     const payloadBase64 = token.split('.')[1];
@@ -210,6 +227,9 @@ export class AppComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Inizializza e renderizza il bottone ufficiale Google Identity Services.
+   */
   inizializzaBottoneGoogle() {
     setTimeout(() => {
       if ((window as any).google) {
@@ -239,6 +259,9 @@ export class AppComponent implements OnInit, OnDestroy {
     }, 100);
   }
 
+  /**
+   * Esegue il logout dell'utente pulendo la sessione locale.
+   */
   eseguiLogout() {
     this.utenteLoggato = null;
     this.emailInput = '';
