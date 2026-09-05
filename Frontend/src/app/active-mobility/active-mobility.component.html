@@ -67,6 +67,7 @@
           'border-pre-departure': app.status === 'PRE_DEPARTURE_COMPLETED',
           'border-in-progress': app.status === 'MOBILITY_IN_PROGRESS',
           'border-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+          'border-exam-approved': app.status === 'EXAM_SCORES_APPROVED',
           'border-closed': app.status === 'CLOSED',
           'border-canceled': app.status === 'CANCELED'
         }">
@@ -85,10 +86,11 @@
               'status-pre-departure': app.status === 'PRE_DEPARTURE_COMPLETED',
               'status-in-progress': app.status === 'MOBILITY_IN_PROGRESS',
               'status-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+              'status-exam-approved': app.status === 'EXAM_SCORES_APPROVED',
               'status-closed': app.status === 'CLOSED',
               'status-canceled': app.status === 'CANCELED'
             }">
-            {{ formattaStato(app.status) }}
+            {{ formattaStato(app.status) | translate }}
           </div>
         </div>
 
@@ -454,7 +456,7 @@
                     "{{ doc.rejection_reason }}"
                   </p>
 
-                  @if (!hasPendingModifications(selectedHistoryApp)) {
+                  @if (!hasPendingDocument(selectedHistoryApp, doc.document_type)) {
                     <button class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px;" (click)="apriCorrezione(selectedHistoryApp)">
                       {{ 'ACTIVE_MOBILITY.BTN_EDIT_RESUBMIT' | translate }}
                     </button>

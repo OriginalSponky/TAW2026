@@ -501,6 +501,7 @@ header {
 .status-in-progress, .badge-info { background-color: var(--primary-light); color: var(--primary); border: 1px solid #bfdbfe; }
 .status-awaiting-modification { background-color: var(--warning-light); color: var(--warning); border: 1px solid #fde68a; }
 .status-waiting-score, .badge-purple { background-color: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid #d8b4fe; }
+.status-exam-approved { background-color: rgba(14, 165, 233, 0.15); color: #0ea5e9; border: 1px solid #7dd3fc; }
 .status-closed, .badge-success { background-color: #dcfce7; color: var(--success); border: 1px solid #bbf7d0; }
 .status-canceled, .badge-danger { background-color: var(--danger-light); color: var(--danger); border: 1px solid #fecaca; }
 .badge-neutral { background-color: var(--bg-color); color: var(--text-muted); border: 1px solid var(--border); }
@@ -513,6 +514,7 @@ header {
 .card.border-closed, .request-card.border-closed { border-left: 6px solid #10b981 !important; }
 .card.border-canceled, .request-card.border-canceled { border-left: 6px solid #ef4444 !important; }
 .card.border-waiting-score, .request-card.border-waiting-score { border-left: 6px solid #a855f7 !important; }
+.card.border-exam-approved, .request-card.border-exam-approved { border-left: 6px solid #0ea5e9 !important; }
 
 /* Stile unificato per i titoli dei documenti e delle card in tutte le dashboard (Student, Lecturer, Staff) */
 .document-title,

@@ -19,18 +19,16 @@ export class MyRequestsComponent implements OnInit {
   @Output() onBack = new EventEmitter<void>();
   @Output() onNewRequest = new EventEmitter<void>();
   @Output() onLogout = new EventEmitter<void>();
-  @Output() onEditRequest = new EventEmitter<number>(); // Passa l'ID della pratica attiva ad Active Mobility
+  @Output() onEditRequest = new EventEmitter<number>();
 
   richieste: any[] = [];
   richiestaSelezionata: number | null = null;
   menuAperto: boolean = false;
 
-  // --- VARIABILI TOAST ---
   mostraAlert: boolean = false;
   alertType: 'success' | 'error' = 'success';
   alertMessage: string = '';
 
-  // --- ELIMINAZIONE INLINE ---
   confermaEliminazioneId: number | null = null;
   isDeleting: boolean = false;
 
@@ -82,7 +80,6 @@ export class MyRequestsComponent implements OnInit {
     this.onNewRequest.emit();
   }
 
-  // Riutilizza la traduzione già usata in Request Detail per consistenza
   formattaPeriodo(periodo: string): string {
     if (periodo === 'FIRST_SEMESTER')
       return this.translationService.translate('REQ_DETAIL.FIRST_SEM');
@@ -106,6 +103,8 @@ export class MyRequestsComponent implements OnInit {
         return 'status-awaiting-modification';
       case 'WAITING_FOR_EXAM_SCORE_APPROVAL':
         return 'status-waiting-score';
+      case 'EXAM_SCORES_APPROVED':
+        return 'status-exam-approved'; // NUOVO COLORE CIANO
       case 'CLOSED':
         return 'status-closed';
       case 'CANCELED':
@@ -129,6 +128,8 @@ export class MyRequestsComponent implements OnInit {
         return this.translationService.translate('MY_REQ.STATUS_AW_MOD');
       case 'WAITING_FOR_EXAM_SCORE_APPROVAL':
         return this.translationService.translate('MY_REQ.STATUS_AW_SCORE');
+      case 'EXAM_SCORES_APPROVED':
+        return this.translationService.translate('MY_REQ.STATUS_EXAM_APP');
       case 'CLOSED':
         return this.translationService.translate('MY_REQ.STATUS_CLOSED');
       case 'CANCELED':
@@ -156,12 +157,10 @@ export class MyRequestsComponent implements OnInit {
     this.onLogout.emit();
   }
 
-  // Viene chiamato quando clicchi "Gestisci Pratica" e spinge l'utente nella Dashboard di gestione attiva
   modificaRichiesta(id: number) {
     this.onEditRequest.emit(id);
   }
 
-  // --- LOGICA ELIMINAZIONE INLINE ---
   chiediConfermaEliminazione(id: number) {
     this.confermaEliminazioneId = id;
   }

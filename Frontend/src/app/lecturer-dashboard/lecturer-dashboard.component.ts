@@ -55,6 +55,46 @@ export class LecturerDashboardComponent implements OnInit {
     this.caricaPratiche();
   }
 
+  formattaStato(status: string): string {
+    if (!status) return '';
+    switch (status) {
+      case 'CREATED':
+        return 'MY_REQ.STATUS_CREATED';
+      case 'AWAITING_FOR_APPROVAL':
+        return 'MY_REQ.STATUS_AW_LA';
+      case 'PRE_DEPARTURE_COMPLETED':
+        return 'MY_REQ.STATUS_PRE_DEP';
+      case 'MOBILITY_IN_PROGRESS':
+        return 'MY_REQ.STATUS_MOB_PROG';
+      case 'AWAITING_MODIFICATION_APPROVAL':
+        return 'MY_REQ.STATUS_AW_MOD';
+      case 'WAITING_FOR_EXAM_SCORE_APPROVAL':
+        return 'MY_REQ.STATUS_AW_SCORE';
+      case 'EXAM_SCORES_APPROVED':
+        return 'MY_REQ.STATUS_EXAM_APP';
+      case 'CLOSED':
+        return 'MY_REQ.STATUS_CLOSED';
+      case 'CANCELED':
+        return 'MY_REQ.STATUS_CANCELED';
+      default:
+        return 'MY_REQ.STATUS_UNKNOWN';
+    }
+  }
+
+  formattaPeriodo(periodo: string): string {
+    if (!periodo) return '';
+    switch (periodo) {
+      case 'FIRST_SEMESTER':
+        return this.translationService.translate('REQ_DETAIL.FIRST_SEM');
+      case 'SECOND_SEMESTER':
+        return this.translationService.translate('REQ_DETAIL.SECOND_SEM');
+      case 'FULL_YEAR':
+        return this.translationService.translate('REQ_DETAIL.FULL_YEAR');
+      default:
+        return periodo;
+    }
+  }
+
   caricaPratiche() {
     if (!this.utente || !this.utente.email) return;
 
@@ -63,10 +103,6 @@ export class LecturerDashboardComponent implements OnInit {
       .then((data) => {
         const praticheVisibili = data;
 
-        // FILTRO AGGIORNATO:
-        // 1. CREATED = Sempre visibile
-        // 2. AWAITING_FOR_APPROVAL = Visibile SOLO con date inserite E documento pending
-        // 3. AWAITING_MODIFICATION_APPROVAL = Sempre visibile (lo studente potrebbe non aver ricaricato il PDF)
         this.pendingLAs = praticheVisibili.filter(
           (a: any) =>
             a.status === 'CREATED' ||
@@ -81,7 +117,6 @@ export class LecturerDashboardComponent implements OnInit {
           (a: any) => a.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' && a.pending_docs > 0,
         );
 
-        // Nello storico ci finisce solo quello che NON rispetta i rigidi criteri qui sopra
         this.handledApps = praticheVisibili.filter((a: any) => {
           const isPendingLA =
             a.status === 'CREATED' ||
@@ -233,8 +268,6 @@ export class LecturerDashboardComponent implements OnInit {
           (d: any) => d.document_type === docType && d.status === 'PENDING',
         );
 
-        // Se la pratica è in modifica ma non c'è un nuovo documento in pending,
-        // recuperiamo l'ultimo documento caricato (quello originale approvato) per farlo vedere al prof come riferimento.
         if (!pendingDoc && app.status === 'AWAITING_MODIFICATION_APPROVAL') {
           const docs = details.documents.filter((d: any) => d.document_type === docType);
           pendingDoc = docs.length > 0 ? docs[docs.length - 1] : null;
@@ -280,9 +313,14 @@ export class LecturerDashboardComponent implements OnInit {
           if (!dataStr) return '';
           return new Date(dataStr).toLocaleDateString('it-IT');
         };
+
+        const fromStr = this.translationService.translate('STAFF.FROM');
+        const toStr = this.translationService.translate('STAFF.TO');
+        const missingStr = this.translationService.translate('STAFF.MISSING_DATES');
+
         const datesText =
           details.actual_arrival_date && details.actual_departure_date
-            ? `Dal ${formatData(details.actual_arrival_date)} al ${formatData(details.actual_departure_date)}`
+            ? `${fromStr} ${formatData(details.actual_arrival_date)} ${toStr} ${formatData(details.actual_departure_date)}`
             : null;
 
         this.reviewData = {

@@ -28,6 +28,7 @@
             'status-in-progress': dettagli.status === 'MOBILITY_IN_PROGRESS',
             'status-awaiting-modification': dettagli.status === 'AWAITING_MODIFICATION_APPROVAL',
             'status-waiting-score': dettagli.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+            'status-exam-approved': dettagli.status === 'EXAM_SCORES_APPROVED',
             'status-closed': dettagli.status === 'CLOSED',
             'status-canceled': dettagli.status === 'CANCELED'
           }">
@@ -163,13 +164,14 @@
         <p style="color: var(--text-muted); font-size: 14px;">{{ 'REQ_DETAIL.NO_EXAMS' | translate }}</p>
       }
 
+      <!-- AGGIORNATA: Sezione Documenti Multipli! -->
       <div class="document-section">
-        <h4>{{ 'REQ_DETAIL.OFFICIAL_DOC' | translate }}</h4>
+        <h4>{{ 'REQ_DETAIL.OFFICIAL_DOC' | translate }} (Learning Agreement)</h4>
 
         @if (!isEditing) {
           <div class="doc-view">
-            <p>📄 {{ getNomeDocumento() }}</p>
-            <a href="#" class="doc-link" (click)="scaricaDocumento($event)">{{ 'REQ_DETAIL.VIEW_DOWNLOAD' | translate }}</a>
+            <p>📄 {{ getNomeDocumento('LEARNING_AGREEMENT') }}</p>
+            <a href="#" class="doc-link" (click)="scaricaDocumento($event, 'LEARNING_AGREEMENT')">{{ 'REQ_DETAIL.VIEW_DOWNLOAD' | translate }}</a>
           </div>
         } @else {
           <div class="doc-edit">
@@ -200,7 +202,14 @@
                 }
               </div>
             </div>
+          </div>
+        }
 
+        @if (dettagli.status === 'CLOSED') {
+          <h4 style="margin-top: 24px;">{{ 'REQ_DETAIL.OFFICIAL_DOC' | translate }} (Transcript of Records)</h4>
+          <div class="doc-view">
+            <p>📄 {{ getNomeDocumento('TRANSCRIPT_OF_RECORDS') }}</p>
+            <a href="#" class="doc-link" (click)="scaricaDocumento($event, 'TRANSCRIPT_OF_RECORDS')">{{ 'REQ_DETAIL.VIEW_DOWNLOAD' | translate }}</a>
           </div>
         }
       </div>

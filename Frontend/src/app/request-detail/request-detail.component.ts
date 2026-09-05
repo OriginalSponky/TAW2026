@@ -63,19 +63,26 @@ export class RequestDetailComponent implements OnInit {
     this.mostraAlert = false;
   }
 
-  // TRADOTTO!
-  getNomeDocumento(): string {
+  // AGGIORNATO: Ora accetta il tipo di documento in ingresso!
+  getNomeDocumento(tipo: string = 'LEARNING_AGREEMENT'): string {
     if (!this.dettagli || !this.dettagli.documents)
       return this.translationService.translate('REQ_DETAIL.NOT_ENTERED');
-    const doc = this.dettagli.documents.find((d: any) => d.document_type === 'LEARNING_AGREEMENT');
+
+    const doc =
+      this.dettagli.documents.find(
+        (d: any) => d.document_type === tipo && d.status === 'APPROVED',
+      ) || this.dettagli.documents.find((d: any) => d.document_type === tipo);
+
     return doc ? doc.file_name : this.translationService.translate('REQ_DETAIL.NOT_ENTERED');
   }
 
-  scaricaDocumento(event: Event) {
+  // AGGIORNATO: Ora accetta il tipo di documento per il download!
+  scaricaDocumento(event: Event, tipo: string = 'LEARNING_AGREEMENT') {
     event.preventDefault();
-    const doc = this.dettagli?.documents?.find(
-      (d: any) => d.document_type === 'LEARNING_AGREEMENT',
-    );
+    const doc =
+      this.dettagli?.documents?.find(
+        (d: any) => d.document_type === tipo && d.status === 'APPROVED',
+      ) || this.dettagli?.documents?.find((d: any) => d.document_type === tipo);
 
     if (doc && doc.file_path) {
       const url = 'http://localhost:3000' + doc.file_path;
@@ -169,7 +176,6 @@ export class RequestDetailComponent implements OnInit {
       });
   }
 
-  // TRADOTTO!
   formattaPeriodo(periodo: string): string {
     if (!periodo) return '';
     switch (periodo) {
@@ -184,7 +190,6 @@ export class RequestDetailComponent implements OnInit {
     }
   }
 
-  // TRADOTTO! Usa le chiavi di MY_REQ per avere gli stati identici alla pagina precedente
   formattaStato(status: string): string {
     if (!status) return '';
     switch (status) {
@@ -200,6 +205,8 @@ export class RequestDetailComponent implements OnInit {
         return this.translationService.translate('MY_REQ.STATUS_AW_MOD');
       case 'WAITING_FOR_EXAM_SCORE_APPROVAL':
         return this.translationService.translate('MY_REQ.STATUS_AW_SCORE');
+      case 'EXAM_SCORES_APPROVED':
+        return this.translationService.translate('MY_REQ.STATUS_EXAM_APP'); // NUOVO STATO!
       case 'CLOSED':
         return this.translationService.translate('MY_REQ.STATUS_CLOSED');
       case 'CANCELED':

@@ -62,16 +62,37 @@ export class ActiveMobilityComponent implements OnInit {
     );
   }
 
-  hasPendingModifications(app: any): boolean {
-    if (!app.documents) return false;
+  hasPendingDocument(app: any, documentType: string): boolean {
+    if (!app || !app.documents) return false;
     return app.documents.some(
-      (doc: any) => doc.document_type === 'LEARNING_AGREEMENT' && doc.status === 'PENDING',
+      (doc: any) => doc.document_type === documentType && doc.status === 'PENDING',
     );
   }
 
   formattaStato(status: string): string {
     if (!status) return '';
-    return status.replace(/_/g, ' ');
+    switch (status) {
+      case 'CREATED':
+        return 'MY_REQ.STATUS_CREATED';
+      case 'AWAITING_FOR_APPROVAL':
+        return 'MY_REQ.STATUS_AW_LA';
+      case 'PRE_DEPARTURE_COMPLETED':
+        return 'MY_REQ.STATUS_PRE_DEP';
+      case 'MOBILITY_IN_PROGRESS':
+        return 'MY_REQ.STATUS_MOB_PROG';
+      case 'AWAITING_MODIFICATION_APPROVAL':
+        return 'MY_REQ.STATUS_AW_MOD';
+      case 'WAITING_FOR_EXAM_SCORE_APPROVAL':
+        return 'MY_REQ.STATUS_AW_SCORE';
+      case 'EXAM_SCORES_APPROVED':
+        return 'MY_REQ.STATUS_EXAM_APP';
+      case 'CLOSED':
+        return 'MY_REQ.STATUS_CLOSED';
+      case 'CANCELED':
+        return 'MY_REQ.STATUS_CANCELED';
+      default:
+        return 'MY_REQ.STATUS_UNKNOWN';
+    }
   }
 
   ngOnInit() {
@@ -267,7 +288,7 @@ export class ActiveMobilityComponent implements OnInit {
     switch (azione) {
       case 'start_mobility':
       case 'update_dates':
-      case 'save_dates': // NUOVA AZIONE
+      case 'save_dates':
         if (!app.arrival_date || !app.departure_date) {
           this.mostraFeedback(
             'error',
@@ -320,7 +341,6 @@ export class ActiveMobilityComponent implements OnInit {
         };
         break;
       case 'submit_tor':
-        // NUOVO CONTROLLO: Verifica che ci sia almeno un esame e che Voto e Data siano compilati per TUTTI
         if (!app.esamiToR || app.esamiToR.length === 0) {
           this.mostraFeedback(
             'error',
@@ -384,11 +404,10 @@ export class ActiveMobilityComponent implements OnInit {
     ) {
       const isStart = this.modalConfig.action === 'start_mobility';
 
-      // Assicuriamoci che le date siano nel formato YYYY-MM-DD
       const formattaDataForDB = (dateObj: Date | string | null) => {
         if (!dateObj) return null;
         const d = new Date(dateObj);
-        if (isNaN(d.getTime())) return null; // data non valida
+        if (isNaN(d.getTime())) return null;
         const month = '' + (d.getMonth() + 1);
         const day = '' + d.getDate();
         const year = d.getFullYear();

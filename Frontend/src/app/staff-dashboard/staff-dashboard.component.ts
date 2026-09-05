@@ -68,7 +68,6 @@ export class StaffDashboardComponent implements OnInit {
         this.allApps = data.map((a: any) => ({
           ...a,
           name: `${a.student_first_name} ${a.student_last_name}`,
-          enumColor: this.getBadgeColor(a.status),
         }));
 
         this.uniqueNazioni = [...new Set(this.allApps.map((a) => a.country))]
@@ -79,8 +78,6 @@ export class StaffDashboardComponent implements OnInit {
           .sort() as string[];
 
         this.preDepartureApps = this.allApps.filter((a) => a.status === 'PRE_DEPARTURE_COMPLETED');
-
-        // MODIFICA: Ora lo Staff prende le pratiche in EXAM_SCORES_APPROVED
         this.closureApps = this.allApps.filter((a) => a.status === 'EXAM_SCORES_APPROVED');
 
         this.praticheFiltrate = [...this.allApps];
@@ -89,28 +86,68 @@ export class StaffDashboardComponent implements OnInit {
       .catch((err) => console.error('Errore recupero archivio:', err));
   }
 
-  getBadgeColor(status: string): string {
-    switch (status) {
+  getClasseStato(stato: string): string {
+    switch (stato) {
       case 'CREATED':
-        return 'badge-neutral';
+        return 'status-created';
       case 'AWAITING_FOR_APPROVAL':
-        return 'badge-warning';
+        return 'status-awaiting-la';
       case 'PRE_DEPARTURE_COMPLETED':
-        return 'badge-warning';
+        return 'status-pre-departure';
       case 'MOBILITY_IN_PROGRESS':
-        return 'badge-info';
+        return 'status-in-progress';
       case 'AWAITING_MODIFICATION_APPROVAL':
-        return 'badge-warning';
+        return 'status-awaiting-modification';
       case 'WAITING_FOR_EXAM_SCORE_APPROVAL':
-        return 'badge-purple';
+        return 'status-waiting-score';
       case 'EXAM_SCORES_APPROVED':
-        return 'badge-purple'; // Nuovo stato aggiunto qui!
+        return 'status-exam-approved';
       case 'CLOSED':
-        return 'badge-success';
+        return 'status-closed';
       case 'CANCELED':
-        return 'badge-danger';
+        return 'status-canceled';
       default:
-        return 'badge-neutral';
+        return 'status-closed';
+    }
+  }
+
+  getTestoStato(stato: string): string {
+    switch (stato) {
+      case 'CREATED':
+        return this.translationService.translate('MY_REQ.STATUS_CREATED');
+      case 'AWAITING_FOR_APPROVAL':
+        return this.translationService.translate('MY_REQ.STATUS_AW_LA');
+      case 'PRE_DEPARTURE_COMPLETED':
+        return this.translationService.translate('MY_REQ.STATUS_PRE_DEP');
+      case 'MOBILITY_IN_PROGRESS':
+        return this.translationService.translate('MY_REQ.STATUS_MOB_PROG');
+      case 'AWAITING_MODIFICATION_APPROVAL':
+        return this.translationService.translate('MY_REQ.STATUS_AW_MOD');
+      case 'WAITING_FOR_EXAM_SCORE_APPROVAL':
+        return this.translationService.translate('MY_REQ.STATUS_AW_SCORE');
+      case 'EXAM_SCORES_APPROVED':
+        return this.translationService.translate('MY_REQ.STATUS_EXAM_APP');
+      case 'CLOSED':
+        return this.translationService.translate('MY_REQ.STATUS_CLOSED');
+      case 'CANCELED':
+        return this.translationService.translate('MY_REQ.STATUS_CANCELED');
+      default:
+        return this.translationService.translate('MY_REQ.STATUS_UNKNOWN');
+    }
+  }
+
+  // --- NUOVA FUNZIONE: TRADUCE IL SEMESTRE ---
+  formattaPeriodo(periodo: string): string {
+    if (!periodo) return '';
+    switch (periodo) {
+      case 'FIRST_SEMESTER':
+        return this.translationService.translate('REQ_DETAIL.FIRST_SEM');
+      case 'SECOND_SEMESTER':
+        return this.translationService.translate('REQ_DETAIL.SECOND_SEM');
+      case 'FULL_YEAR':
+        return this.translationService.translate('REQ_DETAIL.FULL_YEAR');
+      default:
+        return periodo;
     }
   }
 
@@ -171,10 +208,15 @@ export class StaffDashboardComponent implements OnInit {
           if (!dataStr) return '';
           return new Date(dataStr).toLocaleDateString('it-IT');
         };
+
+        const fromStr = this.translationService.translate('STAFF.FROM');
+        const toStr = this.translationService.translate('STAFF.TO');
+        const missingStr = this.translationService.translate('STAFF.MISSING_DATES');
+
         const datesText =
           details.actual_arrival_date && details.actual_departure_date
-            ? `Dal ${formatData(details.actual_arrival_date)} al ${formatData(details.actual_departure_date)}`
-            : 'Date mancanti';
+            ? `${fromStr} ${formatData(details.actual_arrival_date)} ${toStr} ${formatData(details.actual_departure_date)}`
+            : missingStr;
 
         this.reviewData = {
           appId: app.id,

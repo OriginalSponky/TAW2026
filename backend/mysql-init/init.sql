@@ -159,7 +159,7 @@ INSERT INTO Applications (
 ) VALUES
 -- App 1: MOBILITY_IN_PROGRESS (Tutto approvato, in corso)
 (1, 1, 2, '2025/2026', 'FIRST_SEMESTER', '2025-09-01', '2026-02-15', 'MOBILITY_IN_PROGRESS', TRUE, '2025-06-15', NULL, FALSE),
--- App 2: CREATED (Bozza iniziale, nessun documento)
+-- App 2: CREATED (Bozza iniziale)
 (1, 2, 2, '2025/2026', 'FULL_YEAR', NULL, NULL, 'CREATED', FALSE, NULL, NULL, FALSE),
 -- App 3: AWAITING_FOR_APPROVAL (Ha le date e un LA caricato in attesa del Prof)
 (1, 3, 2, '2025/2026', 'SECOND_SEMESTER', '2026-02-01', '2026-07-15', 'AWAITING_FOR_APPROVAL', FALSE, NULL, NULL, FALSE),
@@ -197,31 +197,49 @@ INSERT INTO ExamsMapping (
       (7, 'ART201', 'Modern Art', 4.0, 'ART02', 'Arte Moderna', 6, NULL, NULL, TRUE, FALSE),
       (8, 'HIS101', 'World History', 5.0, 'STO01', 'Storia Globale', 6, '30/30L', '2025-06-25', FALSE, TRUE),
       (9, 'CHEM101', 'Chemistry', 5.0, 'CHI01', 'Chimica', 6, NULL, NULL, FALSE, FALSE),
+      (10, 'ENG101', 'Engineering', 6.0, 'ING01', 'Ingegneria', 6, NULL, NULL, FALSE, TRUE),
       (11, 'FIN201', 'Corporate Finance', 6.0, 'FIN01', 'Finanza Aziendale', 6, 'A+', '2025-06-15', FALSE, TRUE);
 
+
 INSERT INTO Documents (application_id, document_type, file_name, file_path, status, decision_date, rejection_reason, modification_description) VALUES
--- App 1
+-- App 1 (In Progress): Ha uno storico con un LA rifiutato e quello attuale approvato
+(1, 'LEARNING_AGREEMENT', 'LA_Bianchi_Errato.pdf', '/uploads/test.pdf', 'REJECTED', '2025-06-10', 'Il corso CS101 ha un numero di crediti errato. Per favore correggi.', NULL),
 (1, 'LEARNING_AGREEMENT', 'LA_Bianchi_Filippo_Signed.pdf', '/uploads/test.pdf', 'APPROVED', '2025-06-15', NULL, NULL),
--- App 3
+
+-- App 2 (Created): Aggiunto un file test.pdf come bozza caricata ma non ancora inviata
+(2, 'LEARNING_AGREEMENT', 'LA_Draft_Student.pdf', '/uploads/test.pdf', 'PENDING', NULL, NULL, NULL),
+
+-- App 3 (Awaiting Approval): Ha uno storico con un LA rifiutato e uno nuovo in attesa
+(3, 'LEARNING_AGREEMENT', 'LA_Test_Old_Rejected.pdf', '/uploads/test.pdf', 'REJECTED', '2026-02-10', 'Manca la firma nell\'ultima pagina.', NULL),
 (3, 'LEARNING_AGREEMENT', 'LA_Test_Awaiting.pdf', '/uploads/test.pdf', 'PENDING', NULL, NULL, NULL),
--- App 4
+
+-- App 4 (Pre-Departure)
 (4, 'LEARNING_AGREEMENT', 'LA_Test_PreDep.pdf', '/uploads/test.pdf', 'APPROVED', '2025-07-20', NULL, NULL),
--- App 5
+
+-- App 5 (Waiting for Exam Score Approval)
 (5, 'LEARNING_AGREEMENT', 'LA_Test_Waiting.pdf', '/uploads/test.pdf', 'APPROVED', '2025-06-10', NULL, NULL),
 (5, 'TRANSCRIPT_OF_RECORDS', 'ToR_Test_Waiting.pdf', '/uploads/test.pdf', 'PENDING', NULL, NULL, NULL),
--- App 6
+
+-- App 6 (Closed)
 (6, 'LEARNING_AGREEMENT', 'LA_Test_Closed.pdf', '/uploads/test.pdf', 'APPROVED', '2024-05-15', NULL, NULL),
 (6, 'TRANSCRIPT_OF_RECORDS', 'ToR_Test_Closed.pdf', '/uploads/test.pdf', 'APPROVED', '2025-07-05', NULL, NULL),
--- App 7
+
+-- App 7 (Awaiting Modification): LA originale approvato + Prima modifica rifiutata + Seconda modifica in attesa
 (7, 'LEARNING_AGREEMENT', 'LA_Test_Original.pdf', '/uploads/test.pdf', 'APPROVED', '2025-06-01', NULL, NULL),
-(7, 'LEARNING_AGREEMENT', 'LA_Test_Modificato.pdf', '/uploads/test.pdf', 'PENDING', NULL, NULL, 'Sostituzione Storia dell Arte con Arte Moderna'),
--- App 8
+(7, 'LEARNING_AGREEMENT', 'LA_Test_Mod_Rifiutata.pdf', '/uploads/test.pdf', 'REJECTED', '2025-10-15', 'I crediti per Arte Moderna non sono sufficienti per la conversione.', 'Sostituzione Storia dell Arte con Arte Moderna (Primo tentativo)'),
+(7, 'LEARNING_AGREEMENT', 'LA_Test_Modificato.pdf', '/uploads/test.pdf', 'PENDING', NULL, NULL, 'Sostituzione Storia dell Arte con Arte Moderna (Corretto)'),
+
+-- App 8 (Exam Scores Approved)
 (8, 'LEARNING_AGREEMENT', 'LA_Approved.pdf', '/uploads/test.pdf', 'APPROVED', '2024-12-01', NULL, NULL),
 (8, 'TRANSCRIPT_OF_RECORDS', 'ToR_Scores_Approved.pdf', '/uploads/test.pdf', 'APPROVED', '2025-07-15', NULL, NULL),
--- App 9
+
+-- App 9 (Altro Docente - In attesa)
 (9, 'LEARNING_AGREEMENT', 'LA_Alice_Meraviglia.pdf', '/uploads/test.pdf', 'PENDING', NULL, NULL, NULL),
--- App 10
+
+-- App 10 (Mobility In Progress): MODIFICA RIFIUTATA DAL PROFESSORE!
 (10, 'LEARNING_AGREEMENT', 'LA_Bob_InProgress.pdf', '/uploads/test.pdf', 'APPROVED', '2025-06-25', NULL, NULL),
--- App 11
+(10, 'LEARNING_AGREEMENT', 'LA_Bob_Mod_Rifiutata.pdf', '/uploads/test.pdf', 'REJECTED', '2025-11-10', 'Non puoi rimuovere l\'esame obbligatorio dal Learning Agreement. Proposta respinta.', 'Rimozione esame per sovrapposizione orari'),
+
+-- App 11 (Pronta per chiusura)
 (11, 'LEARNING_AGREEMENT', 'LA_Bob.pdf', '/uploads/test.pdf', 'APPROVED', '2025-01-10', NULL, NULL),
-(11, 'TRANSCRIPT_OF_RECORDS', 'ToR_Bob_Approved.pdf', '/uploads/test.pdf', 'APPROVED', '2025-08-05', NULL, NULL); 'TRANSCRIPT_OF_RECORDS', 'ToR_Bob_Approved.pdf', '/uploads/test.pdf', 'APPROVED', '2025-08-05', NULL, NULL);
+(11, 'TRANSCRIPT_OF_RECORDS', 'ToR_Bob_Approved.pdf', '/uploads/test.pdf', 'APPROVED', '2025-08-05', NULL, NULL);

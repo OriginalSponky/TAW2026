@@ -49,7 +49,7 @@
         <div class="box-icon">🏁</div>
         <h2>{{ 'STAFF.BOX_CLOSURE_TITLE' | translate }}</h2>
         <p>{{ 'STAFF.BOX_CLOSURE_DESC' | translate }}</p>
-        @if (closureApps.length > 0) { <div class="badge-count">{{ closureApps.length }} {{ 'STAFF.IN_QUEUE' | translate }}</div> }
+        @if (closureApps.length > 0) { <div class="badge-count badge-count-purple">{{ closureApps.length }} {{ 'STAFF.IN_QUEUE' | translate }}</div> }
       </div>
 
       <div class="home-box" (click)="switchView('allAppsView')">
@@ -74,16 +74,10 @@
         <div class="request-card border-pre-departure">
           <div class="request-info">
             <div class="student-name">🧑‍🎓 {{ app.name }} (Mat. {{ app.matricola }})</div>
-            <div class="details">🌍 Destinazione: {{ app.institution }} | ✉️ Docente: {{ app.teacher }}</div>
-            <div class="status-badge" [ngClass]="{
-              'status-created': app.status === 'CREATED',
-              'status-awaiting-la': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
-              'status-pre-departure': app.status === 'PRE_DEPARTURE_COMPLETED',
-              'status-in-progress': app.status === 'MOBILITY_IN_PROGRESS',
-              'status-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' || app.status === 'EXAM_SCORES_APPROVED',
-              'status-closed': app.status === 'CLOSED',
-              'status-canceled': app.status === 'CANCELED'
-            }">{{ app.status }}</div>
+            <div class="details">🌍 {{ 'STAFF.DESTINATION' | translate }} {{ app.institution }} | ✉️ {{ 'STAFF.TEACHER_REF' | translate }} {{ app.teacher }}</div>
+            <div class="status-badge" [ngClass]="getClasseStato(app.status)">
+              {{ getTestoStato(app.status) }}
+            </div>
           </div>
           <div class="actions">
             <button class="btn-primary" (click)="startReview(app, 'pre-departure', 'Learning Agreement')">{{ 'STAFF.BTN_OPEN' | translate }}</button>
@@ -104,19 +98,13 @@
       }
 
       @for (app of closureApps; track app.id) {
-        <div class="request-card border-waiting-score">
+        <div class="request-card border-exam-approved">
           <div class="request-info">
             <div class="student-name">🧑‍🎓 {{ app.name }} (Mat. {{ app.matricola }})</div>
-            <div class="details">🌍 Destinazione: {{ app.institution }} | ✉️ Docente: {{ app.teacher }}</div>
-            <div class="status-badge" [ngClass]="{
-              'status-created': app.status === 'CREATED',
-              'status-awaiting-la': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
-              'status-pre-departure': app.status === 'PRE_DEPARTURE_COMPLETED',
-              'status-in-progress': app.status === 'MOBILITY_IN_PROGRESS',
-              'status-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' || app.status === 'EXAM_SCORES_APPROVED',
-              'status-closed': app.status === 'CLOSED',
-              'status-canceled': app.status === 'CANCELED'
-            }">{{ app.status }}</div>
+            <div class="details">🌍 {{ 'STAFF.DESTINATION' | translate }} {{ app.institution }} | ✉️ {{ 'STAFF.TEACHER_REF' | translate }} {{ app.teacher }}</div>
+            <div class="status-badge" [ngClass]="getClasseStato(app.status)">
+              {{ getTestoStato(app.status) }}
+            </div>
           </div>
           <div class="actions">
             <button class="btn-primary" (click)="startReview(app, 'closure', 'Transcript of Records')">{{ 'STAFF.BTN_OPEN' | translate }}</button>
@@ -137,15 +125,15 @@
         <input type="text" [(ngModel)]="filtri.docente" [placeholder]="'STAFF.PLACE_PROF' | translate" (input)="applicaFiltri()">
         <select [(ngModel)]="filtri.stato" (change)="applicaFiltri()">
           <option value="">{{ 'STAFF.ALL_STATUSES' | translate }}</option>
-          <option value="CREATED">CREATED</option>
-          <option value="AWAITING_FOR_APPROVAL">AWAITING_FOR_APPROVAL</option>
-          <option value="PRE_DEPARTURE_COMPLETED">PRE_DEPARTURE_COMPLETED</option>
-          <option value="MOBILITY_IN_PROGRESS">MOBILITY_IN_PROGRESS</option>
-          <option value="AWAITING_MODIFICATION_APPROVAL">AWAITING_MODIFICATION_APPROVAL</option>
-          <option value="WAITING_FOR_EXAM_SCORE_APPROVAL">WAITING_FOR_EXAM_SCORE_APPROVAL</option>
-          <option value="EXAM_SCORES_APPROVED">EXAM_SCORES_APPROVED</option>
-          <option value="CLOSED">CLOSED</option>
-          <option value="CANCELED">CANCELED</option>
+          <option value="CREATED">{{ 'MY_REQ.STATUS_CREATED' | translate }}</option>
+          <option value="AWAITING_FOR_APPROVAL">{{ 'MY_REQ.STATUS_AW_LA' | translate }}</option>
+          <option value="PRE_DEPARTURE_COMPLETED">{{ 'MY_REQ.STATUS_PRE_DEP' | translate }}</option>
+          <option value="MOBILITY_IN_PROGRESS">{{ 'MY_REQ.STATUS_MOB_PROG' | translate }}</option>
+          <option value="AWAITING_MODIFICATION_APPROVAL">{{ 'MY_REQ.STATUS_AW_MOD' | translate }}</option>
+          <option value="WAITING_FOR_EXAM_SCORE_APPROVAL">{{ 'MY_REQ.STATUS_AW_SCORE' | translate }}</option>
+          <option value="EXAM_SCORES_APPROVED">{{ 'MY_REQ.STATUS_EXAM_APP' | translate }}</option>
+          <option value="CLOSED">{{ 'MY_REQ.STATUS_CLOSED' | translate }}</option>
+          <option value="CANCELED">{{ 'MY_REQ.STATUS_CANCELED' | translate }}</option>
         </select>
 
         <select [(ngModel)]="filtri.nazione" (change)="applicaFiltri()">
@@ -173,32 +161,32 @@
         </p>
       } @else {
         @for (app of praticheFiltrate; track app.id) {
+
+          <!-- CORREZIONE AURA QUI: Tornato al formato border-* ! -->
           <div class="request-card" [ngClass]="{
             'border-created': app.status === 'CREATED',
             'border-awaiting': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
             'border-pre-departure': app.status === 'PRE_DEPARTURE_COMPLETED',
             'border-in-progress': app.status === 'MOBILITY_IN_PROGRESS',
-            'border-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' || app.status === 'EXAM_SCORES_APPROVED',
+            'border-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+            'border-exam-approved': app.status === 'EXAM_SCORES_APPROVED',
             'border-closed': app.status === 'CLOSED',
             'border-canceled': app.status === 'CANCELED'
           }">
             <div class="request-info">
               <div class="student-name">🧑‍🎓 {{ app.name }} (Mat. {{ app.matricola }})</div>
+
+              <!-- CORREZIONE FORMATO PERIODO QUI! -->
               <div class="details">
-                🌍 Destinazione: {{ app.institution }} ({{ app.country }}) | ✉️ Docente: {{ app.teacher }}
+                🌍 {{ 'STAFF.DESTINATION' | translate }} {{ app.institution }} ({{ app.country }}) | ✉️ {{ 'STAFF.TEACHER_REF' | translate }} {{ app.teacher }}
                 <span style="display: block; margin-top: 6px; color: var(--text-main); font-weight: 500;">
-                  📅 Anno Accademico: {{ app.academic_year }} • {{ app.mobility_period.replace('_', ' ') }}
+                  📅 {{ 'REQ_DETAIL.ACADEMIC_YEAR' | translate }}: {{ app.academic_year }} • {{ formattaPeriodo(app.mobility_period) }}
                 </span>
               </div>
-              <div class="status-badge" [ngClass]="{
-                'status-created': app.status === 'CREATED',
-                'status-awaiting-la': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
-                'status-pre-departure': app.status === 'PRE_DEPARTURE_COMPLETED',
-                'status-in-progress': app.status === 'MOBILITY_IN_PROGRESS',
-                'status-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' || app.status === 'EXAM_SCORES_APPROVED',
-                'status-closed': app.status === 'CLOSED',
-                'status-canceled': app.status === 'CANCELED'
-              }">{{ app.status.replace('_', ' ') }}</div>
+
+              <div class="status-badge" [ngClass]="getClasseStato(app.status)">
+                {{ getTestoStato(app.status) }}
+              </div>
             </div>
             <button class="btn-outline" (click)="apriDettagli(app.id)">{{ 'STAFF.BTN_DETAILS' | translate }}</button>
           </div>
@@ -291,26 +279,20 @@
       <h3 style="margin-bottom: 4px; margin-top: 0;">🧑‍🎓 {{ appSelezionata.name }}</h3>
       <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px; margin-top: 0;">{{ 'STAFF.MATRICULA' | translate }} {{ appSelezionata.matricola }}</p>
 
-      <div class="status-badge" [ngClass]="{
-        'status-created': appSelezionata.status === 'CREATED',
-        'status-awaiting-la': appSelezionata.status === 'AWAITING_FOR_APPROVAL' || appSelezionata.status === 'AWAITING_MODIFICATION_APPROVAL',
-        'status-pre-departure': appSelezionata.status === 'PRE_DEPARTURE_COMPLETED',
-        'status-in-progress': appSelezionata.status === 'MOBILITY_IN_PROGRESS',
-        'status-waiting-score': appSelezionata.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' || appSelezionata.status === 'EXAM_SCORES_APPROVED',
-        'status-closed': appSelezionata.status === 'CLOSED',
-        'status-canceled': appSelezionata.status === 'CANCELED'
-      }" style="margin-bottom: 24px;">{{ appSelezionata.status }}</div>
+      <div class="status-badge" [ngClass]="getClasseStato(appSelezionata.status)" style="margin-bottom: 24px;">
+        {{ getTestoStato(appSelezionata.status) }}
+      </div>
 
       <div style="background: var(--bg-color); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px;">
         <p style="margin: 0; font-size: 14px; color: var(--text-main);"><strong>🌍 {{ 'STAFF.DESTINATION' | translate }}</strong> {{ appSelezionata.institution }} ({{ appSelezionata.country }})</p>
 
         <p style="margin: 0; font-size: 14px; color: var(--text-main);">
-          <strong>📅 {{ 'STAFF.PERIOD' | translate }}</strong> {{ appSelezionata.academic_year }} • {{ appSelezionata.mobility_period?.replace('_', ' ') }}
+          <strong>📅 {{ 'STAFF.PERIOD' | translate }}</strong> {{ appSelezionata.academic_year }} • {{ formattaPeriodo(appSelezionata.mobility_period) }}
         </p>
 
         @if (appSelezionata.actual_arrival_date && appSelezionata.actual_departure_date) {
           <p style="margin: 0; font-size: 14px; color: var(--primary); font-weight: 600;">
-            <strong>⏱️ Date di Soggiorno:</strong> dal {{ appSelezionata.actual_arrival_date | date:'dd/MM/yyyy' }} al {{ appSelezionata.actual_departure_date | date:'dd/MM/yyyy' }}
+            <strong>⏱️ {{ 'STAFF.STAY_DATES' | translate }}</strong> {{ 'STAFF.FROM' | translate }} {{ appSelezionata.actual_arrival_date | date:'dd/MM/yyyy' }} {{ 'STAFF.TO' | translate }} {{ appSelezionata.actual_departure_date | date:'dd/MM/yyyy' }}
           </p>
         }
 

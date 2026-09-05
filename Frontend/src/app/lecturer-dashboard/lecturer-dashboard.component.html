@@ -80,10 +80,10 @@
           <div class="request-info">
             <div class="student-name">🧑‍🎓 {{ 'LECTURER.STUDENT' | translate }} {{ app.student_first_name }} {{ app.student_last_name }} ({{app.matricola}})</div>
             <div class="details">
-              🌍 {{ 'LECTURER.DESTINATION' | translate }} {{ app.institution_name }} ({{ app.country }}) | 📅 {{ 'LECTURER.ACADEMIC_YEAR' | translate }} {{ app.academic_year }}
+              🌍 {{ 'LECTURER.DESTINATION' | translate }} {{ app.institution_name }} ({{ app.country }}) | 📅 {{ 'LECTURER.ACADEMIC_YEAR' | translate }} {{ app.academic_year }} • {{ formattaPeriodo(app.mobility_period) }}
               @if (app.actual_arrival_date && app.actual_departure_date) {
                 <span style="display: block; margin-top: 6px; color: var(--primary); font-weight: 600;">
-                  ⏱️ Date di soggiorno: dal {{ app.actual_arrival_date | date:'dd/MM/yyyy' }} al {{ app.actual_departure_date | date:'dd/MM/yyyy' }}
+                  ⏱️ {{ 'STAFF.STAY_DATES' | translate }} {{ 'STAFF.FROM' | translate }} {{ app.actual_arrival_date | date:'dd/MM/yyyy' }} {{ 'STAFF.TO' | translate }} {{ app.actual_departure_date | date:'dd/MM/yyyy' }}
                 </span>
               }
             </div>
@@ -92,7 +92,7 @@
               'badge-warning': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
               'badge-info': app.status !== 'CREATED' && app.status !== 'AWAITING_FOR_APPROVAL' && app.status !== 'AWAITING_MODIFICATION_APPROVAL'
             }" style="margin-top: 8px;">
-              {{ app.status }}
+              {{ formattaStato(app.status) | translate }}
             </div>
           </div>
           <div class="actions">
@@ -121,9 +121,9 @@
         <div class="request-card border-purple">
           <div class="request-info">
             <div class="student-name">🧑‍🎓 {{ 'LECTURER.STUDENT' | translate }} {{ app.student_first_name }} {{ app.student_last_name }} ({{app.matricola}})</div>
-            <div class="details">🌍 {{ 'LECTURER.DESTINATION' | translate }} {{ app.institution_name }} ({{ app.country }}) | 📅 {{ 'LECTURER.ACADEMIC_YEAR' | translate }} {{ app.academic_year }}</div>
+            <div class="details">🌍 {{ 'LECTURER.DESTINATION' | translate }} {{ app.institution_name }} ({{ app.country }}) | 📅 {{ 'LECTURER.ACADEMIC_YEAR' | translate }} {{ app.academic_year }} • {{ formattaPeriodo(app.mobility_period) }}</div>
             <div class="status-badge badge-purple" style="margin-top: 8px;">
-              {{ app.status }}
+              {{ formattaStato(app.status) | translate }}
             </div>
           </div>
           <div class="actions">
@@ -146,14 +146,15 @@
 
         <select [(ngModel)]="filtri.stato" (change)="applicaFiltri()">
           <option value="">{{ 'LECTURER.ALL_STATUSES' | translate }}</option>
-          <option value="CREATED">CREATED</option>
-          <option value="AWAITING_FOR_APPROVAL">AWAITING_FOR_APPROVAL</option>
-          <option value="PRE_DEPARTURE_COMPLETED">PRE_DEPARTURE_COMPLETED</option>
-          <option value="MOBILITY_IN_PROGRESS">MOBILITY_IN_PROGRESS</option>
-          <option value="WAITING_FOR_EXAM_SCORE_APPROVAL">WAITING_FOR_EXAM_SCORE_APPROVAL</option>
-          <option value="EXAM_SCORES_APPROVED">EXAM_SCORES_APPROVED</option>
-          <option value="CLOSED">CLOSED</option>
-          <option value="CANCELED">CANCELED</option>
+          <option value="CREATED">{{ 'MY_REQ.STATUS_CREATED' | translate }}</option>
+          <option value="AWAITING_FOR_APPROVAL">{{ 'MY_REQ.STATUS_AW_LA' | translate }}</option>
+          <option value="PRE_DEPARTURE_COMPLETED">{{ 'MY_REQ.STATUS_PRE_DEP' | translate }}</option>
+          <option value="MOBILITY_IN_PROGRESS">{{ 'MY_REQ.STATUS_MOB_PROG' | translate }}</option>
+          <option value="AWAITING_MODIFICATION_APPROVAL">{{ 'MY_REQ.STATUS_AW_MOD' | translate }}</option>
+          <option value="WAITING_FOR_EXAM_SCORE_APPROVAL">{{ 'MY_REQ.STATUS_AW_SCORE' | translate }}</option>
+          <option value="EXAM_SCORES_APPROVED">{{ 'MY_REQ.STATUS_EXAM_APP' | translate }}</option>
+          <option value="CLOSED">{{ 'MY_REQ.STATUS_CLOSED' | translate }}</option>
+          <option value="CANCELED">{{ 'MY_REQ.STATUS_CANCELED' | translate }}</option>
         </select>
 
         <select [(ngModel)]="filtri.anno" (change)="applicaFiltri()">
@@ -186,23 +187,34 @@
             'border-awaiting': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
             'border-pre-departure': app.status === 'PRE_DEPARTURE_COMPLETED',
             'border-in-progress': app.status === 'MOBILITY_IN_PROGRESS',
-            'border-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' || app.status === 'EXAM_SCORES_APPROVED',
+            'border-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+            'border-exam-approved': app.status === 'EXAM_SCORES_APPROVED',
             'border-closed': app.status === 'CLOSED',
             'border-canceled': app.status === 'CANCELED'
           }">
           <div class="request-info">
             <div class="student-name">🧑‍🎓 {{ 'LECTURER.STUDENT' | translate }} {{ app.student_first_name }} {{ app.student_last_name }} ({{app.matricola}})</div>
-            <div class="details">🌍 {{ 'LECTURER.DESTINATION' | translate }} {{ app.institution_name }} | 📅 {{ 'LECTURER.ACADEMIC_YEAR' | translate }} {{ app.academic_year }}</div>
+
+            <div class="details">
+              🌍 {{ 'LECTURER.DESTINATION' | translate }} {{ app.institution_name }} | 📅 {{ 'LECTURER.ACADEMIC_YEAR' | translate }} {{ app.academic_year }} • {{ formattaPeriodo(app.mobility_period) }}
+              @if (app.actual_arrival_date && app.actual_departure_date) {
+                <span style="display: block; margin-top: 6px; color: var(--primary); font-weight: 600;">
+                  ⏱️ {{ 'STAFF.STAY_DATES' | translate }} {{ 'STAFF.FROM' | translate }} {{ app.actual_arrival_date | date:'dd/MM/yyyy' }} {{ 'STAFF.TO' | translate }} {{ app.actual_departure_date | date:'dd/MM/yyyy' }}
+                </span>
+              }
+            </div>
+
             <div class="status-badge" [ngClass]="{
                 'status-created': app.status === 'CREATED',
                 'status-awaiting-la': app.status === 'AWAITING_FOR_APPROVAL' || app.status === 'AWAITING_MODIFICATION_APPROVAL',
                 'status-pre-departure': app.status === 'PRE_DEPARTURE_COMPLETED',
                 'status-in-progress': app.status === 'MOBILITY_IN_PROGRESS',
-                'status-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL' || app.status === 'EXAM_SCORES_APPROVED',
+                'status-waiting-score': app.status === 'WAITING_FOR_EXAM_SCORE_APPROVAL',
+                'status-exam-approved': app.status === 'EXAM_SCORES_APPROVED',
                 'status-closed': app.status === 'CLOSED',
                 'status-canceled': app.status === 'CANCELED'
               }" style="margin-top: 8px;">
-              {{ app.status }}
+              {{ formattaStato(app.status) | translate }}
             </div>
           </div>
           <div class="actions">
@@ -236,7 +248,7 @@
 
         @if (reviewData.datesText) {
           <div style="margin-bottom: 20px; padding: 12px; background: var(--primary-light); border: 1px solid #bfdbfe; border-radius: var(--radius-md); text-align: left;">
-            <strong style="color: var(--primary); font-size: 14px; display: block; margin-bottom: 4px;">📅 Date di Soggiorno Previste:</strong>
+            <strong style="color: var(--primary); font-size: 14px; display: block; margin-bottom: 4px;">📅 {{ 'STAFF.STAY_DATES' | translate }}</strong>
             <span style="color: var(--text-main); font-size: 14px; font-weight: 500;">{{ reviewData.datesText }}</span>
           </div>
         }
@@ -307,6 +319,13 @@
       </h3>
       <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 15px;">
         🌍 {{ historicalDetails.institution_name }} ({{ historicalDetails.country }})
+
+        @if (historicalDetails.actual_arrival_date && historicalDetails.actual_departure_date) {
+          <br>
+          <span style="color: var(--primary); font-weight: 600; display: inline-block; margin-top: 8px;">
+            ⏱️ {{ 'STAFF.STAY_DATES' | translate }} {{ 'STAFF.FROM' | translate }} {{ historicalDetails.actual_arrival_date | date:'dd/MM/yyyy' }} {{ 'STAFF.TO' | translate }} {{ historicalDetails.actual_departure_date | date:'dd/MM/yyyy' }}
+          </span>
+        }
       </p>
 
       <h4 style="color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0; display: flex; align-items: center; gap: 8px;">
@@ -348,7 +367,7 @@
               </div>
               <div class="status-badge" style="margin-top: 0; padding: 6px 14px; font-size: 11px; border-radius: 20px;"
                    [ngClass]="{'badge-warning': doc.status === 'PENDING', 'badge-danger': doc.status === 'REJECTED', 'status-closed': doc.status === 'APPROVED'}">
-                {{ doc.status }}
+                {{ doc.status === 'PENDING' ? ('ACTIVE_MOBILITY.WAITING' | translate) : (doc.status === 'APPROVED' ? ('ACTIVE_MOBILITY.APPROVED' | translate) : ('ACTIVE_MOBILITY.REJECTED' | translate)) }}
               </div>
             </div>
           }
