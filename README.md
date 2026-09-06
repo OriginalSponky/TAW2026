@@ -1,5 +1,18 @@
-# Overseas Program - Gestionale Mobilità Internazionale
+# Overseas_Studio - Gestionale Mobilità Internazionale
 **Progetto di Tecnologie e Applicazioni Web - A.A. 2025/2026**
+
+**Sviluppato da:**
+
+[![Cioffosplat](https://img.shields.io/badge/GitHub-Cioffosplat-181717?style=for-the-badge&logo=github)](https://github.com/Cioffosplat)
+[![OriginalSponky](https://img.shields.io/badge/GitHub-OriginalSponky-181717?style=for-the-badge&logo=github)](https://github.com/OriginalSponky)
+
+**Codice Utilizzato:**
+
+![TypeScript](https://img.shields.io/badge/TypeScript-60%25-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![HTML5](https://img.shields.io/badge/HTML5-20%25-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-10%25-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-8%25-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![MySQL](https://img.shields.io/badge/SQL-2%25-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 
 Questo progetto implementa una piattaforma web SPA (Single Page Application) per la gestione delle pratiche Erasmus/Overseas per l'Università Ca' Foscari.
 Il sistema gestisce l'intero ciclo di vita della mobilità attraverso tre ruoli principali: **Studente**, **Docente Referente (Lecturer)** e **Ufficio Overseas (Staff)**.
