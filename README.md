@@ -1,3 +1,4 @@
+<img width="2557" height="1437" alt="Home Page Student" src="https://github.com/user-attachments/assets/f81e31e7-b0c7-4a9a-8ea4-ef58f5f182b3" />
 # Overseas_Studio - Gestionale Mobilità Internazionale
 **Progetto di Tecnologie e Applicazioni Web - A.A. 2025/2026**
 
