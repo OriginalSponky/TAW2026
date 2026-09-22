@@ -48,9 +48,9 @@ export class AppComponent implements OnInit, OnDestroy {
   private langSub!: Subscription;
 
   constructor(
-    private cdr: ChangeDetectorRef,
-    public translationService: TranslationService,
-    public themeService: ThemeService,
+      private cdr: ChangeDetectorRef,
+      public translationService: TranslationService,
+      public themeService: ThemeService,
   ) {}
 
   ngOnInit() {
@@ -82,36 +82,36 @@ export class AppComponent implements OnInit, OnDestroy {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: this.emailInput, password: this.passwordInput }),
     })
-      .then(async (response) => {
-        if (!response.ok) {
-          const errorMsg = await response.text();
-          if (errorMsg.includes('Password errata')) throw new Error('ERRORS.WRONG_PASSWORD');
-          if (errorMsg.includes('Email non trovata')) throw new Error('ERRORS.EMAIL_NOT_FOUND');
-          throw new Error(errorMsg);
-        }
-        return response.json();
-      })
+        .then(async (response) => {
+          if (!response.ok) {
+            const errorMsg = await response.text();
+            if (errorMsg.includes('Password errata')) throw new Error('ERRORS.WRONG_PASSWORD');
+            if (errorMsg.includes('Email non trovata')) throw new Error('ERRORS.EMAIL_NOT_FOUND');
+            throw new Error(errorMsg);
+          }
+          return response.json();
+        })
         .then((data) => {
           this.messaggioErrore = '';
 
           if (data.action === 'LOGIN') {
             this.utenteLoggato = data.user;
-            localStorage.setItem('jwt_token', data.token);
+            localStorage.setItem('jwt_token', data.token); // <-- SALVATAGGIO TOKEN
             localStorage.setItem('utenteLoggato', JSON.stringify(data.user));
           } else if (data.action === 'REQUIRES_REGISTRATION') {
-          this.inRegistrazione = true;
-          this.registrazioneDaGoogle = false;
-          this.datiRegistrazione = data.prefill;
-          this.passwordConferma = '';
-        }
-        this.cdr.detectChanges();
-      })
-      .catch((error) => {
-        this.messaggioErrore = error.message;
-        this.utenteLoggato = null;
-        this.inRegistrazione = false;
-        this.cdr.detectChanges();
-      });
+            this.inRegistrazione = true;
+            this.registrazioneDaGoogle = false;
+            this.datiRegistrazione = data.prefill;
+            this.passwordConferma = '';
+          }
+          this.cdr.detectChanges();
+        })
+        .catch((error) => {
+          this.messaggioErrore = error.message;
+          this.utenteLoggato = null;
+          this.inRegistrazione = false;
+          this.cdr.detectChanges();
+        });
   }
 
   /**
@@ -128,7 +128,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.registrazioneDaGoogle) {
       // Genera una password casuale sicura per gli utenti autenticati via Google SSO
       passwordDaSalvare =
-        Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+          Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     } else {
       if (this.passwordConferma !== this.passwordInput) {
         this.messaggioErrore = 'ERRORS.PASSWORD_MISMATCH';
@@ -149,31 +149,44 @@ export class AppComponent implements OnInit, OnDestroy {
         matriculation_number: this.datiRegistrazione.matriculation_number,
       }),
     })
-      .then(async (res) => {
-        if (!res.ok) throw new Error('ERRORS.REGISTRATION_ERROR');
-        return res.json();
-      })
-      .then(() => {
-        this.inRegistrazione = false;
+        .then(async (res) => {
+          if (!res.ok) throw new Error('ERRORS.REGISTRATION_ERROR');
+          return res.json();
+        })
+        .then(() => {
+          this.inRegistrazione = false;
 
-        if (this.registrazioneDaGoogle) {
-          this.utenteLoggato = {
-            first_name: this.datiRegistrazione.first_name,
-            last_name: this.datiRegistrazione.last_name,
-            email: this.datiRegistrazione.email,
-            role: this.datiRegistrazione.role,
-            matriculation_number: this.datiRegistrazione.matriculation_number,
-          };
-          localStorage.setItem('utenteLoggato', JSON.stringify(this.utenteLoggato));
+          // FIX: Autenticazione silenziosa post-registrazione per ottenere il JWT
+          if (this.registrazioneDaGoogle) {
+            fetch('http://localhost:3000/api/google-login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: this.datiRegistrazione.email,
+                given_name: this.datiRegistrazione.first_name,
+                family_name: this.datiRegistrazione.last_name,
+              }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                  if (data.action === 'LOGIN') {
+                    this.utenteLoggato = data.user;
+                    localStorage.setItem('jwt_token', data.token);
+                    localStorage.setItem('utenteLoggato', JSON.stringify(data.user));
+                    this.cdr.detectChanges();
+                  }
+                });
+          } else {
+            // Pre-compiliamo i campi con i dati appena registrati e forziamo il login
+            this.emailInput = this.datiRegistrazione.email;
+            this.passwordInput = passwordDaSalvare;
+            this.eseguiLogin();
+          }
+        })
+        .catch((err) => {
+          this.messaggioErrore = err.message;
           this.cdr.detectChanges();
-        } else {
-          this.eseguiLogin();
-        }
-      })
-      .catch((err) => {
-        this.messaggioErrore = err.message;
-        this.cdr.detectChanges();
-      });
+        });
   }
 
   annullaRegistrazione() {
@@ -200,33 +213,33 @@ export class AppComponent implements OnInit, OnDestroy {
         family_name: decodedPayload.family_name,
       }),
     })
-      .then(async (res) => {
-        if (!res.ok) throw new Error('ERRORS.NOT_AUTHORIZED');
-        return res.json();
-      })
-      .then((data) => {
-        this.messaggioErrore = '';
+        .then(async (res) => {
+          if (!res.ok) throw new Error('ERRORS.NOT_AUTHORIZED');
+          return res.json();
+        })
+        .then((data) => {
+          this.messaggioErrore = '';
 
-        if (data.action === 'REQUIRES_REGISTRATION') {
-          this.inRegistrazione = true;
-          this.registrazioneDaGoogle = true;
-          this.datiRegistrazione = data.prefill;
-          this.passwordInput = '';
-          this.passwordConferma = '';
-        } else if (data.action === 'LOGIN') {
-      this.utenteLoggato = data.user;
-      localStorage.setItem('jwt_token', data.token);
-      localStorage.setItem('utenteLoggato', JSON.stringify(data.user));
-    }
+          if (data.action === 'REQUIRES_REGISTRATION') {
+            this.inRegistrazione = true;
+            this.registrazioneDaGoogle = true;
+            this.datiRegistrazione = data.prefill;
+            this.passwordInput = '';
+            this.passwordConferma = '';
+          } else if (data.action === 'LOGIN') {
+            this.utenteLoggato = data.user;
+            localStorage.setItem('jwt_token', data.token); // <-- SALVATAGGIO TOKEN
+            localStorage.setItem('utenteLoggato', JSON.stringify(data.user));
+          }
 
-        this.cdr.detectChanges();
-      })
-      .catch((error) => {
-        this.messaggioErrore = error.message;
-        this.utenteLoggato = null;
-        if ((window as any).google) (window as any).google.accounts.id.disableAutoSelect();
-        this.cdr.detectChanges();
-      });
+          this.cdr.detectChanges();
+        })
+        .catch((error) => {
+          this.messaggioErrore = error.message;
+          this.utenteLoggato = null;
+          if ((window as any).google) (window as any).google.accounts.id.disableAutoSelect();
+          this.cdr.detectChanges();
+        });
   }
 
   /**
@@ -247,15 +260,15 @@ export class AppComponent implements OnInit, OnDestroy {
         });
 
         (window as any).google.accounts.id.renderButton(
-          document.getElementById('google-btn-container'),
-          {
-            theme: 'outline',
-            size: 'large',
-            type: 'standard',
-            shape: 'rectangular',
-            text: 'signin_with',
-            logo_alignment: 'left',
-          },
+            document.getElementById('google-btn-container'),
+            {
+              theme: 'outline',
+              size: 'large',
+              type: 'standard',
+              shape: 'rectangular',
+              text: 'signin_with',
+              logo_alignment: 'left',
+            },
         );
       }
     }, 100);
@@ -269,6 +282,8 @@ export class AppComponent implements OnInit, OnDestroy {
     this.emailInput = '';
     this.passwordInput = '';
     this.messaggioErrore = '';
+
+    // <-- RIMOZIONE TOKEN E SESSIONE
     localStorage.removeItem('jwt_token');
     localStorage.removeItem('utenteLoggato');
 

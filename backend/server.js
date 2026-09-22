@@ -409,7 +409,7 @@ app.put('/api/applications/:id', authenticateToken, authorizeRole('STUDENT'), up
 /**
  * ELIMINA DEFINITIVAMENTE UNA PRATICA
  */
-app.delete('/api/applications/:id', authenticateToken, async (req, res) => {
+app.delete('/api/applications/:id', authenticateToken, authorizeRole('STUDENT'), async (req, res) => {
     try {
         await dbPool.query('DELETE FROM Applications WHERE id = ?', [req.params.id]);
         res.json({ message: 'Application deleted successfully' });
@@ -632,7 +632,7 @@ app.get('/api/lecturer/applications', authenticateToken, authorizeRole('LECTURER
 /**
  * VALUTAZIONE DOCENTE (Azzera i PENDING, aggiorna la State Machine dell'Application)
  */
-app.put('/api/lecturer/applications/:id/review', authorizeRole('LECTURER'), authenticateToken, async (req, res) => {
+app.put('/api/lecturer/applications/:id/review', authenticateToken, authorizeRole('LECTURER'), async (req, res) => {
     const appId = req.params.id;
     const { document_type, action, rejection_reason } = req.body;
 
@@ -715,7 +715,7 @@ app.put('/api/lecturer/applications/:id/review', authorizeRole('LECTURER'), auth
 /**
  * ACCETTAZIONE RAPIDA DELLA BOZZA (Senza file)
  */
-app.put('/api/lecturer/applications/:id/draft-review', authorizeRole('LECTURER'), authenticateToken, async (req, res) => {
+app.put('/api/lecturer/applications/:id/draft-review', authenticateToken, authorizeRole('LECTURER'), async (req, res) => {
     const { action, rejection_reason } = req.body;
     try {
         if (action === 'APPROVE') {
@@ -740,7 +740,6 @@ app.put('/api/lecturer/applications/:id/draft-review', authorizeRole('LECTURER')
  * Ottiene la panoramica globale di tutto l'Ateneo
  */
 app.get('/api/staff/applications', authenticateToken, authorizeRole('STAFF'), async (req, res) => {
-    if (req.user.role !== 'STAFF') return res.status(403).send("Accesso negato: Solo lo staff può vedere questi dati.");
     try {
         const [rows] = await dbPool.query(`
             SELECT
@@ -766,7 +765,6 @@ app.get('/api/staff/applications', authenticateToken, authorizeRole('STAFF'), as
  * Approvazione Finale Staff (Trigger delle partenze e delle chiusure definitive)
  */
 app.put('/api/staff/applications/:id/review', authenticateToken, authorizeRole('STAFF'), async (req, res) => {
-    if (req.user.role !== 'STAFF') return res.status(403).send("Accesso negato: Solo lo staff può vedere questi dati.");
     const appId = req.params.id;
     const { action, actionType, rejection_reason } = req.body;
 
