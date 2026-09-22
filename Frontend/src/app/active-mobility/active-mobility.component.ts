@@ -16,6 +16,10 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
 import { ThemeService } from '../services/theme.service';
 import { TranslationService } from '../services/translation.service';
 import { TranslatePipe } from '../translate.pipe';
@@ -52,9 +56,10 @@ export class ActiveMobilityComponent implements OnInit {
   alertMessage: string = '';
 
   constructor(
-    private cdr: ChangeDetectorRef,
-    public themeService: ThemeService,
-    public translationService: TranslationService,
+      private cdr: ChangeDetectorRef,
+      public themeService: ThemeService,
+      public translationService: TranslationService,
+      private http: HttpClient
   ) {}
 
   get iniziali(): string {
@@ -68,7 +73,7 @@ export class ActiveMobilityComponent implements OnInit {
   get hasNotifiche(): boolean {
     if (!this.richiesteAttive) return false;
     return this.richiesteAttive.some(
-      (app) => app.documents && app.documents.some((doc: any) => doc.status === 'REJECTED'),
+        (app) => app.documents && app.documents.some((doc: any) => doc.status === 'REJECTED'),
     );
   }
 
@@ -78,7 +83,7 @@ export class ActiveMobilityComponent implements OnInit {
   hasPendingDocument(app: any, documentType: string): boolean {
     if (!app || !app.documents) return false;
     return app.documents.some(
-      (doc: any) => doc.document_type === documentType && doc.status === 'PENDING',
+        (doc: any) => doc.document_type === documentType && doc.status === 'PENDING',
     );
   }
 
@@ -124,9 +129,9 @@ export class ActiveMobilityComponent implements OnInit {
    */
   caricaTutteLeAttive() {
     const emailSicura = encodeURIComponent(this.utente.email);
-    fetch(`http://localhost:3000/api/applications?email=${emailSicura}`)
-      .then((res) => res.json())
-      .then((data) => {
+
+    this.http.get<any[]>(`http://localhost:3000/api/applications?email=${emailSicura}`).subscribe({
+      next: (data) => {
         const statiAttivi = [
           'AWAITING_FOR_APPROVAL',
           'PRE_DEPARTURE_COMPLETED',
@@ -137,16 +142,33 @@ export class ActiveMobilityComponent implements OnInit {
         ];
         const activeApps = data.filter((a: any) => statiAttivi.includes(a.status));
 
-        const promises = activeApps.map((a: any) =>
-          fetch(`http://localhost:3000/api/applications/${a.id}`).then((res) => res.json()),
+        // Se non ci sono app attive, svuotiamo e usciamo subito
+        if (activeApps.length === 0) {
+          this.richiesteAttive = [];
+          this.selectedHistoryApp = null;
+          this.cdr.detectChanges();
+          return;
+        }
+
+        // Creiamo gli Observable per i dettagli di ogni applicazione
+        const observables = activeApps.map((a: any) =>
+            this.http.get<any>(`http://localhost:3000/api/applications/${a.id}`).pipe(
+                catchError(error => {
+                  console.error(`Errore caricamento app ${a.id}:`, error);
+                  return of(null);
+                })
+            )
         );
 
-        Promise.all(promises).then((detailedApps) => {
-          this.richiesteAttive = detailedApps.map((app) => {
+        forkJoin(observables).subscribe((detailedApps) => {
+          // Filtriamo gli eventuali null dovuti ad errori singoli
+          const validApps = detailedApps.filter(app => app !== null);
+
+          this.richiesteAttive = validApps.map((app: any) => {
             if (app.documents && app.documents.length > 0) {
               app.documents.sort(
-                (a: any, b: any) =>
-                  new Date(b.upload_date).getTime() - new Date(a.upload_date).getTime(),
+                  (a: any, b: any) =>
+                      new Date(b.upload_date).getTime() - new Date(a.upload_date).getTime(),
               );
             }
             return {
@@ -164,8 +186,8 @@ export class ActiveMobilityComponent implements OnInit {
           if (this.richiesteAttive.length > 0) {
             if (this.selectedHistoryApp) {
               this.selectedHistoryApp =
-                this.richiesteAttive.find((a) => a.id === this.selectedHistoryApp.id) ||
-                this.richiesteAttive[0];
+                  this.richiesteAttive.find((a) => a.id === this.selectedHistoryApp.id) ||
+                  this.richiesteAttive[0];
             } else {
               this.selectedHistoryApp = this.richiesteAttive[0];
             }
@@ -175,8 +197,9 @@ export class ActiveMobilityComponent implements OnInit {
 
           this.cdr.detectChanges();
         });
-      })
-      .catch((err) => console.error('Errore fetch database:', err));
+      },
+      error: (err) => console.error('Errore fetch database:', err),
+    });
   }
 
   cambiaVista(vista: 'activeMobility' | 'modifications') {
@@ -233,8 +256,8 @@ export class ActiveMobilityComponent implements OnInit {
 
     setTimeout(() => {
       document
-        .getElementById('app-card-' + app.id)
-        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          .getElementById('app-card-' + app.id)
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
   }
 
@@ -308,8 +331,8 @@ export class ActiveMobilityComponent implements OnInit {
       case 'save_dates':
         if (!app.arrival_date || !app.departure_date) {
           this.mostraFeedback(
-            'error',
-            this.translationService.translate('ACTIVE_MOBILITY.ERR_DATES'),
+              'error',
+              this.translationService.translate('ACTIVE_MOBILITY.ERR_DATES'),
           );
           return;
         }
@@ -360,20 +383,20 @@ export class ActiveMobilityComponent implements OnInit {
       case 'submit_tor':
         if (!app.esamiToR || app.esamiToR.length === 0) {
           this.mostraFeedback(
-            'error',
-            this.translationService.translate('ACTIVE_MOBILITY.ERR_MISSING_TOR_DATA'),
+              'error',
+              this.translationService.translate('ACTIVE_MOBILITY.ERR_MISSING_TOR_DATA'),
           );
           return;
         }
 
         const datiMancanti = app.esamiToR.some(
-          (e: any) =>
-            !e.score || String(e.score).trim() === '' || !e.date || String(e.date).trim() === '',
+            (e: any) =>
+                !e.score || String(e.score).trim() === '' || !e.date || String(e.date).trim() === '',
         );
         if (datiMancanti) {
           this.mostraFeedback(
-            'error',
-            this.translationService.translate('ACTIVE_MOBILITY.ERR_MISSING_TOR_DATA'),
+              'error',
+              this.translationService.translate('ACTIVE_MOBILITY.ERR_MISSING_TOR_DATA'),
           );
           return;
         }
@@ -415,12 +438,12 @@ export class ActiveMobilityComponent implements OnInit {
 
     const app = this.appInModifica;
     const appId = app.id;
-    let fetchPromise: Promise<any>;
+    let requestObservable: any; // Manteniamo un riferimento all'Observable generato
 
     if (
-      this.modalConfig.action === 'start_mobility' ||
-      this.modalConfig.action === 'update_dates' ||
-      this.modalConfig.action === 'save_dates'
+        this.modalConfig.action === 'start_mobility' ||
+        this.modalConfig.action === 'update_dates' ||
+        this.modalConfig.action === 'save_dates'
     ) {
       const isStart = this.modalConfig.action === 'start_mobility';
 
@@ -435,70 +458,64 @@ export class ActiveMobilityComponent implements OnInit {
         return [year, month.padStart(2, '0'), day.padStart(2, '0')].join('-');
       };
 
-      fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/dates`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          arrival_date: formattaDataForDB(app.arrival_date),
-          departure_date: formattaDataForDB(app.departure_date),
-          start_mobility: isStart,
-        }),
-      });
+      const payloadDates = {
+        arrival_date: formattaDataForDB(app.arrival_date),
+        departure_date: formattaDataForDB(app.departure_date),
+        start_mobility: isStart,
+      };
+
+      requestObservable = this.http.put(`http://localhost:3000/api/applications/${appId}/dates`, payloadDates);
+
     } else if (this.modalConfig.action === 'reject_mobility') {
-      fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/cancel`, {
-        method: 'PUT',
-      });
+      requestObservable = this.http.put(`http://localhost:3000/api/applications/${appId}/cancel`, {});
+
     } else if (this.modalConfig.action === 'submit_la') {
       const payloadEsami = app.nuoviEsamiLA.map((e: any) => ({ ...e, is_proposed_change: true }));
       const formData = new FormData();
       formData.append('exams', JSON.stringify(payloadEsami));
       formData.append('reason', app.motivoVariazioneLA);
       if (app.fileLA) formData.append('learning_agreement_file', app.fileLA);
-      fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/modify-la`, {
-        method: 'PUT',
-        body: formData,
-      });
+
+      requestObservable = this.http.put(`http://localhost:3000/api/applications/${appId}/modify-la`, formData);
+
     } else if (this.modalConfig.action === 'submit_tor') {
       const formData = new FormData();
       formData.append('exams', JSON.stringify(app.esamiToR));
       if (app.fileToR) formData.append('tor_file', app.fileToR);
-      fetchPromise = fetch(`http://localhost:3000/api/applications/${appId}/tor`, {
-        method: 'POST',
-        body: formData,
-      });
+
+      requestObservable = this.http.post(`http://localhost:3000/api/applications/${appId}/tor`, formData);
+
     } else if (this.modalConfig.action === 'resubmit_modification') {
       const payloadEsami = app.nuoviEsamiLA.map((e: any) => ({ ...e, is_proposed_change: true }));
       const formData = new FormData();
       formData.append('exams', JSON.stringify(payloadEsami));
       if (app.fileCorrection) formData.append('learning_agreement_file', app.fileCorrection);
-      fetchPromise = fetch(
-        `http://localhost:3000/api/applications/${appId}/resubmit-modification`,
-        { method: 'PUT', body: formData },
-      );
+
+      requestObservable = this.http.put(`http://localhost:3000/api/applications/${appId}/resubmit-modification`, formData);
+
     } else {
+      this.isSubmitting = false;
       return;
     }
 
-    fetchPromise
-      .then((res) => {
-        if (!res.ok) throw new Error("Errore durante l'operazione server");
-        return res.json();
-      })
-      .then(() => {
+    requestObservable.subscribe({
+      next: () => {
         this.mostraModale = false;
         this.mostraFeedback(
-          'success',
-          this.translationService.translate('ACTIVE_MOBILITY.SUCCESS_OP'),
+            'success',
+            this.translationService.translate('ACTIVE_MOBILITY.SUCCESS_OP'),
         );
         this.caricaTutteLeAttive();
-      })
-      .catch((err) => {
+      },
+      error: (err: any) => {
         this.mostraModale = false;
-        this.mostraFeedback('error', err.message);
-      })
-      .finally(() => {
+        this.mostraFeedback('error', err.message || 'Errore durante l\'operazione server');
+      },
+      complete: () => {
         this.isSubmitting = false;
-      });
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   mostraFeedback(tipo: 'success' | 'error', messaggio: string) {

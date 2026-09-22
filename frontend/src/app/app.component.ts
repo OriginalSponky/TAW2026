@@ -91,13 +91,14 @@ export class AppComponent implements OnInit, OnDestroy {
         }
         return response.json();
       })
-      .then((data) => {
-        this.messaggioErrore = '';
+        .then((data) => {
+          this.messaggioErrore = '';
 
-        if (data.action === 'LOGIN') {
-          this.utenteLoggato = data.user;
-          localStorage.setItem('utenteLoggato', JSON.stringify(data.user));
-        } else if (data.action === 'REQUIRES_REGISTRATION') {
+          if (data.action === 'LOGIN') {
+            this.utenteLoggato = data.user;
+            localStorage.setItem('jwt_token', data.token);
+            localStorage.setItem('utenteLoggato', JSON.stringify(data.user));
+          } else if (data.action === 'REQUIRES_REGISTRATION') {
           this.inRegistrazione = true;
           this.registrazioneDaGoogle = false;
           this.datiRegistrazione = data.prefill;
@@ -213,9 +214,10 @@ export class AppComponent implements OnInit, OnDestroy {
           this.passwordInput = '';
           this.passwordConferma = '';
         } else if (data.action === 'LOGIN') {
-          this.utenteLoggato = data.user;
-          localStorage.setItem('utenteLoggato', JSON.stringify(data.user));
-        }
+      this.utenteLoggato = data.user;
+      localStorage.setItem('jwt_token', data.token);
+      localStorage.setItem('utenteLoggato', JSON.stringify(data.user));
+    }
 
         this.cdr.detectChanges();
       })
@@ -267,6 +269,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.emailInput = '';
     this.passwordInput = '';
     this.messaggioErrore = '';
+    localStorage.removeItem('jwt_token');
     localStorage.removeItem('utenteLoggato');
 
     if ((window as any).google) {

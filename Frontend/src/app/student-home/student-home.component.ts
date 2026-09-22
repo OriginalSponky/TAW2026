@@ -14,6 +14,7 @@ import {
   ChangeDetectorRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http'; //
 import { NewRequestComponent } from '../new-request/new-request.component';
 import { MyRequestsComponent } from '../my-requests/my-requests.component';
 import { ActiveMobilityComponent } from '../active-mobility/active-mobility.component';
@@ -47,30 +48,36 @@ export class StudentHomeComponent implements OnInit {
   praticaAttiva: any = null;
 
   constructor(
-    private cdr: ChangeDetectorRef,
-    public themeService: ThemeService,
-    public translationService: TranslationService,
+      private cdr: ChangeDetectorRef,
+      public themeService: ThemeService,
+      public translationService: TranslationService,
+      private http: HttpClient
   ) {}
 
   ngOnInit() {
     // Al caricamento, interroga il server per verificare se lo studente possiede una mobilità attiva
     if (this.utente && this.utente.email) {
       const emailSicura = encodeURIComponent(this.utente.email);
-      fetch(`http://localhost:3000/api/applications?email=${emailSicura}`)
-        .then((res) => res.json())
-        .then((data) => {
-          // Elenco degli stati che abilitano il box speciale "In Erasmus" nella home
-          const activeStatuses = [
-            'AWAITING_FOR_APPROVAL',
-            'AWAITING_MODIFICATION_APPROVAL',
-            'PRE_DEPARTURE_COMPLETED',
-            'MOBILITY_IN_PROGRESS',
-            'WAITING_FOR_EXAM_SCORE_APPROVAL',
-          ];
-          this.praticaAttiva = data.find((req: any) => activeStatuses.includes(req.status));
-          this.cdr.detectChanges();
-        })
-        .catch((err) => console.error('Errore recupero mobilità attiva:', err));
+
+      // <-- SOSTITUITO FETCH CON HTTP.GET
+      this.http.get<any[]>(`http://localhost:3000/api/applications?email=${emailSicura}`)
+          .subscribe({
+            next: (data) => {
+              // Elenco degli stati che abilitano il box speciale "In Erasmus" nella home
+              const activeStatuses = [
+                'AWAITING_FOR_APPROVAL',
+                'AWAITING_MODIFICATION_APPROVAL',
+                'PRE_DEPARTURE_COMPLETED',
+                'MOBILITY_IN_PROGRESS',
+                'WAITING_FOR_EXAM_SCORE_APPROVAL',
+              ];
+              this.praticaAttiva = data.find((req: any) => activeStatuses.includes(req.status));
+              this.cdr.detectChanges();
+            },
+            error: (err) => {
+              console.error('Errore recupero mobilità attiva:', err);
+            }
+          });
     }
   }
 

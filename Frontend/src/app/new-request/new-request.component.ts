@@ -7,6 +7,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 
 // Servizi e i18n
 import { ThemeService } from '../services/theme.service';
@@ -68,9 +69,10 @@ export class NewRequestComponent implements OnInit {
   alertMessage: string = '';
 
   constructor(
-    private cdr: ChangeDetectorRef,
-    public themeService: ThemeService,
-    public translationService: TranslationService,
+      private cdr: ChangeDetectorRef,
+      public themeService: ThemeService,
+      public translationService: TranslationService,
+      private http: HttpClient
   ) {}
 
   get iniziali(): string {
@@ -79,21 +81,20 @@ export class NewRequestComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Carica la lista delle università partner
-    fetch('http://localhost:3000/api/institutions')
-      .then((res) => res.json())
-      .then((data) => (this.istituzioni = data));
+    this.http.get<any[]>('http://localhost:3000/api/institutions').subscribe({
+      next: (data) => (this.istituzioni = data),
+      error: (err) => console.error('Errore recupero istituzioni:', err)
+    });
 
-    // Carica la lista dei docenti referenti
-    fetch('http://localhost:3000/api/lecturers')
-      .then((res) => res.json())
-      .then((data) => (this.professori = data));
+    this.http.get<any[]>('http://localhost:3000/api/lecturers').subscribe({
+      next: (data) => (this.professori = data),
+      error: (err) => console.error('Errore recupero docenti:', err)
+    });
 
     // Se è presente un ID di modifica, pre-carica i dati della bozza esistente
     if (this.editRequestId) {
-      fetch(`http://localhost:3000/api/applications/${this.editRequestId}`)
-        .then((res) => res.json())
-        .then((data) => {
+      this.http.get<any>(`http://localhost:3000/api/applications/${this.editRequestId}`).subscribe({
+        next: (data) => {
           this.datiRichiesta = {
             academic_year: data.academic_year,
             mobility_period: data.mobility_period,
@@ -108,7 +109,9 @@ export class NewRequestComponent implements OnInit {
             localCredits: e.unive_course_credits,
             localName: e.unive_course_title,
           }));
-        });
+        },
+        error: (err) => console.error('Errore recupero dettagli bozza:', err)
+      });
     }
   }
 
@@ -160,22 +163,22 @@ export class NewRequestComponent implements OnInit {
    */
   validaEApriModale() {
     const isValidBasic = !!(
-      this.datiRichiesta.academic_year &&
-      this.datiRichiesta.mobility_period &&
-      this.datiRichiesta.institution_id &&
-      this.datiRichiesta.lecturer_id
+        this.datiRichiesta.academic_year &&
+        this.datiRichiesta.mobility_period &&
+        this.datiRichiesta.institution_id &&
+        this.datiRichiesta.lecturer_id
     );
     let areExamsValid = this.esami.length > 0;
 
     for (let i = 0; i < this.esami.length; i++) {
       const e = this.esami[i];
       if (
-        !e.foreignCode ||
-        !e.foreignName ||
-        !e.foreignCredits ||
-        !e.localCode ||
-        !e.localName ||
-        !e.localCredits
+          !e.foreignCode ||
+          !e.foreignName ||
+          !e.foreignCredits ||
+          !e.localCode ||
+          !e.localName ||
+          !e.localCredits
       ) {
         areExamsValid = false;
         break;
@@ -220,26 +223,27 @@ export class NewRequestComponent implements OnInit {
     }
 
     const url = this.editRequestId
-      ? `http://localhost:3000/api/applications/${this.editRequestId}`
-      : 'http://localhost:3000/api/applications';
-    const method = this.editRequestId ? 'PUT' : 'POST';
+        ? `http://localhost:3000/api/applications/${this.editRequestId}`
+        : 'http://localhost:3000/api/applications';
 
-    fetch(url, { method: method, body: formData })
-      .then(async (res) => {
-        if (!res.ok) throw new Error(await res.text());
-        return res.json();
-      })
-      .then(() => {
+    // Creiamo un Observable in base al tipo di azione
+    const request$ = this.editRequestId
+        ? this.http.put(url, formData)
+        : this.http.post(url, formData);
+
+    request$.subscribe({
+      next: () => {
         this.richiestaCompletata = true;
         this.cdr.detectChanges();
-      })
-      .catch((error) => {
+      },
+      error: (error) => {
         this.mostraModale = false;
-        this.erroreSalvataggio = 'Errore di connessione: ' + error.message;
+        this.erroreSalvataggio = 'Errore di connessione: ' + (error.message || 'Server error');
         this.mostraFeedback('error', "Errore durante l'invio della richiesta.");
         this.isSubmitting = false;
         this.cdr.detectChanges();
-      });
+      }
+    });
   }
 
   chiudiModale() {
@@ -259,8 +263,8 @@ export class NewRequestComponent implements OnInit {
       if (file.type === 'application/pdf') {
         this.fileSelezionato = file;
         this.mostraFeedback(
-          'success',
-          this.translationService.translate('NEW_REQ.SUCCESS_UPLOAD') + ' ' + file.name,
+            'success',
+            this.translationService.translate('NEW_REQ.SUCCESS_UPLOAD') + ' ' + file.name,
         );
       } else {
         this.mostraFeedback('error', this.translationService.translate('NEW_REQ.ERR_PDF_ONLY'));
@@ -297,8 +301,8 @@ export class NewRequestComponent implements OnInit {
       if (file.type === 'application/pdf') {
         this.fileSelezionato = file;
         this.mostraFeedback(
-          'success',
-          this.translationService.translate('NEW_REQ.SUCCESS_UPLOAD') + ' ' + file.name,
+            'success',
+            this.translationService.translate('NEW_REQ.SUCCESS_UPLOAD') + ' ' + file.name,
         );
       } else {
         this.mostraFeedback('error', this.translationService.translate('NEW_REQ.ERR_PDF_ONLY'));

@@ -6,6 +6,7 @@
 
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { RequestDetailComponent } from '../request-detail/request-detail.component';
 
 // Servizi e i18n
@@ -41,9 +42,10 @@ export class MyRequestsComponent implements OnInit {
   isDeleting: boolean = false;
 
   constructor(
-    private cdr: ChangeDetectorRef,
-    public themeService: ThemeService,
-    public translationService: TranslationService,
+      private cdr: ChangeDetectorRef,
+      public themeService: ThemeService,
+      public translationService: TranslationService,
+      private http: HttpClient
   ) {}
 
   get iniziali(): string {
@@ -54,16 +56,14 @@ export class MyRequestsComponent implements OnInit {
   ngOnInit() {
     // Al caricamento, recupera dal server tutte le pratiche associate all'email dello studente
     const emailSicura = encodeURIComponent(this.utente.email);
-    fetch(`http://localhost:3000/api/applications?email=${emailSicura}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Errore dal server');
-        return res.json();
-      })
-      .then((data) => {
+
+    this.http.get<any[]>(`http://localhost:3000/api/applications?email=${emailSicura}`).subscribe({
+      next: (data) => {
         this.richieste = data;
         this.cdr.detectChanges();
-      })
-      .catch((err) => console.error('❌ Errore di lettura:', err));
+      },
+      error: (err) => console.error('❌ Errore di lettura:', err)
+    });
   }
 
   mostraFeedback(tipo: 'success' | 'error', messaggio: string) {
@@ -194,23 +194,22 @@ export class MyRequestsComponent implements OnInit {
     if (this.isDeleting) return;
     this.isDeleting = true;
 
-    fetch(`http://localhost:3000/api/applications/${id}`, { method: 'DELETE' })
-      .then((res) => {
-        if (!res.ok) throw new Error("Errore durante l'eliminazione");
-        return res.json();
-      })
-      .then(() => {
+    this.http.delete(`http://localhost:3000/api/applications/${id}`).subscribe({
+      next: () => {
         this.richieste = this.richieste.filter((r) => r.id !== id);
         this.mostraFeedback('success', this.translationService.translate('MY_REQ.SUCCESS_DEL'));
         this.confermaEliminazioneId = null;
         this.cdr.detectChanges();
-      })
-      .catch((err) => {
+      },
+      error: (err) => {
+        console.error(err);
         this.mostraFeedback('error', this.translationService.translate('MY_REQ.ERR_DEL'));
         this.confermaEliminazioneId = null;
-      })
-      .finally(() => {
+      },
+      complete: () => {
         this.isDeleting = false;
-      });
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

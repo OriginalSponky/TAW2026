@@ -12,8 +12,14 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
+const jwt = require('jsonwebtoken'); // <-- NUOVA LIBRERIA JWT
 
 const app = express();
+
+// ==========================================
+// CHIAVE SEGRETA JWT
+// ==========================================
+const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_overseas_key_2026';
 
 // ==========================================
 // 1. CONFIGURAZIONI GLOBALI (Middleware)
@@ -22,15 +28,41 @@ app.use(cors()); // Abilita le chiamate cross-origin (da Angular a Express)
 app.use(express.json()); // Permette al server di interpretare il corpo delle richieste in JSON
 
 // ==========================================
+// MIDDLEWARE DI AUTENTICAZIONE JWT
+// ==========================================
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) return res.status(401).send("Accesso negato: Token mancante.");
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).send("Accesso negato: Token non valido o scaduto.");
+        req.user = user;
+        next();
+    });
+};
+
+// ==========================================
+// MIDDLEWARE DI AUTORIZZAZIONE RUOLI
+// ==========================================
+const authorizeRole = (...allowedRoles) => {
+    return (req, res, next) => {
+        if (!req.user || !allowedRoles.includes(req.user.role)) {
+            return res.status(403).send("Accesso negato: non hai i permessi per questa operazione.");
+        }
+        next();
+    };
+};
+
+// ==========================================
 // 2. CONFIGURAZIONE UPLOAD FILE (Multer)
 // ==========================================
 const uploadDir = path.join(__dirname, 'uploads');
-// Crea la cartella se non esiste al primo avvio
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
-// Definisce dove e come vengono salvati i file PDF (con un suffisso unico per evitare collisioni)
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, uploadDir);
@@ -42,8 +74,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-
-// Espone la cartella '/uploads' al web per permettere il download dei PDF generati
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ==========================================
@@ -64,8 +94,7 @@ const dbPool = mysql.createPool({
    ========================================================================== */
 
 /**
- * LOGIN TRADIZIONALE
- * Supporta sia password criptate (nuovi utenti) che testo in chiaro (vecchi account di seed)
+ * LOGIN TRADIZIONALE (Modificato per generare JWT)
  */
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
@@ -84,15 +113,23 @@ app.post('/api/login', async (req, res) => {
             }
 
             if (passwordCorretta) {
+                // GENERAZIONE DEL TOKEN JWT!
+                const payload = {
+                    id: user.id,
+                    email: user.email,
+                    role: user.role,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    matriculation_number: user.matriculation_number
+                };
+
+                // Il token scade tra 24 ore
+                const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
+
                 res.json({
                     action: 'LOGIN',
-                    user: {
-                        first_name: user.first_name,
-                        last_name: user.last_name,
-                        role: user.role,
-                        matriculation_number: user.matriculation_number,
-                        email: user.email
-                    }
+                    token: token, // <-- Inviamo il token al frontend
+                    user: payload // Inviamo anche i dati base per comodità visiva di Angular
                 });
             } else {
                 res.status(401).send("Password errata per questo account.");
@@ -122,7 +159,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 /**
- * GOOGLE LOGIN (SSO)
+ * GOOGLE LOGIN (SSO) (Modificato per generare JWT)
  */
 app.post('/api/google-login', async (req, res) => {
     const { email, given_name, family_name } = req.body;
@@ -132,14 +169,23 @@ app.post('/api/google-login', async (req, res) => {
 
         if (rows.length > 0) {
             const user = rows[0];
+
+            // GENERAZIONE DEL TOKEN JWT!
+            const payload = {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                matriculation_number: user.matriculation_number
+            };
+
+            const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
+
             res.json({
                 action: 'LOGIN',
-                user: {
-                    first_name: user.first_name,
-                    last_name: user.last_name,
-                    role: user.role,
-                    matriculation_number: email.split('@')[0]
-                }
+                token: token, // <-- Inviamo il token al frontend
+                user: payload
             });
         } else {
             if (email.endsWith('@stud.unive.it') || email.endsWith('@unive.it')) {
@@ -214,7 +260,7 @@ app.get('/api/lecturers', async (req, res) => {
 /**
  * OTTIENI TUTTE LE RICHIESTE DI UNO STUDENTE
  */
-app.get('/api/applications', async (req, res) => {
+app.get('/api/applications', authenticateToken, async (req, res) => {
     const studentEmail = req.query.email;
     if (!studentEmail) return res.status(400).send("Email mancante");
 
@@ -236,7 +282,7 @@ app.get('/api/applications', async (req, res) => {
 /**
  * OTTIENI IL DETTAGLIO COMPLETO DI UNA PRATICA
  */
-app.get('/api/applications/:id', async (req, res) => {
+app.get('/api/applications/:id', authenticateToken, authorizeRole('STUDENT', 'STAFF', 'LECTURER'), async (req, res) => {
     const appId = req.params.id;
     try {
         const [appRows] = await dbPool.query(`
@@ -264,7 +310,7 @@ app.get('/api/applications/:id', async (req, res) => {
 /**
  * CREA UNA NUOVA RICHIESTA (Bozza/CREATED)
  */
-app.post('/api/applications', upload.single('learning_agreement_file'), async (req, res) => {
+app.post('/api/applications', authenticateToken, authorizeRole('STUDENT'), upload.single('learning_agreement_file'), async (req, res) => {
     const { student_email, institution_id, lecturer_id, academic_year, mobility_period, exams } = req.body;
     const file = req.file;
 
@@ -314,7 +360,7 @@ app.post('/api/applications', upload.single('learning_agreement_file'), async (r
 /**
  * AGGIORNA UNA BOZZA ESISTENTE (Cancellazione e reinserimento dati e documenti)
  */
-app.put('/api/applications/:id', upload.single('learning_agreement_file'), async (req, res) => {
+app.put('/api/applications/:id', authenticateToken, authorizeRole('STUDENT'), upload.single('learning_agreement_file'), async (req, res) => {
     const appId = req.params.id;
     const { institution_id, lecturer_id, academic_year, mobility_period, exams } = req.body;
     const file = req.file;
@@ -363,7 +409,7 @@ app.put('/api/applications/:id', upload.single('learning_agreement_file'), async
 /**
  * ELIMINA DEFINITIVAMENTE UNA PRATICA
  */
-app.delete('/api/applications/:id', async (req, res) => {
+app.delete('/api/applications/:id', authenticateToken, async (req, res) => {
     try {
         await dbPool.query('DELETE FROM Applications WHERE id = ?', [req.params.id]);
         res.json({ message: 'Application deleted successfully' });
@@ -379,7 +425,7 @@ app.delete('/api/applications/:id', async (req, res) => {
 /**
  * INSERIMENTO O AGGIORNAMENTO DELLE DATE EFFETTIVE (Start Mobility)
  */
-app.put('/api/applications/:id/dates', async (req, res) => {
+app.put('/api/applications/:id/dates', authenticateToken, authorizeRole('STUDENT'), async (req, res) => {
     const appId = req.params.id;
     const { arrival_date, departure_date, start_mobility } = req.body;
     const connection = await dbPool.getConnection();
@@ -415,7 +461,7 @@ app.put('/api/applications/:id/dates', async (req, res) => {
 /**
  * RINUNCIA ALLA MOBILITA'
  */
-app.put('/api/applications/:id/cancel', async (req, res) => {
+app.put('/api/applications/:id/cancel', authenticateToken, authorizeRole('STUDENT'), async (req, res) => {
     try {
         await dbPool.query(`UPDATE Applications SET status = 'CANCELED' WHERE id = ?`, [req.params.id]);
         res.json({ message: 'Mobilità annullata' });
@@ -427,7 +473,7 @@ app.put('/api/applications/:id/cancel', async (req, res) => {
 /**
  * PROPONI UNA MODIFICA AL LEARNING AGREEMENT (Awaiting Modification Approval)
  */
-app.put('/api/applications/:id/modify-la', upload.single('learning_agreement_file'), async (req, res) => {
+app.put('/api/applications/:id/modify-la', authenticateToken, authorizeRole('STUDENT'), upload.single('learning_agreement_file'), async (req, res) => {
     const appId = req.params.id;
     const { exams, reason } = req.body;
     const file = req.file;
@@ -469,7 +515,7 @@ app.put('/api/applications/:id/modify-la', upload.single('learning_agreement_fil
 /**
  * INVIA IL TRANSCRIPT OF RECORDS E CHIUDI L'ERASMUS (Awaiting Exam Score Approval)
  */
-app.post('/api/applications/:id/tor', upload.single('tor_file'), async (req, res) => {
+app.post('/api/applications/:id/tor', authenticateToken, authorizeRole('STUDENT'), upload.single('tor_file'), async (req, res) => {
     const appId = req.params.id;
     const { exams } = req.body;
     const file = req.file;
@@ -510,7 +556,7 @@ app.post('/api/applications/:id/tor', upload.single('tor_file'), async (req, res
 /**
  * RE-INVIA UNA MODIFICA RIFIUTATA (Correzione Errore Docente)
  */
-app.put('/api/applications/:id/resubmit-modification', upload.single('learning_agreement_file'), async (req, res) => {
+app.put('/api/applications/:id/resubmit-modification', authenticateToken, authorizeRole('STUDENT'), upload.single('learning_agreement_file'), async (req, res) => {
     const appId = req.params.id;
     const { exams } = req.body;
     const file = req.file;
@@ -557,7 +603,7 @@ app.put('/api/applications/:id/resubmit-modification', upload.single('learning_a
 /**
  * Recupera l'intero archivio e lo storico assegnato ad uno specifico Docente
  */
-app.get('/api/lecturer/applications', async (req, res) => {
+app.get('/api/lecturer/applications', authenticateToken, authorizeRole('LECTURER'), async (req, res) => {
     const lecturerEmail = req.query.email;
     if (!lecturerEmail) return res.status(400).send("Email mancante");
 
@@ -586,7 +632,7 @@ app.get('/api/lecturer/applications', async (req, res) => {
 /**
  * VALUTAZIONE DOCENTE (Azzera i PENDING, aggiorna la State Machine dell'Application)
  */
-app.put('/api/lecturer/applications/:id/review', async (req, res) => {
+app.put('/api/lecturer/applications/:id/review', authorizeRole('LECTURER'), authenticateToken, async (req, res) => {
     const appId = req.params.id;
     const { document_type, action, rejection_reason } = req.body;
 
@@ -669,7 +715,7 @@ app.put('/api/lecturer/applications/:id/review', async (req, res) => {
 /**
  * ACCETTAZIONE RAPIDA DELLA BOZZA (Senza file)
  */
-app.put('/api/lecturer/applications/:id/draft-review', async (req, res) => {
+app.put('/api/lecturer/applications/:id/draft-review', authorizeRole('LECTURER'), authenticateToken, async (req, res) => {
     const { action, rejection_reason } = req.body;
     try {
         if (action === 'APPROVE') {
@@ -693,7 +739,8 @@ app.put('/api/lecturer/applications/:id/draft-review', async (req, res) => {
 /**
  * Ottiene la panoramica globale di tutto l'Ateneo
  */
-app.get('/api/staff/applications', async (req, res) => {
+app.get('/api/staff/applications', authenticateToken, authorizeRole('STAFF'), async (req, res) => {
+    if (req.user.role !== 'STAFF') return res.status(403).send("Accesso negato: Solo lo staff può vedere questi dati.");
     try {
         const [rows] = await dbPool.query(`
             SELECT
@@ -718,7 +765,8 @@ app.get('/api/staff/applications', async (req, res) => {
 /**
  * Approvazione Finale Staff (Trigger delle partenze e delle chiusure definitive)
  */
-app.put('/api/staff/applications/:id/review', async (req, res) => {
+app.put('/api/staff/applications/:id/review', authenticateToken, authorizeRole('STAFF'), async (req, res) => {
+    if (req.user.role !== 'STAFF') return res.status(403).send("Accesso negato: Solo lo staff può vedere questi dati.");
     const appId = req.params.id;
     const { action, actionType, rejection_reason } = req.body;
 

@@ -8,6 +8,7 @@
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 
 // Servizi e internazionalizzazione
 import { ThemeService } from '../services/theme.service';
@@ -58,9 +59,10 @@ export class StaffDashboardComponent implements OnInit {
   appSelezionata: any = null;
 
   constructor(
-    public themeService: ThemeService,
-    public translationService: TranslationService,
-    private cdr: ChangeDetectorRef,
+      public themeService: ThemeService,
+      public translationService: TranslationService,
+      private cdr: ChangeDetectorRef,
+      private http: HttpClient
   ) {}
 
   ngOnInit() {
@@ -79,9 +81,8 @@ export class StaffDashboardComponent implements OnInit {
    * Recupera dal backend tutte le pratiche di mobilità dell'Ateneo.
    */
   caricaPratiche() {
-    fetch(`http://localhost:3000/api/staff/applications`)
-      .then((res) => res.json())
-      .then((data) => {
+    this.http.get<any[]>(`http://localhost:3000/api/staff/applications`).subscribe({
+      next: (data) => {
         this.allApps = data.map((a: any) => ({
           ...a,
           name: `${a.student_first_name} ${a.student_last_name}`,
@@ -89,11 +90,11 @@ export class StaffDashboardComponent implements OnInit {
 
         // Estrae liste uniche per popolare i filtri a tendina
         this.uniqueNazioni = [...new Set(this.allApps.map((a) => a.country))]
-          .filter(Boolean)
-          .sort() as string[];
+            .filter(Boolean)
+            .sort() as string[];
         this.uniqueIstituzioni = [...new Set(this.allApps.map((a) => a.institution))]
-          .filter(Boolean)
-          .sort() as string[];
+            .filter(Boolean)
+            .sort() as string[];
 
         // Suddivide le pratiche nelle rispettive code operative dell'Ufficio
         this.preDepartureApps = this.allApps.filter((a) => a.status === 'PRE_DEPARTURE_COMPLETED');
@@ -101,8 +102,9 @@ export class StaffDashboardComponent implements OnInit {
 
         this.praticheFiltrate = [...this.allApps];
         this.cdr.detectChanges();
-      })
-      .catch((err) => console.error('Errore recupero archivio Staff:', err));
+      },
+      error: (err) => console.error('Errore recupero archivio Staff:', err),
+    });
   }
 
   /**
@@ -184,16 +186,16 @@ export class StaffDashboardComponent implements OnInit {
   applicaFiltri() {
     this.praticheFiltrate = this.allApps.filter((app) => {
       const matchStudente =
-        !this.filtri.studente ||
-        app.name.toLowerCase().includes(this.filtri.studente.toLowerCase()) ||
-        (app.matricola && app.matricola.includes(this.filtri.studente));
+          !this.filtri.studente ||
+          app.name.toLowerCase().includes(this.filtri.studente.toLowerCase()) ||
+          (app.matricola && app.matricola.includes(this.filtri.studente));
       const matchDocente =
-        !this.filtri.docente ||
-        app.teacher.toLowerCase().includes(this.filtri.docente.toLowerCase());
+          !this.filtri.docente ||
+          app.teacher.toLowerCase().includes(this.filtri.docente.toLowerCase());
       const matchStato = !this.filtri.stato || app.status === this.filtri.stato;
       const matchNazione = !this.filtri.nazione || app.country === this.filtri.nazione;
       const matchIstituzione =
-        !this.filtri.istituzione || app.institution === this.filtri.istituzione;
+          !this.filtri.istituzione || app.institution === this.filtri.istituzione;
 
       return matchStudente && matchDocente && matchStato && matchNazione && matchIstituzione;
     });
@@ -212,9 +214,9 @@ export class StaffDashboardComponent implements OnInit {
   apriDettagli(id: number) {
     const basicApp = this.allApps.find((a) => a.id === id);
 
-    fetch(`http://localhost:3000/api/applications/${id}`)
-      .then((res) => res.json())
-      .then((details) => {
+    // <-- SOSTITUITO FETCH CON HTTP.GET
+    this.http.get<any>(`http://localhost:3000/api/applications/${id}`).subscribe({
+      next: (details) => {
         this.appSelezionata = {
           ...basicApp,
           ...details,
@@ -222,18 +224,20 @@ export class StaffDashboardComponent implements OnInit {
         };
         this.mostraModaleDettagli = true;
         this.cdr.detectChanges();
-      });
+      },
+      error: (err) => console.error('Errore recupero dettagli pratica:', err),
+    });
   }
 
   /**
    * Avvia il processo di verifica (Pre-partenza o Chiusura) per una pratica in coda.
    */
   startReview(app: any, actionType: 'pre-departure' | 'closure', docType: string) {
-    fetch(`http://localhost:3000/api/applications/${app.id}`)
-      .then((res) => res.json())
-      .then((details) => {
+    // <-- SOSTITUITO FETCH CON HTTP.GET
+    this.http.get<any>(`http://localhost:3000/api/applications/${app.id}`).subscribe({
+      next: (details) => {
         const dbDocType =
-          actionType === 'pre-departure' ? 'LEARNING_AGREEMENT' : 'TRANSCRIPT_OF_RECORDS';
+            actionType === 'pre-departure' ? 'LEARNING_AGREEMENT' : 'TRANSCRIPT_OF_RECORDS';
 
         const relevantDocs = details.documents.filter((d: any) => d.document_type === dbDocType);
         const pendingDoc = relevantDocs.length > 0 ? relevantDocs[relevantDocs.length - 1] : null;
@@ -250,9 +254,9 @@ export class StaffDashboardComponent implements OnInit {
         const missingStr = this.translationService.translate('STAFF.MISSING_DATES');
 
         const datesText =
-          details.actual_arrival_date && details.actual_departure_date
-            ? `${fromStr} ${formatData(details.actual_arrival_date)} ${toStr} ${formatData(details.actual_departure_date)}`
-            : missingStr;
+            details.actual_arrival_date && details.actual_departure_date
+                ? `${fromStr} ${formatData(details.actual_arrival_date)} ${toStr} ${formatData(details.actual_departure_date)}`
+                : missingStr;
 
         this.reviewData = {
           appId: app.id,
@@ -269,7 +273,9 @@ export class StaffDashboardComponent implements OnInit {
         this.pendingAction = null;
         this.mostraModaleReview = true;
         this.cdr.detectChanges();
-      });
+      },
+      error: (err) => console.error('Errore recupero dati per la review:', err),
+    });
   }
 
   impostaStep(step: 'read' | 'reject-reason' | 'confirm') {
@@ -285,22 +291,21 @@ export class StaffDashboardComponent implements OnInit {
    * Invia al server l'esito della verifica dello Staff (Approva o Segnala/Rifiuta).
    */
   eseguiAzione() {
-    fetch(`http://localhost:3000/api/staff/applications/${this.reviewData.appId}/review`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        actionType: this.reviewData.actionType,
-        action: this.pendingAction === 'approve' ? 'APPROVE' : 'REJECT',
-        rejection_reason: this.pendingAction === 'reject' ? this.motivoRifiuto : null,
-      }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('Errore server');
+    const payload = {
+      actionType: this.reviewData.actionType,
+      action: this.pendingAction === 'approve' ? 'APPROVE' : 'REJECT',
+      rejection_reason: this.pendingAction === 'reject' ? this.motivoRifiuto : null,
+    };
+
+    // <-- SOSTITUITO FETCH CON HTTP.PUT
+    this.http.put(`http://localhost:3000/api/staff/applications/${this.reviewData.appId}/review`, payload).subscribe({
+      next: () => {
         this.modalStep = 'success';
         this.caricaPratiche();
         this.cdr.detectChanges();
-      })
-      .catch((err) => console.error(err));
+      },
+      error: (err) => console.error('Errore durante il salvataggio della review:', err),
+    });
   }
 
   chiudiReviewModal() {

@@ -7,6 +7,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 
 // Internazionalizzazione
 import { TranslatePipe } from '../translate.pipe';
@@ -40,8 +41,9 @@ export class RequestDetailComponent implements OnInit {
   fileSelezionato: File | null = null;
 
   constructor(
-    private cdr: ChangeDetectorRef,
-    public translationService: TranslationService,
+      private cdr: ChangeDetectorRef,
+      public translationService: TranslationService,
+      private http: HttpClient
   ) {}
 
   ngOnInit() {
@@ -52,13 +54,13 @@ export class RequestDetailComponent implements OnInit {
    * Recupera i dettagli completi della pratica dal backend.
    */
   caricaDettagli() {
-    fetch(`http://localhost:3000/api/applications/${this.requestId}`)
-      .then((res) => res.json())
-      .then((data) => {
+    this.http.get<any>(`http://localhost:3000/api/applications/${this.requestId}`).subscribe({
+      next: (data) => {
         this.dettagli = data;
         this.cdr.detectChanges();
-      })
-      .catch((err) => console.error('Errore fetch dettagli pratica:', err));
+      },
+      error: (err) => console.error('Errore fetch dettagli pratica:', err),
+    });
   }
 
   mostraFeedback(tipo: 'success' | 'error', messaggio: string) {
@@ -82,9 +84,9 @@ export class RequestDetailComponent implements OnInit {
       return this.translationService.translate('REQ_DETAIL.NOT_ENTERED');
 
     const doc =
-      this.dettagli.documents.find(
-        (d: any) => d.document_type === tipo && d.status === 'APPROVED',
-      ) || this.dettagli.documents.find((d: any) => d.document_type === tipo);
+        this.dettagli.documents.find(
+            (d: any) => d.document_type === tipo && d.status === 'APPROVED',
+        ) || this.dettagli.documents.find((d: any) => d.document_type === tipo);
 
     return doc ? doc.file_name : this.translationService.translate('REQ_DETAIL.NOT_ENTERED');
   }
@@ -95,18 +97,19 @@ export class RequestDetailComponent implements OnInit {
   scaricaDocumento(event: Event, tipo: string = 'LEARNING_AGREEMENT') {
     event.preventDefault();
     const doc =
-      this.dettagli?.documents?.find(
-        (d: any) => d.document_type === tipo && d.status === 'APPROVED',
-      ) || this.dettagli?.documents?.find((d: any) => d.document_type === tipo);
+        this.dettagli?.documents?.find(
+            (d: any) => d.document_type === tipo && d.status === 'APPROVED',
+        ) || this.dettagli?.documents?.find((d: any) => d.document_type === tipo);
 
     if (doc && doc.file_path) {
       const url = 'http://localhost:3000' + doc.file_path;
+
       fetch(url, { method: 'HEAD' })
-        .then((response) => {
-          if (response.ok) window.open(url, '_blank');
-          else this.mostraFeedback('error', 'Il file non è disponibile sul server.');
-        })
-        .catch(() => this.mostraFeedback('error', 'Impossibile connettersi al server dei file.'));
+          .then((response) => {
+            if (response.ok) window.open(url, '_blank');
+            else this.mostraFeedback('error', 'Il file non è disponibile sul server.');
+          })
+          .catch(() => this.mostraFeedback('error', 'Impossibile connettersi al server dei file.'));
     } else {
       this.mostraFeedback('error', 'Nessun percorso file associato.');
     }
@@ -169,29 +172,24 @@ export class RequestDetailComponent implements OnInit {
     formData.append('exams', JSON.stringify(examsPayload));
     if (this.fileSelezionato) formData.append('learning_agreement_file', this.fileSelezionato);
 
-    fetch(`http://localhost:3000/api/applications/${this.requestId}`, {
-      method: 'PUT',
-      body: formData,
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('Errore durante il salvataggio');
-        return res.json();
-      })
-      .then(() => {
+    // <-- SOSTITUITO FETCH CON HTTP.PUT
+    this.http.put(`http://localhost:3000/api/applications/${this.requestId}`, formData).subscribe({
+      next: () => {
         this.mostraModale = false;
         this.isEditing = false;
         this.fileSelezionato = null;
         this.mostraFeedback('success', 'Modifiche salvate con successo!');
         this.caricaDettagli();
-      })
-      .catch((err) => {
+      },
+      error: (err) => {
         this.mostraModale = false;
         this.mostraFeedback('error', err.message || 'Errore di connessione.');
-      })
-      .finally(() => {
+      },
+      complete: () => {
         this.isSubmitting = false;
         this.cdr.detectChanges();
-      });
+      }
+    });
   }
 
   formattaPeriodo(periodo: string): string {
